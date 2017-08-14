@@ -36,8 +36,8 @@ public:
         , bit_(0)
     {}
 
-    template<typename Value>
-    void read_bits(Value& v, std::size_t num_bits)
+    template<typename ValueType, typename BitReader>
+    void read_bits(ValueType& v, BitReader& reader)
     {
         BOOST_ASSERT(num_bits <= sizeof(v) * 8);
         BOOST_ASSERT(num_bits > 0);
@@ -73,13 +73,13 @@ public:
             do
             {
                 ++current_;
-                Value rest = unsigned_buffer_element_type(finished() ? 0 : *current_);
+                ValueType rest = unsigned_buffer_element_type(*current_);
                 v |= rest << bits_extracted;
                 bits_extracted += element_bits;
             } while(--elements_remaining);
         } 
 
-        Value all_value_bit_mask = 0;
+        ValueType all_value_bit_mask = 0;
         all_value_bit_mask = ~all_value_bit_mask;
 
         // Mask off any overhang we didn't ask for.
@@ -114,6 +114,58 @@ private:
     InputIterator current_;
     InputIterator end_;
     std::size_t bit_;
+};
+
+class msb_bit_reader
+{
+public:
+
+    msb_bit_reader(std::size_t num_bits)
+        : num_bits_(num_bits)
+    {}
+
+    template<typename SourceType>
+    typename boost::make_unsigned<
+        SourceType
+    >::type operator()(SourceType const& source, std::size_t source_bit_offset)
+    {
+        
+    }
+
+    std::size_t read_size_bits()
+    {
+        return num_bits_;
+    }
+
+private:
+
+    std::size_t num_bits_;
+};
+
+class lsb_bit_reader
+{
+public:
+
+    lsb_bit_reader(std::size_t num_bits)
+        : num_bits_(num_bits)
+    {}
+
+    template<typename SourceType>
+    typename boost::make_unsigned<
+        SourceType
+    >::type operator()(SourceType const& source, std::size_t source_bit_offset)
+    {
+
+    }
+
+    std::size_t read_size_bits()
+    {
+        return num_bits_;
+    }
+
+private:
+
+    std::size_t num_bits_;
 };
 
 }}} // namespace boost { namespace radix { namespace detail {

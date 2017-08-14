@@ -37,8 +37,8 @@ public:
         *current_ = 0;
     }
 
-    template<typename ValueType>
-    void write_bits(ValueType const& v, std::size_t num_bits)
+    template<typename ValueType, typename BitWriter>
+    void write_bits(ValueType const& v, BitWriter& writer)
     {
         BOOST_ASSERT(num_bits <= sizeof(v) * 8);
         
