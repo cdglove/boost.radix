@@ -38,9 +38,9 @@ public:
     }
 
     template<typename ValueType, typename BitWriter>
-    void write_bits(ValueType const& v, BitWriter& writer)
+    void write_bits(ValueType const& v, BitWriter writer)
     {
-        BOOST_ASSERT(num_bits <= sizeof(v) * 8);
+        BOOST_ASSERT(writer.num_bits() <= sizeof(v) * 8);
         
         typedef typename std::iterator_traits<OutputIterator>::value_type buffer_element_type;
 
@@ -61,13 +61,13 @@ public:
         
         std::size_t bits_inserted = element_bits - bit_;
     
-        if(bits_inserted < num_bits)
+        if(bits_inserted < writer.num_bits())
         {
             typedef typename boost::make_unsigned<ValueType>::type unsigned_value_type;
             unsigned_value_type unsigned_v(v);
             unsigned_v >>= bits_inserted;
 
-            std::size_t bits_remaining = num_bits - bits_inserted;
+            std::size_t bits_remaining = writer.num_bits() - bits_inserted;
             std::size_t aligned_bits_remaining = boost::alignment::align_up(bits_remaining, element_bits);
             std::size_t elements_remaining = aligned_bits_remaining / element_bits;
             BOOST_ASSERT(elements_remaining <= sizeof(v));
@@ -77,12 +77,12 @@ public:
             do
             {
                 ++current_;
-                *current_ = unsigned_v; // & all_element_bit_mask;
+                *current_ = unsigned_v;
                 unsigned_v >>= 8;
             } while(--elements_remaining);
         } 
 
-        bit_ += num_bits;
+        bit_ += writer.num_bits();
         while(bit_ >= 8)
         {
             bit_ -= 8;
@@ -104,6 +104,58 @@ private:
 
     OutputIterator current_;
     std::size_t bit_;
+};
+
+class msb_bit_writer
+{
+public:
+
+    msb_bit_writer(std::size_t num_bits)
+        : num_bits_(num_bits)
+    {}
+
+    template<typename SourceType>
+    typename boost::make_unsigned<
+        SourceType
+    >::type operator()(SourceType const& source, std::size_t source_bit_offset) const
+    {
+        
+    }
+
+    std::size_t num_bits() const
+    {
+        return num_bits_;
+    }
+
+private:
+
+    std::size_t num_bits_;
+};
+
+class lsb_bit_writer
+{
+public:
+
+    lsb_bit_writer(std::size_t num_bits)
+        : num_bits_(num_bits)
+    {}
+
+    template<typename SourceType>
+    typename boost::make_unsigned<
+        SourceType
+    >::type operator()(SourceType const& source, std::size_t source_bit_offset) const
+    {
+
+    }
+
+    std::size_t num_bits() const
+    {
+        return num_bits_;
+    }
+
+private:
+
+    std::size_t num_bits_;
 };
 
 }}} // namespace boost { namespace radix { namespace detail {

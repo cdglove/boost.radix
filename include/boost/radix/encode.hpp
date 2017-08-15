@@ -48,11 +48,11 @@ void encode(InputIterator first, InputIterator last,
             OutputIterator out, alphabet const& scheme) 
 {
     detail::ibitstream<InputIterator> s(first, last);
-    std::size_t num_bits = scheme.bits_required();
+    detail::lsb_bit_reader bit_reader(scheme.bits_required());
     while(!s.finished())
     {
         char c;
-        s.read_bits(c, num_bits);
+        s.read_bits(c, bit_reader);
         *out++ = scheme.char_from_bits(c);
     }
 }

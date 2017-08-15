@@ -37,10 +37,10 @@ void decode(InputIterator first, InputIterator last,
             OutputIterator out, alphabet const& scheme) 
 {
     detail::obitstream<OutputIterator> s(out);
-    std::size_t num_bits = scheme.bits_required();
+    detail::lsb_bit_writer bit_writer(scheme.bits_required());
     while(first != last)
     {
-        s.write_bits(scheme.bits_from_char(*first++), num_bits);
+        s.write_bits(scheme.bits_from_char(*first++), bit_writer);
     }
 }
 
