@@ -56,12 +56,12 @@ public:
         return bits_required_;
     }
 
-    char char_from_bits(std::size_t index) const
+    char char_from_bits(unsigned char index) const
     {
         return chars_[index];
     }
 
-    char bits_from_char(char index) const
+    unsigned char bits_from_char(char index) const
     {
         return bits_[index];
     }
@@ -93,7 +93,7 @@ private:
         }
     }
 
-    boost::array<unsigned char, 128> chars_;
+    boost::array<char, 128>          chars_;
     boost::array<unsigned char, 256> bits_;
     std::size_t alphabet_size_;
     std::size_t bits_required_;
