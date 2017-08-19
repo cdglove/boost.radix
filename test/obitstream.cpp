@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(write_ints)
     std::vector<char> out_buf;
     out_buf.resize(in_buf.size());
     boost::radix::detail::obitstream<std::vector<char>::iterator> s(out_buf.begin());
-    boost::radix::detail::lsb_bit_writer writer(3);
+    boost::radix::detail::lsb_bit_writer writer(11);
     for(std::size_t i = 0; i < in_buf.size() * 8; i+=writer.num_bits())
     {
         s.write_bits(get_bits<int>(in_buf, i, writer.num_bits()), writer);

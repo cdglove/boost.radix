@@ -74,12 +74,12 @@ public:
             
             // cglover-note: There's opportunity for optimization here if we know
             // the endiness of the machine.
-            do
+            while(elements_remaining--)
             {
                 ++current_;
                 *current_ = unsigned_v;
                 unsigned_v >>= 8;
-            } while(--elements_remaining);
+            }
         } 
 
         bit_ += writer.num_bits();
@@ -119,7 +119,7 @@ public:
         SourceType
     >::type operator()(SourceType const& source, std::size_t source_bit_offset) const
     {
-        
+        return source << source_bit_offset;
     }
 
     std::size_t num_bits() const

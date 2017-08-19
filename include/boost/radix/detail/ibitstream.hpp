@@ -70,13 +70,14 @@ public:
             
             // cglover-note: There's opportunity for optimization here if we know
             // the endiness of the machine.
-            do
+            ++current_;
+            while(!finished() && elements_remaining--)
             {
-                ++current_;
                 ValueType rest = reader(*current_, 0);
                 v |= rest << bits_extracted;
                 bits_extracted += element_bits;
-            } while(--elements_remaining);
+                ++current_;
+            }
         } 
 
         ValueType all_value_bit_mask = 0;
@@ -92,7 +93,7 @@ public:
             bit_ -= 8;
         }
 
-        if(bit_ == 0)
+        if(!finished() && bit_ == 0)
         {
             ++current_;
         }
@@ -129,7 +130,25 @@ public:
         SourceType
     >::type operator()(SourceType const& source, std::size_t source_bit_offset) const
     {
-        
+        typedef typename boost::make_unsigned<SourceType>::type unsigned_source;
+        unsigned_source all_bits = 0;
+        all_bits = ~all_bits;
+
+        unsigned_source ret = source;
+        ret &= all_bits >> source_bit_offset;
+
+        std::size_t remaining = (sizeof(source) * 8) - num_bits_;
+        if(remaining < source_bit_offset)
+        {
+            ret <<= source_bit_offset - remaining;
+        }
+        else if(remaining > source_bit_offset)
+        {
+            ret >>= remaining - source_bit_offset;
+        }
+
+
+        return ret;
     }
 
     std::size_t num_bits() const
