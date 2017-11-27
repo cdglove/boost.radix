@@ -1,0 +1,1 @@
+encode(iterator, iterator, iterator, codec)

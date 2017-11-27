@@ -11,94 +11,95 @@
 #define BOOST_RADIX_ALPHABET_HPP
 
 #include <boost/config.hpp>
-#include <boost/assert.hpp>
+
+#include <boost/radix/common.hpp>
+
 #include <boost/array.hpp>
+#include <boost/static_assert.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-# pragma once
+#pragma once
 #endif
 
-namespace boost { namespace radix { 
+namespace boost { namespace radix {
 
+template <std::size_t Size>
 class alphabet
 {
 public:
+    BOOST_STATIC_ASSERT(Size < std::size_t(1) << 63);
+    BOOST_STATIC_CONSTANT(std::size_t, size = Size);
 
-    template<typename Iterator>
+    template <typename Iterator>
     alphabet(Iterator first, Iterator last)
     {
-        init_from_iterators(first, last);
+        init_from_iterators(first, last, bits_type(~0U), '=');
     }
 
-    template<typename Container>
-    explicit alphabet(Container const& c)
+    template <typename Iterator>
+    alphabet(Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
     {
-        init_from_iterators(c.begin(), c.end());
+        init_from_iterators(first, last, pad_bits, pad_char);
     }
 
-    template<typename Char>
-    explicit alphabet(Char const* chars)
+    explicit alphabet(char_type const* chars)
     {
-        Char const* last = chars;
+        char_type const* last = chars;
+        while(*last)
+            ++last;
+
+        init_from_iterators(chars, last, bits_type(~0U), '=');
+    }
+
+    alphabet(char_type const* chars, bits_type pad_bits, char_type pad_char)
+    {
+        char_type const* last = chars;
         while(*last)
             ++last;
 
         init_from_iterators(chars, last);
     }
 
-    std::size_t size() const
-    {
-        return alphabet_size_;
-    }
-
-    std::size_t bits_required() const
-    {
-        return bits_required_;
-    }
-
-    char char_from_bits(unsigned char index) const
+    char_type char_from_bits(bits_type index) const
     {
         return chars_[index];
     }
 
-    unsigned char bits_from_char(char index) const
+    bits_type bits_from_char(char_type index) const
     {
         return bits_[index];
     }
-    
-private:
 
-    template<typename Iterator>
-    void init_from_iterators(Iterator first, Iterator last)
+    void set_pads(bits_type pad_bits, char_type pad_char)
     {
-        alphabet_size_ = 0;
-        for(Iterator current = first; current != last; ++current)
-        {
-            chars_[alphabet_size_] = *current;
-            bits_[static_cast<unsigned char>(chars_[alphabet_size_])] = static_cast<unsigned char>(alphabet_size_);
-            ++alphabet_size_;
-            if(alphabet_size_ == chars_.size())
-            {
-                BOOST_ASSERT(false); // throw??
-            }
-        }
+        BOOST_ASSERT(pad_bits > Size);
+        BOOST_ASSERT(std::find(chars_.begin(), chars_.end(), pad_char) == chars_.end());
 
-        std::size_t bit = 1;
-        bits_required_ = 0;
-        BOOST_ASSERT(alphabet_size_ < (bit << 63));
-        while(bit < alphabet_size_)
-        {
-            bit <<= 1;
-            ++bits_required_;
-        }
+        chars_[pad_bits] = pad_char;
+        bits_[pad_char]  = pad_bits;
     }
 
-    boost::array<char, 128>          chars_;
-    boost::array<unsigned char, 256> bits_;
-    std::size_t alphabet_size_;
-    std::size_t bits_required_;
+private:
+    template <typename Iterator>
+    void init_from_iterators(
+        Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
+    {
+        boost::array<char_type, 256>::iterator last_char =
+            std::copy(first, last, chars_.begin());
+        std::fill(last_char, chars_.end(), '\0');
+
+        for(bits_type i = 0; i < Size; ++i)
+        {
+            bits_[static_cast<bits_type>(chars_[i])] = i;
+        }
+
+        set_pads(pad_bits, pad_char);
+    }
+
+    boost::array<char_type, 256> chars_;
+    boost::array<bits_type, 256> bits_;
 };
 
-}} // namespace boost { namespace radix { 
+}} // namespace boost::radix
 
 #endif // BOOST_RADIX_ALPHABET_HPP

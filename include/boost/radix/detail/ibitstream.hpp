@@ -70,13 +70,11 @@ public:
             
             // cglover-note: There's opportunity for optimization here if we know
             // the endiness of the machine.
-            ++current_;
-            while(!finished() && elements_remaining--)
+            while(elements_remaining-- && (++current_,true) && !finished())
             {
-                ValueType rest = reader(*current_, 0);
+                ValueType rest = reader(*current_);
                 v |= rest << bits_extracted;
                 bits_extracted += element_bits;
-                ++current_;
             }
         } 
 
@@ -117,11 +115,92 @@ private:
     std::size_t bit_;
 };
 
-class msb_bit_reader
+class ibitstream_le 
 {
 public:
 
-    msb_bit_reader(std::size_t num_bits)
+    template<typename Iterator>
+    ibitstream_le(Iterator& current)
+        : byte_(*current++)
+        , bit_(0)
+    {}
+
+    template<typename ValueType, typename Iterator, typename BitReader>
+    void read_bits(ValueType& v, Iterator& next , Iterator last, BitReader reader)
+    {
+        BOOST_ASSERT(reader.num_bits() <= sizeof(v) * 8);
+        BOOST_ASSERT(reader.num_bits() > 0);
+
+        std::size_t const element_bits = 8;
+
+        v = reader(byte_, bit_); 
+        
+        std::size_t bits_extracted = element_bits - bit_;
+
+        //// Extract whatever is left in the current element.
+        //v = reader(byte_, bit_); 
+        //
+        //std::size_t bits_extracted = element_bits - bit_;
+    
+        //if(bits_extracted == reader.num_bits())
+        //{
+        //    byte_ = *current_++;
+        //    bit_ = 0;
+        //    return;
+        //}
+        //else if(bits_extracted < reader.num_bits())
+        //{
+        //    std::size_t bits_remaining = reader.num_bits() - bits_extracted;
+        //    std::size_t aligned_bits_remaining = boost::alignment::align_up(bits_remaining, element_bits);
+        //    std::size_t elements_remaining = aligned_bits_remaining / element_bits;
+        //    BOOST_ASSERT(elements_remaining <= sizeof(v));
+        //    
+        //    // cglover-note: There's opportunity for optimization here if we know
+        //    // the endiness of the machine.
+        //    while(elements_remaining-- && (++current_, true) && (current != last))
+        //    {
+        //        ValueType rest = reader(*current_);
+        //        v |= rest << bits_extracted;
+        //        bits_extracted += element_bits;
+        //    }
+        //} 
+
+        //ValueType all_value_bit_mask = 0;
+        //all_value_bit_mask = ~all_value_bit_mask;
+
+        //// Mask off any overhang we didn't ask for.
+        //v &= ~(all_value_bit_mask << reader.num_bits());
+
+        //// Reset the bit offset to account for overhang.
+        //bit_ += reader.num_bits();
+        //while(bit_ >= 8)
+        //{
+        //    bit_ -= 8;
+        //}
+
+        //if((current != last) && bit_ == 0)
+        //{
+        //    byte_ = *current++;
+        //    
+        //}
+    }
+
+    //bool finished() const
+    //{
+    //    return current_ == end_;
+    //}
+
+private:
+
+    bits_type byte_;
+    std::size_t bit_;
+};
+
+class dynamic_bit_reader
+{
+public:
+
+    dynamic_bit_reader(std::size_t num_bits)
         : num_bits_(num_bits)
     {}
 
@@ -130,25 +209,15 @@ public:
         SourceType
     >::type operator()(SourceType const& source, std::size_t source_bit_offset) const
     {
-        typedef typename boost::make_unsigned<SourceType>::type unsigned_source;
-        unsigned_source all_bits = 0;
-        all_bits = ~all_bits;
+        return boost::make_unsigned<SourceType>::type(source) >> source_bit_offset;
+    }
 
-        unsigned_source ret = source;
-        ret &= all_bits >> source_bit_offset;
-
-        std::size_t remaining = (sizeof(source) * 8) - num_bits_;
-        if(remaining < source_bit_offset)
-        {
-            ret <<= source_bit_offset - remaining;
-        }
-        else if(remaining > source_bit_offset)
-        {
-            ret >>= remaining - source_bit_offset;
-        }
-
-
-        return ret;
+    template<typename SourceType>
+    typename boost::make_unsigned<
+        SourceType
+    >::type operator()(SourceType const& source) const
+    {
+        return boost::make_unsigned<SourceType>::type(source);
     }
 
     std::size_t num_bits() const
@@ -161,13 +230,10 @@ private:
     std::size_t num_bits_;
 };
 
-class lsb_bit_reader
+template<std::size_t Bits>
+class static_bit_reader
 {
 public:
-
-    lsb_bit_reader(std::size_t num_bits)
-        : num_bits_(num_bits)
-    {}
 
     template<typename SourceType>
     typename boost::make_unsigned<
@@ -177,14 +243,18 @@ public:
         return boost::make_unsigned<SourceType>::type(source) >> source_bit_offset;
     }
 
-    std::size_t num_bits() const
+    template<typename SourceType>
+    typename boost::make_unsigned<
+        SourceType
+    >::type operator()(SourceType const& source) const
     {
-        return num_bits_;
+        return boost::make_unsigned<SourceType>::type(source);
     }
 
-private:
-
-    std::size_t num_bits_;
+    std::size_t num_bits() const
+    {
+        return Bits;
+    }
 };
 
 }}} // namespace boost { namespace radix { namespace detail {

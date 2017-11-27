@@ -26,19 +26,19 @@ T get_expected_bits(int idx, int num_bits)
     return ret;
 }
 
-void get_bit_buffer(std::vector<char>& buf, int count)
+std::vector<char> get_bit_buffer(int count)
 {
-    buf.clear();
+    std::vector<char> buf;
     for(int i = 0; i < count; ++i)
     {
         buf.push_back(get_expected_bits<char>(i, 8));
     }
+    return buf;
 }
 
 BOOST_AUTO_TEST_CASE(encode_chars_binary)
 {
-    std::vector<char> buf;
-    get_bit_buffer(buf, 4);
+    std::vector<char> buf = get_bit_buffer(4);
     std::string result;
     boost::radix::encode(buf.begin(), buf.end(), std::back_inserter(result), boost::radix::alphabet("01"));
     BOOST_TEST(result == "01010101010101010101010101010101");
@@ -46,9 +46,10 @@ BOOST_AUTO_TEST_CASE(encode_chars_binary)
 
 BOOST_AUTO_TEST_CASE(encode_chars_hex)
 {
-    std::vector<char> buf;
-    get_bit_buffer(buf, 4);
+    std::vector<unsigned char> buf { 0x01, 0x10, 0x5a, 0xa5, 0xff };
     std::string result;
     boost::radix::encode(buf.begin(), buf.end(), std::back_inserter(result), boost::radix::alphabet("0123456789ABCDEF"));
-    BOOST_TEST(result == "5A5A");
+
+    // Result is switched because big endian representation of 0x01
+    BOOST_TEST(result == "1001A55AFF");
 }

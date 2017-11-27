@@ -106,11 +106,11 @@ private:
     std::size_t bit_;
 };
 
-class msb_bit_writer
+class dynamic_bit_writer
 {
 public:
 
-    msb_bit_writer(std::size_t num_bits)
+    dynamic_bit_writer(std::size_t num_bits)
         : num_bits_(num_bits)
     {}
 
@@ -122,31 +122,14 @@ public:
         return source << source_bit_offset;
     }
 
-    std::size_t num_bits() const
-    {
-        return num_bits_;
-    }
-
-private:
-
-    std::size_t num_bits_;
-};
-
-class lsb_bit_writer
-{
-public:
-
-    lsb_bit_writer(std::size_t num_bits)
-        : num_bits_(num_bits)
-    {}
-
     template<typename SourceType>
     typename boost::make_unsigned<
         SourceType
-    >::type operator()(SourceType const& source, std::size_t source_bit_offset) const
+    >::type operator()(SourceType const& source) const
     {
-
+        return source;
     }
+
 
     std::size_t num_bits() const
     {
