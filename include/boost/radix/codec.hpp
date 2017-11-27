@@ -12,45 +12,38 @@
 
 #include <boost/config.hpp>
 
-#include <boost/align/align_up.hpp>
-#include <boost/assert.hpp>
-#include <boost/integer/common_factor_rt.hpp>
 #include <boost/radix/alphabet.hpp>
-#include <limits>
+#include <boost/radix/common.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once
 #endif
 
+// -----------------------------------------------------------------------------
+//
 namespace boost { namespace radix {
 
-template <std::size_t AlphabetSize>
-class codec
+template <typename Tag, std::size_t AlphabetSize>
+class codec : public alphabet<AlphabetSize>
 {
 public:
-    typedef alphabet<AlphabetSize> alphabet_type;
-
-    codec(alphabet_type chars, char_type pad)
-        : alphabet_(boost::move(chars))
-        , pad_(pad)
+    template <typename Iterator>
+    codec(Iterator first, Iterator last)
+        : alphabet(first, last)
     {}
 
     template <typename Iterator>
-    codec(Iterator first, Iterator last, char_type pad)
-        : alphabet(first, last)
-        , pad_(pad)
+    codec(Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
+        : alphabet(first, last, pad_bits, pad_char)
     {}
 
-    codec(char_type const* chars, char_type pad)
-        : alphabet_(chars)
-        , pad_(pad)
+    explicit codec(char_type const* chars)
+        : alphabet(chars)
     {}
 
-    alphabet_type const& get_alphabet() const { return alphabet_; }
-
-private:
-    alphabet<AlphabetSize> alphabet_;
-    char pad_;
+    codec(char_type const* chars, bits_type pad_bits, char_type pad_char)
+        : alphabet(chars, pad_bits, bad_char)
+    {}
 };
 
 }} // namespace boost::radix

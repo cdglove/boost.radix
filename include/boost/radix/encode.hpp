@@ -13,10 +13,11 @@
 #include <boost/config.hpp>
 
 #include <boost/radix/common.hpp>
+#include <boost/radix/segment_unpacker.hpp>
 #include <boost/radix/detail/segment.hpp>
 
-#include <boost/array.hpp>
 #include <boost/algorithm/cxx11/copy_n.hpp>
+#include <boost/array.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
@@ -24,19 +25,28 @@
 #pragma once
 #endif
 
+// -----------------------------------------------------------------------------
+//
 namespace boost { namespace radix {
 
+// -----------------------------------------------------------------------------
+//
 namespace adl {
 
 template <typename Segment, typename Codec>
-auto unpack_segment(Segment const& segment, Codec const& codec)
+auto unpack_segment(Segment const& segment, Codec const&)
 {
-    typedef boost::array<char_type, detail::unpacked_segment_size<Codec::alphabet_type::size>::value > unpacked_buffer_type;
-    return unpacked_buffer_type();
+    typedef big_endian_segment_unpacker<
+        detail::required_bits<Codec::alphabet_size>::value,
+        detail::unpacked_segment_size<Codec::alphabet_size>::value
+    > unpacker;
+    return unpacker()(segment);
 }
 
 } // namespace adl
 
+// -----------------------------------------------------------------------------
+//
 namespace detail {
 
 template <typename Alphabet>
@@ -54,22 +64,24 @@ struct bits_to_char_mapper
     Alphabet const& alphabet_;
 };
 
-template<typename Alphabet>
-bits_to_char_mapper<Alphabet> map_bits_to_char(Alphabet const& alphabet)
+template <typename Alphabet>
+bits_to_char_mapper<Alphabet> make_bits_to_char_mapper(Alphabet const& alphabet)
 {
     return bits_to_char_mapper<Alphabet>(alphabet);
 }
 
 // cglover-todo: Specialize on iterator tag.
 template <typename Iterator, typename EndIterator, typename Codec>
-auto get_packed_segment(
-    Iterator& first, EndIterator last, Codec const& codec)
+auto get_packed_segment(Iterator& first, EndIterator last, Codec const& codec)
 {
-    typedef boost::array<char_type, detail::packed_segment_size<Codec::alphabet_type::size>::value > packed_buffer_type;
+    typedef boost::array<
+        char_type,
+        detail::packed_segment_size<Codec::alphabet_size>::value>
+        packed_buffer_type;
     packed_buffer_type buffer;
 
     packed_buffer_type::iterator bfirst = buffer.begin();
-    packed_buffer_type::iterator blast = buffer.begin();
+    packed_buffer_type::iterator blast  = buffer.end();
 
     while(first != last && bfirst != blast)
     {
@@ -77,7 +89,7 @@ auto get_packed_segment(
     }
 
     // Pad the result in case last-first < buffer.size();
-    std::fill(bfirst, blast, char(~0));
+    std::fill(bfirst, blast, codec.get_pad_bits());
 
     return buffer;
 }
@@ -91,6 +103,8 @@ auto call_unpack_segment(InputBuffer const& buffer, Codec const& codec)
 
 } // namespace detail
 
+// -----------------------------------------------------------------------------
+//
 template <
     typename InputIterator,
     typename InputEndIterator,
@@ -112,7 +126,7 @@ void encode(
 
         out = std::transform(
             unpacked_segment.begin(), unpacked_segment.end(), out,
-            ::boost::radix::detail::map_bits_to_char(codec.get_alphabet()));
+            detail::make_bits_to_char_mapper(codec));
     }
 
     // boost::array<unsigned char, 3> input_buffer;
@@ -132,7 +146,8 @@ void encode(
     //         output_buffer[3] = input_buffer[2] & 0x3f;
 
     //         for(i = 0; (i < 4); ++i)
-    //             *out++ = codec.get_alphabet().char_from_bits(output_buffer[i]);
+    //             *out++ =
+    //             codec.get_alphabet().char_from_bits(output_buffer[i]);
     //         i = 0;
     //     }
     // }
@@ -144,9 +159,11 @@ void encode(
 
     //     output_buffer[0] = (input_buffer[0] & 0xfc) >> 2;
     //     output_buffer[1] =
-    //         ((input_buffer[0] & 0x03) << 4) + ((input_buffer[1] & 0xf0) >> 4);
+    //         ((input_buffer[0] & 0x03) << 4) + ((input_buffer[1] & 0xf0) >>
+    //         4);
     //     output_buffer[2] =
-    //         ((input_buffer[1] & 0x0f) << 2) + ((input_buffer[2] & 0xc0) >> 6);
+    //         ((input_buffer[1] & 0x0f) << 2) + ((input_buffer[2] & 0xc0) >>
+    //         6);
     //     output_buffer[3] = input_buffer[2] & 0x3f;
 
     //     for(int j = 0; (j < i + 1); ++j)

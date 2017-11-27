@@ -31,7 +31,7 @@ void decode(InputIterator first, InputIterator last,
     unsigned char output_buffer[3];
     unsigned char input_buffer[4];
 
-    auto const& alpha = codec.get_alphabet();
+    auto const& alpha = codec;
     int i = 0;
 
     

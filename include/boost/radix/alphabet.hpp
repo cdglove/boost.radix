@@ -28,7 +28,7 @@ class alphabet
 {
 public:
     BOOST_STATIC_ASSERT(Size < std::size_t(1) << 63);
-    BOOST_STATIC_CONSTANT(std::size_t, size = Size);
+    BOOST_STATIC_CONSTANT(std::size_t, alphabet_size = Size);
 
     template <typename Iterator>
     alphabet(Iterator first, Iterator last)
@@ -70,6 +70,16 @@ public:
         return bits_[index];
     }
 
+    char_type get_pad_char() const
+    {
+        return chars_[pad_bits_];
+    }
+
+    bits_type get_pad_bits() const
+    {
+        return pad_bits_;
+    }
+
     void set_pads(bits_type pad_bits, char_type pad_char)
     {
         BOOST_ASSERT(pad_bits > Size);
@@ -84,9 +94,9 @@ private:
     void init_from_iterators(
         Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
     {
-        boost::array<char_type, 256>::iterator last_char =
-            std::copy(first, last, chars_.begin());
-        std::fill(last_char, chars_.end(), '\0');
+        std::fill(
+            std::copy(first, last, chars_.begin()),
+            chars_.end(), '\0');
 
         for(bits_type i = 0; i < Size; ++i)
         {
@@ -98,6 +108,7 @@ private:
 
     boost::array<char_type, 256> chars_;
     boost::array<bits_type, 256> bits_;
+    bits_type pad_bits_;
 };
 
 }} // namespace boost::radix
