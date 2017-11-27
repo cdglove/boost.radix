@@ -12,6 +12,8 @@
 
 #include <boost/radix/decode.hpp>
 #include <boost/radix/encode.hpp>
+#include <boost/radix/codec.hpp>
+#include <boost/range/algorithm/equal.hpp>
 #include "generate_bytes.hpp"
 #include "base64_reference.hpp"
 #include <vector>
@@ -21,21 +23,21 @@
 
 BOOST_AUTO_TEST_CASE(round_trip_base64)
 {
-    boost::radix::alphabet base64("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+    boost::radix::codec<64> base64(boost::radix::alphabet<64>("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), '=');
   
     std::vector<char> binary_in = generate_bytes(1024);
-    std::string text;
-    text.resize(boost::radix::encoded_size(binary_in.size(), base64));
     
-    boost::radix::encode(binary_in.begin(), binary_in.end(), text.begin(), base64);
+    std::string encoded_text;
+    boost::radix::encode(binary_in.begin(), binary_in.end(), std::back_inserter(encoded_text), base64);
 
-    std::vector<char> binary_out(boost::radix::decoded_size(text.size(), base64));
-    boost::radix::decode(text.begin(), text.end(), binary_out.begin(), base64);
-    BOOST_TEST(binary_in == binary_out);
+    std::vector<char> decoded_binary;
+    boost::radix::decode(encoded_text.begin(), encoded_text.end(), std::back_inserter(decoded_binary), base64);
+    
+    BOOST_TEST(binary_in == decoded_binary);
 
     std::string ref_encode = base64::encode(reinterpret_cast<unsigned char*>(binary_in.data()), (int)binary_in.size());
     std::string ref_decode = base64::decode(ref_encode);
 
-    std::cout << ref_encode << std::endl;
-    std::cout << text;
+    BOOST_TEST(ref_encode == encoded_text);
+    BOOST_TEST(boost::equal(ref_decode, decoded_binary));
 }

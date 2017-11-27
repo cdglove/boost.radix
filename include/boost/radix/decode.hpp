@@ -11,9 +11,6 @@
 #define BOOST_RADIX_DECODE_HPP
 
 #include <boost/config.hpp>
-#include <boost/radix/alphabet.hpp>
-#include <boost/radix/detail/obitstream.hpp>
-#include <limits>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once
@@ -21,26 +18,60 @@
 
 namespace boost { namespace radix { 
 
-std::size_t decoded_size(std::size_t encoded_size, alphabet const& chars)
+template<typename Codec>
+std::size_t decoded_size(std::size_t encoded_size, Codec const& codec)
 {
-    // Make sure we're not going to overflow the size.    
-    BOOST_ASSERT(encoded_size < (std::numeric_limits<std::size_t>::max() / chars.bits_required()));
-    std::size_t total_bits = encoded_size * chars.bits_required();
-
-    total_bits = boost::alignment::align_up(total_bits, 8);
-    std::size_t decoded_bytes = total_bits / 8;
-    return decoded_bytes;
+    return codec.decoded_size(encoded_size);
 }
 
-template<typename InputIterator, typename OutputIterator>
-void decode(InputIterator first, InputIterator last, 
-            OutputIterator out, alphabet const& scheme) 
+template<typename InputIterator, typename OutputIterator, typename Codec>
+void decode(InputIterator first, InputIterator last,
+            OutputIterator out, Codec const& codec) 
 {
-    detail::obitstream<OutputIterator> s(out);
-    std::size_t num_bits = scheme.bits_required();
+    unsigned char output_buffer[3];
+    unsigned char input_buffer[4];
+
+    auto const& alpha = codec.get_alphabet();
+    int i = 0;
+
+    
+
     while(first != last)
     {
-        s.write_bits(scheme.bits_from_char(*first++), num_bits);
+    	unsigned char current = *first++;
+        if(current == '=')
+            break;
+
+        input_buffer[i++] = current;
+        if (i == 4)
+        {
+            for (i = 0; i < 4; ++i)
+                input_buffer[i] = alpha.bits_from_char(input_buffer[i]);
+
+            output_buffer[0] = (input_buffer[0] << 2) + ((input_buffer[1] & 0x30) >> 4);
+            output_buffer[1] = ((input_buffer[1] & 0xf) << 4) + ((input_buffer[2] & 0x3c) >> 2);
+            output_buffer[2] = ((input_buffer[2] & 0x3) << 6) + input_buffer[3];
+
+            for (i = 0; (i < 3); ++i)
+                *out++ = output_buffer[i];
+            i = 0;
+        }
+    }
+
+    if (i)
+    {
+        for (int j = i; j < 4; ++j)
+            input_buffer[j] = 0;
+
+        for (int j = 0; j < 4; ++j)
+            input_buffer[j] = alpha.bits_from_char(input_buffer[j]);
+
+        output_buffer[0] = (input_buffer[0] << 2) + ((input_buffer[1] & 0x30) >> 4);
+        output_buffer[1] = ((input_buffer[1] & 0xf) << 4) + ((input_buffer[2] & 0x3c) >> 2);
+        output_buffer[2] = ((input_buffer[2] & 0x3) << 6) + input_buffer[3];
+
+        for (int j = 0; (j < i - 1); ++j)
+            *out++ = output_buffer[j];
     }
 }
 

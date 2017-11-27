@@ -18,12 +18,13 @@ BOOST_AUTO_TEST_CASE(read_bytes)
 {
     std::vector<char> buf = generate_bytes(3 * 8 * 2);
     boost::radix::detail::ibitstream<std::vector<char>::iterator> s(buf.begin(), buf.end());
+    boost::radix::detail::dynamic_bit_reader reader(3);
     BOOST_TEST(!s.finished());
-    for(int i = 0; i < buf.size() * 8; i+=3)
+    for(std::size_t i = 0; i < buf.size() * 8; i+=reader.num_bits())
     {
         char val = 0;
-        s.read_bits(val, 3);
-        BOOST_TEST(val == get_bits<char>(buf, i, 3));
+        s.read_bits(val, reader);
+        BOOST_TEST(val == get_bits<char>(buf, i, reader.num_bits()));
     }
 
     BOOST_TEST(s.finished());
@@ -33,12 +34,13 @@ BOOST_AUTO_TEST_CASE(read_ints)
 {
     std::vector<char> buf = generate_bytes(11 * 8 * 2);
     boost::radix::detail::ibitstream<std::vector<char>::iterator> s(buf.begin(), buf.end());
+    boost::radix::detail::dynamic_bit_reader reader(11);
     BOOST_TEST(!s.finished());
-    for(int i = 0; i < buf.size() * 8; i+=11)
+    for(std::size_t i = 0; i < buf.size() * 8; i+=reader.num_bits())
     {
         int val = 0;
-        s.read_bits(val, 11);
-        BOOST_TEST(val == get_bits<int>(buf, i, 11));
+        s.read_bits(val, reader);
+        BOOST_TEST(val == get_bits<int>(buf, i, reader.num_bits()));
     }
     BOOST_TEST(s.finished());
 }
