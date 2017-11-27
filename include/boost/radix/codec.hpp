@@ -41,7 +41,7 @@ public:
         : alphabet(chars)
     {}
 
-    codec(char_type const* chars, bits_type pad_bits, char_type pad_char)
+    codec(boost::basic_string_view<char_type> chars, bits_type pad_bits, char_type pad_char)
         : alphabet(chars, pad_bits, bad_char)
     {}
 };

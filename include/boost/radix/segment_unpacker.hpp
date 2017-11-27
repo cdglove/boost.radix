@@ -10,6 +10,10 @@
 #ifndef BOOST_RADIX_SEGMENTUNPACKER_HPP
 #define BOOST_RADIX_SEGMENTUNPACKER_HPP
 
+#include <boost/config.hpp>
+
+#include <boost/radix/common.hpp>
+
 namespace boost { namespace radix {
 
 namespace detail {
@@ -32,7 +36,7 @@ namespace detail {
         void operator()(UnpackedSegment& unpacked, PackedSegment const& packed)
         {
             std::size_t byte_index = Offset / 8;
-            std::size_t 
+            //std::size_t 
             bits_type bits = packed[byte_index];
             big_endian_segment_unpacker_impl<BitSize, TotalBits, Offset + BitSize, Offset + BitSize < TotalBits>()(unpacked, packed);
         }

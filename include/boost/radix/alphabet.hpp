@@ -16,6 +16,7 @@
 
 #include <boost/array.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/utility/string_view.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #pragma once
@@ -42,22 +43,14 @@ public:
         init_from_iterators(first, last, pad_bits, pad_char);
     }
 
-    explicit alphabet(char_type const* chars)
+    explicit alphabet(boost::basic_string_view<char_type> chars)
     {
-        char_type const* last = chars;
-        while(*last)
-            ++last;
-
-        init_from_iterators(chars, last, bits_type(~0U), '=');
+        init_from_iterators(chars.begin(), chars.end(), bits_type(~0U), '=');
     }
 
-    alphabet(char_type const* chars, bits_type pad_bits, char_type pad_char)
+    alphabet(boost::basic_string_view<char_type> chars, bits_type pad_bits, char_type pad_char)
     {
-        char_type const* last = chars;
-        while(*last)
-            ++last;
-
-        init_from_iterators(chars, last);
+        init_from_iterators(chars.begin(), chars.end());
     }
 
     char_type char_from_bits(bits_type index) const
