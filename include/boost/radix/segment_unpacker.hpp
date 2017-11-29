@@ -12,7 +12,7 @@
 
 #include <boost/config.hpp>
 
-#include <boost/integer/integer_mask.hpp>
+#include <boost/radix/bitmask.hpp>
 #include <boost/radix/common.hpp>
 
 namespace boost { namespace radix {
@@ -28,12 +28,13 @@ struct big_endian_segment_unpacker_impl<1>
     template <typename PackedSegment, typename UnpackedSegment>
     void operator()(PackedSegment const& packed, UnpackedSegment& unpacked)
     {
+        // [1, 1, 1, 1]
         bits_type bits = packed[0];
         for(int i = 0; i < 8; ++i)
         {
-            unpacked[i] = (bits >> 7 - i) & low_bits_mask_t<1>::sig_bits_fast;
+            unpacked[i] = (bits >> 7 - i) & mask<1>::value;
         }
-    };
+    }
 };
 
 template <std::size_t BitSize>
@@ -42,11 +43,12 @@ struct big_endian_segment_unpacker_impl<2>
     template <typename PackedSegment, typename UnpackedSegment>
     void operator()(PackedSegment const& packed, UnpackedSegment& unpacked)
     {
+        // [2, 2, 2, 2]
         bits_type bits = packed[0];
-        unpacked[0]    = (bits >> 6) & low_bits_mask_t<2>::sig_bits_fast;
-        unpacked[1]    = (bits >> 4) & low_bits_mask_t<2>::sig_bits_fast;
-        unpacked[2]    = (bits >> 2) & low_bits_mask_t<2>::sig_bits_fast;
-        unpacked[3]    = (bits >> 0) & low_bits_mask_t<2>::sig_bits_fast;
+        unpacked[0]    = (bits >> 6) & mask<2>::value;
+        unpacked[1]    = (bits >> 4) & mask<2>::value;
+        unpacked[2]    = (bits >> 2) & mask<2>::value;
+        unpacked[3]    = (bits >> 0) & mask<2>::value;
     };
 };
 
@@ -56,25 +58,56 @@ struct big_endian_segment_unpacker_impl<3>
     template <typename PackedSegment, typename UnpackedSegment>
     void operator()(PackedSegment const& packed, UnpackedSegment& unpacked)
     {
-        bits_type bits = packed[0];
-        unpacked[0]    = (packed[0] >> 5) & low_bits_mask_t<3>::sig_bits_fast;
-        unpacked[1]    = (packed[0] >> 2) & low_bits_mask_t<3>::sig_bits_fast;
-        unpacked[2] =
-            (((packed[0] >> 0) & low_bits_mask_t<2>::sig_bits_fast) |
-             ((packed[1] << 2) & low_bits_mask_t<3>::sig_bits_fast));
-
-        unpacked[3] = (packed[1] >> 4) & low_bits_mask_t<3>::sig_bits_fast;
-        unpacked[4] = (packed[1] >> 1) & low_bits_mask_t<3>::sig_bits_fast;
-        unpacked[5] = ((packed[1] >> 0) & low_bits_mask_t<3>::sig_bits_fast) | 
-                      ((packed[1] >> 7) & low_bits_mask_t<1>::sig_bits_fast));
-    };
+        // [3, 3, 2], [1, 3, 3, 1], [2, 3, 3]
+        unpacked[0] = (packed[0] >> 5) & mask<3>::value;
+        unpacked[1] = (packed[0] >> 2) & mask<3>::value;
+        unpacked[2] = ((packed[0] << 1) & mask_shift<2, 1>::value) |
+                      ((packed[1] >> 7) & mask<1>::value);
+        unpacked[3] = (packed[1] >> 4) & mask<3>::value;
+        unpacked[4] = (packed[1] >> 1) & mask<3>::value;
+        unpacked[5] = ((packed[1] << 0) & mask_shift<1, 2>::value) |
+                      ((packed[2] >> 6) & mask<2>::value);
+        unpacked[6] = (packed[3] >> 3) & mask<3>::value;
+        unpacked[7] = (packed[3] >> 0) & mask<3>::value;
+    }
 };
 
 template <std::size_t BitSize>
-struct big_endian_segment_unpacker_impl;
+struct big_endian_segment_unpacker_impl<4>
+{
+    template <typename PackedSegment, typename UnpackedSegment>
+    void operator()(PackedSegment const& packed, UnpackedSegment& unpacked)
+    {
+        // [4, 4]
+        bits_type bits = packed[0];
+        unpacked[0]    = (bits >> 4) & mask<4>::value;
+        unpacked[1]    = (bits >> 0) & mask<4>::value;
+    }
+};
 
 template <std::size_t BitSize>
-struct big_endian_segment_unpacker_impl;
+struct big_endian_segment_unpacker_impl<5>
+{
+    template <typename PackedSegment, typename UnpackedSegment>
+    void operator()(PackedSegment const& packed, UnpackedSegment& unpacked)
+    {
+        // [5, 3], [2, 5, 1], [4, 4], [1, 5, 2], [3, 5]
+        unpacked[0] = (packed[0] >> 3) & mask<5>::value;
+        unpacked[1] = ((packed[0] >> 2) & mask_shift<3, 2>::value) |
+                      ((packed[1] >> 6) & mask<2>::value);
+        unpacked[2] = (packed[1] >> 1) & mask<5>::value;
+        unpacked[3] = ((packed[1] << 4) & mask_shift<1, 4>::value) |
+                      ((packed[2] >> 4) & mask<4>::value);
+        unpacked[4] = ((packed[2] << 1) & mask_shift<4, 1>::value) |
+                      ((packed[3] >> 7) & mask<1>::value;
+        unpacked[5] = (packed[3] >> 2) & mask<5>::value;
+
+        unpacked[6] = ((packed[3] << 3) & mask_shift<2, 3>::value) |
+                      ((packed[4] >> 5) & mask<3>::value);
+
+        unpacked[7] = (packed[4] >> 0) & mask<5>::value;
+    }
+};
 
 template <std::size_t BitSize>
 struct big_endian_segment_unpacker_impl<6>
@@ -90,7 +123,14 @@ struct big_endian_segment_unpacker_impl<6>
 };
 
 template <std::size_t BitSize>
-struct big_endian_segment_unpacker_impl;
+struct big_endian_segment_unpacker_impl<7>
+{
+    template <typename PackedSegment, typename UnpackedSegment>
+    void operator()(PackedSegment const& packed, UnpackedSegment& unpacked)
+    {
+
+    };
+};
 
 } // namespace detail
 
