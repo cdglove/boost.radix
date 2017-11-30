@@ -22,7 +22,7 @@ namespace detail {
 template <std::size_t BitSize>
 struct big_endian_segment_unpacker_impl;
 
-template <std::size_t BitSize>
+template <>
 struct big_endian_segment_unpacker_impl<1>
 {
     template <typename PackedSegment, typename UnpackedSegment>
@@ -37,7 +37,7 @@ struct big_endian_segment_unpacker_impl<1>
     }
 };
 
-template <std::size_t BitSize>
+template <>
 struct big_endian_segment_unpacker_impl<2>
 {
     template <typename PackedSegment, typename UnpackedSegment>
@@ -52,7 +52,7 @@ struct big_endian_segment_unpacker_impl<2>
     };
 };
 
-template <std::size_t BitSize>
+template <>
 struct big_endian_segment_unpacker_impl<3>
 {
     template <typename PackedSegment, typename UnpackedSegment>
@@ -72,7 +72,7 @@ struct big_endian_segment_unpacker_impl<3>
     }
 };
 
-template <std::size_t BitSize>
+template <>
 struct big_endian_segment_unpacker_impl<4>
 {
     template <typename PackedSegment, typename UnpackedSegment>
@@ -85,7 +85,7 @@ struct big_endian_segment_unpacker_impl<4>
     }
 };
 
-template <std::size_t BitSize>
+template <>
 struct big_endian_segment_unpacker_impl<5>
 {
     template <typename PackedSegment, typename UnpackedSegment>
@@ -107,7 +107,7 @@ struct big_endian_segment_unpacker_impl<5>
     }
 };
 
-template <std::size_t BitSize>
+template <>
 struct big_endian_segment_unpacker_impl<6>
 {
     template <typename PackedSegment, typename UnpackedSegment>
@@ -120,7 +120,7 @@ struct big_endian_segment_unpacker_impl<6>
     }
 };
 
-template <std::size_t BitSize>
+template <>
 struct big_endian_segment_unpacker_impl<7>
 {
     template <typename PackedSegment, typename UnpackedSegment>

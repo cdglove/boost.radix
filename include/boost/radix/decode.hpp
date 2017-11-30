@@ -39,7 +39,7 @@ void decode(InputIterator first, InputIterator last,
     while(first != last)
     {
     	unsigned char current = *first++;
-        if(current == '=')
+        if(current == codec.get_pad_char())
             break;
 
         input_buffer[i++] = current;

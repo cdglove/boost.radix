@@ -10,6 +10,7 @@
 #define BOOST_TEST_MODULE TestDecode
 #include <boost/test/unit_test.hpp>
 
+#include <boost/radix/alphabet.hpp>
 #include <boost/radix/decode.hpp>
 #include <vector>
 #include <array>
@@ -31,7 +32,7 @@ BOOST_AUTO_TEST_CASE(decode_chars_binary)
     std::vector<char> buf;
     std::string str("01010101010101010101010101010101");
     std::vector<char> result;
-    boost::radix::alphabet binary("01");
+    boost::radix::alphabet<2> binary("01");
     result.resize(boost::radix::decoded_size(str.length(), binary));
     boost::radix::decode(str.begin(), str.end(), result.begin(), binary);
     BOOST_TEST(std::count(result.begin(), result.end(), get_expected_bits<char>(0, 8)) == result.size());

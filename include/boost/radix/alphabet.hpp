@@ -78,6 +78,7 @@ public:
         BOOST_ASSERT(pad_bits > Size);
         BOOST_ASSERT(std::find(chars_.begin(), chars_.end(), pad_char) == chars_.end());
 
+        pad_bits_ = pad_bits;
         chars_[pad_bits] = pad_char;
         bits_[pad_char]  = pad_bits;
     }
