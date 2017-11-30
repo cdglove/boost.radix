@@ -99,12 +99,10 @@ struct big_endian_segment_unpacker_impl<5>
         unpacked[3] = ((packed[1] << 4) & mask_shift<1, 4>::value) |
                       ((packed[2] >> 4) & mask<4>::value);
         unpacked[4] = ((packed[2] << 1) & mask_shift<4, 1>::value) |
-                      ((packed[3] >> 7) & mask<1>::value;
+                      ((packed[3] >> 7) & mask<1>::value);
         unpacked[5] = (packed[3] >> 2) & mask<5>::value;
-
         unpacked[6] = ((packed[3] << 3) & mask_shift<2, 3>::value) |
                       ((packed[4] >> 5) & mask<3>::value);
-
         unpacked[7] = (packed[4] >> 0) & mask<5>::value;
     }
 };
@@ -118,8 +116,8 @@ struct big_endian_segment_unpacker_impl<6>
         unpacked[0] = (packed[0] & 0xfc) >> 2;
         unpacked[1] = ((packed[0] & 0x03) << 4) | ((packed[1] & 0xf0) >> 4);
         unpacked[2] = ((packed[1] & 0x0f) << 2) | ((packed[2] & 0xc0) >> 6);
-        unpacked[3] = (packed[2] & 0x3f >> 0;
-    };
+        unpacked[3] = (packed[2] & 0x3f) >> 0;
+    }
 };
 
 template <std::size_t BitSize>
@@ -128,7 +126,21 @@ struct big_endian_segment_unpacker_impl<7>
     template <typename PackedSegment, typename UnpackedSegment>
     void operator()(PackedSegment const& packed, UnpackedSegment& unpacked)
     {
-
+        // [7, 1], [6, 2], [5, 3], [4, 4], [3, 5], [2, 6], [1, 7]
+        unpacked[0] = (packed[0] >> 1) & mask<7>::value;
+        unpacked[1] = ((packed[0] << 6) & mask_shift<1, 6>::value) |
+                      ((packed[1] >> 2) & mask<6>::value);
+        unpacked[2] = ((packed[1] << 5) & mask_shift<2, 5>::value) |
+                      ((packed[2] >> 3) & mask<5>::value);
+        unpacked[3] = ((packed[2] << 4) & mask_shift<3, 4>::value) |
+                      ((packed[3] >> 4) & mask<4>::value);
+        unpacked[4] = ((packed[3] << 4) & mask_shift<4, 4>::value) |
+                      ((packed[4] >> 5) & mask<3>::value);
+        unpacked[5] = ((packed[4] << 2) & mask_shift<5, 2>::value) |
+                      ((packed[5] >> 6) & mask<2>::value);
+        unpacked[6] = ((packed[5] << 1) & mask_shift<6, 1>::value) |
+                      ((packed[6] >> 6) & mask<1>::value);
+        unpacked[7] = (packed[6] >> 0) & mask<7>::value;
     };
 };
 
