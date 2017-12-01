@@ -97,26 +97,20 @@ struct packed_segment_result
     std::size_t size_;
 };
 
-template <typename Alphabet>
+template <typename Codec>
 struct bits_to_char_mapper
 {
-    bits_to_char_mapper(Alphabet const& alphabet)
-        : alphabet_(alphabet)
+    bits_to_char_mapper(Codec const& codec)
+        : codec_(codec)
     {}
 
     char_type operator()(bits_type bits) const
     {
-        return alphabet_.char_from_bits(bits);
+        return codec_.char_from_bits(bits);
     }
 
-    Alphabet const& alphabet_;
+    Codec const& codec_;
 };
-
-template <typename Alphabet>
-bits_to_char_mapper<Alphabet> make_bits_to_char_mapper(Alphabet const& alphabet)
-{
-    return bits_to_char_mapper<Alphabet>(alphabet);
-}
 
 // cglover-todo: Specialize on iterator tag?
 template <typename Iterator, typename EndIterator, typename Codec>
@@ -180,7 +174,7 @@ void encode(
 
         out = std::transform(
             unpacked_segment.begin(), unpacked_segment.end(), out,
-            detail::make_bits_to_char_mapper(codec));
+            detail::bits_to_char_mapper<Codec>(codec));
     }
 }
 }} // namespace boost::radix
