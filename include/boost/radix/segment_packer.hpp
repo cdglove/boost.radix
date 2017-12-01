@@ -1,5 +1,5 @@
 //
-// boost/radix/segment_unpacker.hpp
+// boost/radix/segment_packer.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -7,8 +7,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_RADIX_SEGMENTUNPACKER_HPP
-#define BOOST_RADIX_SEGMENTUNPACKER_HPP
+#ifndef BOOST_RADIX_SEGMENTPACKER_HPP
+#define BOOST_RADIX_SEGMENTPACKER_HPP
 
 #include <boost/config.hpp>
 
@@ -23,8 +23,8 @@ struct big_endian_segment_unpacker;
 template <>
 struct big_endian_segment_unpacker<1>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
     {
         // [1, 1, 1, 1]
         bits_type bits = packed[0];
@@ -38,8 +38,8 @@ struct big_endian_segment_unpacker<1>
 template <>
 struct big_endian_segment_unpacker<2>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
     {
         // [2, 2, 2, 2]
         bits_type bits = packed[0];
@@ -53,8 +53,8 @@ struct big_endian_segment_unpacker<2>
 template <>
 struct big_endian_segment_unpacker<3>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
     {
         // [3, 3, 2], [1, 3, 3, 1], [2, 3, 3]
         unpacked[0] = (packed[0] >> 5) & mask<3>::value;
@@ -73,8 +73,8 @@ struct big_endian_segment_unpacker<3>
 template <>
 struct big_endian_segment_unpacker<4>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
     {
         // [4, 4]
         bits_type bits = packed[0];
@@ -86,8 +86,8 @@ struct big_endian_segment_unpacker<4>
 template <>
 struct big_endian_segment_unpacker<5>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
     {
         // [5, 3], [2, 5, 1], [4, 4], [1, 5, 2], [3, 5]
         unpacked[0] = (packed[0] >> 3) & mask<5>::value;
@@ -108,8 +108,8 @@ struct big_endian_segment_unpacker<5>
 template <>
 struct big_endian_segment_unpacker<6>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
     {
         // [6, 2], [4, 4], [2, 6]
         unpacked[0] = (packed[0] >> 2) & mask<6>::value;
@@ -124,8 +124,8 @@ struct big_endian_segment_unpacker<6>
 template <>
 struct big_endian_segment_unpacker<7>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
     {
         // [7, 1], [6, 2], [5, 3], [4, 4], [3, 5], [2, 6], [1, 7]
         unpacked[0] = (packed[0] >> 1) & mask<7>::value;
@@ -145,6 +145,31 @@ struct big_endian_segment_unpacker<7>
     };
 };
 
-}} // namespace boost::radix
+template <>
+struct big_endian_segment_unpacker<8>
+{
+    template <typename UnPackedSegment, typename PackedSegment>
+    void operator()(UnPackedSegment const& unpacked, PackedSegment& packed)
+    {
+        // [7, 1], [6, 2], [5, 3], [4, 4], [3, 5], [2, 6], [1, 7]
+        unpacked[0] = (packed[0] >> 1) & mask<7>::value;
+        unpacked[1] = ((packed[0] << 6) & mask_shift<1, 6>::value) |
+                      ((packed[1] >> 2) & mask<6>::value);
+        unpacked[2] = ((packed[1] << 5) & mask_shift<2, 5>::value) |
+                      ((packed[2] >> 3) & mask<5>::value);
+        unpacked[3] = ((packed[2] << 4) & mask_shift<3, 4>::value) |
+                      ((packed[3] >> 4) & mask<4>::value);
+        unpacked[4] = ((packed[3] << 4) & mask_shift<4, 4>::value) |
+                      ((packed[4] >> 5) & mask<3>::value);
+        unpacked[5] = ((packed[4] << 2) & mask_shift<5, 2>::value) |
+                      ((packed[5] >> 6) & mask<2>::value);
+        unpacked[6] = ((packed[5] << 1) & mask_shift<6, 1>::value) |
+                      ((packed[6] >> 6) & mask<1>::value);
+        unpacked[7] = (packed[6] >> 0) & mask<7>::value;
+    };
+};
 
-#endif // BOOST_RADIX_SEGMENTUNPACKER_HPP
+)} // namespace boost::radix
+
+#endif // BOOST_RADIX_SEGMENTPACKER_HPP
+

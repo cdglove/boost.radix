@@ -16,7 +16,7 @@
 #include <boost/radix/common.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-# pragma once
+#pragma once
 #endif
 
 // -----------------------------------------------------------------------------
@@ -41,7 +41,10 @@ public:
         : alphabet(chars)
     {}
 
-    codec(boost::basic_string_view<char_type> chars, bits_type pad_bits, char_type pad_char)
+    codec(
+        boost::basic_string_view<char_type> chars,
+        bits_type pad_bits,
+        char_type pad_char)
         : alphabet(chars, pad_bits, bad_char)
     {}
 };

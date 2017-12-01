@@ -22,7 +22,7 @@ struct mask
 {
     BOOST_STATIC_CONSTANT(
         typename low_bits_mask_t<Bits>::fast,
-        value = low_bits_mask_t<Bits>::sig_bits_fast);
+        value = ~(~low_bits_mask_t<Bits>::sig_bits_fast));
 };
 
 template <std::size_t Bits, std::size_t Shift>
@@ -30,7 +30,7 @@ struct mask_shift
 {
     BOOST_STATIC_CONSTANT(
         typename low_bits_mask_t<Bits>::fast,
-        value = low_bits_mask_t<Bits>::sig_bits_fast << Shift);
+        value = ~(~low_bits_mask_t<Bits>::sig_bits_fast) << Shift);
 };
 
 }} // namespace boost::radix

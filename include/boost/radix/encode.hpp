@@ -29,37 +29,28 @@ namespace boost { namespace radix {
 template <typename Codec>
 struct packed_segment_type
 {
-    typedef boost::array<
-        bits_type,
-        detail::packed_segment_size<Codec::alphabet_size>::value>
-        type;
+    typedef boost::array<bits_type, packed_segment_size<Codec>::value> type;
 };
 
 template <typename Codec>
 struct unpacked_segment_type
 {
-    typedef boost::array<
-        bits_type,
-        detail::unpacked_segment_size<Codec::alphabet_size>::value>
-        type;
+    typedef boost::array<bits_type, unpacked_segment_size<Codec>::value> type;
 };
 
-// -----------------------------------------------------------------------------
-//
-namespace adl {
-
-template <typename Segment, typename Codec>
-typename unpacked_segment_type<Codec>::type
-unpack_segment(Segment const& segment, Codec const&)
+template <typename Codec>
+struct segment_unpacker
 {
-    typedef big_endian_segment_unpacker<
-        detail::required_bits<Codec::alphabet_size>::value,
-        detail::unpacked_segment_size<Codec::alphabet_size>::value>
-        unpacker;
-    return unpacker()(segment);
-}
-
-} // namespace adl
+    template <typename PackedSegment>
+    static typename unpacked_segment_type<Codec>::type
+    unpack(Codec const& codec, PackedSegment const& packed)
+    {
+        unpacked_segment_type<Codec>::type unpacked;
+        big_endian_segment_unpacker<required_bits<Codec>::value>::unpack(
+            packed, unpacked);
+        return unpacked;
+    }
+};
 
 // -----------------------------------------------------------------------------
 //
@@ -74,7 +65,7 @@ struct packed_segment_result
     typedef typename container::const_reference const_reference;
 
     packed_segment_result()
-        : size_(packed_segment_size<Codec::alphabet_size>::value)
+        : size_(packed_segment_size<Codec>::value)
     {}
 
     reference operator[](std::size_t idx)
@@ -152,14 +143,13 @@ get_packed_segment(Iterator& first, EndIterator last, Codec const& codec)
 
 template <typename InputBuffer, typename Codec>
 typename unpacked_segment_type<Codec>::type
-call_unpack_segment(InputBuffer const& buffer, Codec const& codec)
+unpack_segment(InputBuffer const& buffer, Codec const& codec)
 {
-    using boost::radix::adl::unpack_segment;
     typename unpacked_segment_type<Codec>::type unpacked =
-        unpack_segment(buffer, codec);
+        typename segment_unpacker<Codec>::unpack(codec, buffer);
 
     std::size_t pad = buffer.size();
-    while(pad < detail::packed_segment_size<Codec::alphabet_size>::value)
+    while(pad < packed_segment_size<Codec>::value)
         unpacked[++pad] = codec.get_pad_bits();
 
     return unpacked;
@@ -186,11 +176,10 @@ void encode(
             ::boost::radix::detail::get_packed_segment(first, last, codec);
 
         typename unpacked_segment_type<Codec>::type unpacked_segment =
-            ::boost::radix::detail::call_unpack_segment(packed_segment, codec);
+            ::boost::radix::detail::unpack_segment(packed_segment, codec);
 
         out = std::transform(
-            unpacked_segment.begin(), unpacked_segment.end(),
-            out,
+            unpacked_segment.begin(), unpacked_segment.end(), out,
             detail::make_bits_to_char_mapper(codec));
     }
 }

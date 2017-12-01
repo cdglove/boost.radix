@@ -11,14 +11,14 @@
 #define BOOST_RADIX_COMMON_HPP
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-# pragma once
+#pragma once
 #endif
 
 namespace boost { namespace radix {
 
-    typedef unsigned char bits_type;
-    typedef char char_type;
+typedef unsigned char bits_type;
+typedef char char_type;
 
-}}
+}} // namespace boost::radix
 
 #endif // BOOST_RADIX_COMMON_HPP

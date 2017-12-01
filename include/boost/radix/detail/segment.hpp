@@ -16,37 +16,41 @@
 #include <boost/integer/static_log2.hpp>
 
 namespace boost { namespace radix {
+
 namespace detail {
 
-template <std::size_t AlphabetSize>
+// bits_lcm exists only to keep a comma out of BOOST_STATIC_CONSTANT macros
+template <std::size_t Bits>
+struct bits_lcm
+{
+    typedef typename boost::integer::static_lcm<Bits, 8> type;
+};
+
+} // namespace detail
+
+template <typename Codec>
 struct required_bits
 {
     BOOST_STATIC_CONSTANT(
-        std::size_t, value = boost::static_log2<AlphabetSize>::value);
+        std::size_t, value = boost::static_log2<Codec::alphabet_size>::value);
 };
 
-template <std::size_t AlphabetSize>
-struct bits_lcm
-{
-    typedef boost::integer::static_lcm<required_bits<AlphabetSize>::value, 8>
-        type;
-};
-
-template <std::size_t AlphabetSize>
+template <typename Codec>
 struct packed_segment_size
 {
-    BOOST_STATIC_CONSTANT(std::size_t, value = bits_lcm<AlphabetSize>::type::value / 8);
+    BOOST_STATIC_CONSTANT(
+        std::size_t,
+        value = detail::bits_lcm<required_bits<Codec>::value>::type::value / 8);
 };
 
-template <std::size_t AlphabetSize>
+template <typename Codec>
 struct unpacked_segment_size
 {
     BOOST_STATIC_CONSTANT(
         std::size_t,
-        value = bits_lcm<AlphabetSize>::type::value / detail::required_bits<AlphabetSize>::value);
+        value = detail::bits_lcm<required_bits<Codec>::value>::type::value /
+                required_bits<Codec>::value);
 };
-
-} // namespace detail
 
 }} // namespace boost::radix
 
