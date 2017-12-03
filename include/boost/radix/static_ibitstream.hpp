@@ -12,6 +12,8 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/radix/bitmask.hpp>
+
 namespace boost { namespace radix {
 
 template <std::size_t Bits, std::size_t SegmentSize>
@@ -35,9 +37,11 @@ private:
     struct read_op
     {
     private:
+        struct split_read
+        {};
 
-        struct split_read {};
-        struct single_read {};
+        struct single_read
+        {};
 
         template <typename PackedSegment, typename UnpackedSegment>
         static void do_read(
@@ -58,6 +62,7 @@ private:
             unpacked[SegmentSize - ReadsRemaining] =
                 (packed[Offset / 8] >> Offset % 8) & mask<Bits>::value;
         }
+
     public:
         template <typename PackedSegment, typename UnpackedSegment>
         static void read(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -67,8 +72,7 @@ private:
                 split_read>::type read_type;
 
             do_read(packed, unpacked, read_type());
-            read_op<Offset + Bits, ReadsRemaining - 1>::read(
-                packed, unpacked);
+            read_op<Offset + Bits, ReadsRemaining - 1>::read(packed, unpacked);
         };
     };
 

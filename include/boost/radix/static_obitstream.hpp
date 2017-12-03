@@ -12,6 +12,8 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/radix/bitmask.hpp>
+
 namespace boost { namespace radix {
 
 template <std::size_t Bits, std::size_t SegmentSize>
@@ -35,8 +37,11 @@ private:
     struct write_op
     {
     private:
-        struct split_write {};
-        struct single_write {};
+        struct split_write
+        {};
+
+        struct single_write
+        {};
 
         template <typename UnpackedSegment, typename PackedSegment>
         static void do_write(

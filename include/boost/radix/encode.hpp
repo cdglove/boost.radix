@@ -41,7 +41,10 @@ struct unpacked_segment_type
 template <typename Codec>
 struct segment_unpacker_type
 {
-    typedef static_ibitstream<required_bits<Codec>::value, unpacked_segment_size<Codec>::value> type;
+    typedef static_ibitstream<
+        required_bits<Codec>::value,
+        unpacked_segment_size<Codec>::value>
+        type;
 };
 
 namespace adl {
@@ -51,8 +54,7 @@ typename unpacked_segment_type<Codec>::type
 unpack_segment(Codec const& codec, PackedSegment const& packed)
 {
     unpacked_segment_type<Codec>::type unpacked;
-    segment_unpacker_type<Codec>::type::unpack(
-        packed, unpacked);
+    segment_unpacker_type<Codec>::type::unpack(packed, unpacked);
     return unpacked;
 }
 } // namespace adl
