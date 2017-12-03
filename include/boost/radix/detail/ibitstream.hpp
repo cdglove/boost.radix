@@ -10,7 +10,7 @@
 #ifndef BOOST_RADIX_DETAIL_IBITSTREAM_HPP
 #define BOOST_RADIX_DETAIL_IBITSTREAM_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #include <algorithm>
 #include <boost/align/align_up.hpp>

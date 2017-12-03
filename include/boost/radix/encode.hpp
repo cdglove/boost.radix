@@ -10,11 +10,11 @@
 #ifndef BOOST_RADIX_ENCODE_HPP
 #define BOOST_RADIX_ENCODE_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #include <boost/radix/common.hpp>
 #include <boost/radix/detail/segment.hpp>
-#include <boost/radix/segment_unpacker.hpp>
+#include <boost/radix/static_ibitstream.hpp>
 
 #include <boost/array.hpp>
 
@@ -39,18 +39,23 @@ struct unpacked_segment_type
 };
 
 template <typename Codec>
-struct segment_unpacker
+struct segment_unpacker_type
 {
-    template <typename PackedSegment>
-    static typename unpacked_segment_type<Codec>::type
-    unpack(Codec const& codec, PackedSegment const& packed)
-    {
-        unpacked_segment_type<Codec>::type unpacked;
-        big_endian_segment_unpacker<required_bits<Codec>::value>::unpack(
-            packed, unpacked);
-        return unpacked;
-    }
+    typedef static_ibitstream<required_bits<Codec>::value, unpacked_segment_size<Codec>::value> type;
 };
+
+namespace adl {
+
+template <typename Codec, typename PackedSegment>
+typename unpacked_segment_type<Codec>::type
+unpack_segment(Codec const& codec, PackedSegment const& packed)
+{
+    unpacked_segment_type<Codec>::type unpacked;
+    segment_unpacker_type<Codec>::type::unpack(
+        packed, unpacked);
+    return unpacked;
+}
+} // namespace adl
 
 // -----------------------------------------------------------------------------
 //
@@ -114,7 +119,7 @@ struct bits_to_char_mapper
 
 // cglover-todo: Specialize on iterator tag?
 template <typename Iterator, typename EndIterator, typename Codec>
-detail::packed_segment_result<Codec>
+packed_segment_result<Codec>
 get_packed_segment(Iterator& first, EndIterator last, Codec const& codec)
 {
     packed_segment_result<Codec> buffer;
@@ -135,12 +140,13 @@ get_packed_segment(Iterator& first, EndIterator last, Codec const& codec)
     return buffer;
 }
 
-template <typename InputBuffer, typename Codec>
+template <typename Codec, typename InputBuffer>
 typename unpacked_segment_type<Codec>::type
-unpack_segment(InputBuffer const& buffer, Codec const& codec)
+unpack_and_pad_segment(Codec const& codec, InputBuffer const& buffer)
 {
+    using boost::radix::adl::unpack_segment;
     typename unpacked_segment_type<Codec>::type unpacked =
-        typename segment_unpacker<Codec>::unpack(codec, buffer);
+        unpack_segment(codec, buffer);
 
     std::size_t pad = buffer.size();
     while(pad < packed_segment_size<Codec>::value)
@@ -170,11 +176,12 @@ void encode(
             ::boost::radix::detail::get_packed_segment(first, last, codec);
 
         typename unpacked_segment_type<Codec>::type unpacked_segment =
-            ::boost::radix::detail::unpack_segment(packed_segment, codec);
+            ::boost::radix::detail::unpack_and_pad_segment(
+                codec, packed_segment);
 
         out = std::transform(
             unpacked_segment.begin(), unpacked_segment.end(), out,
-            detail::bits_to_char_mapper<Codec>(codec));
+            ::boost::radix::detail::bits_to_char_mapper<Codec>(codec));
     }
 }
 }} // namespace boost::radix

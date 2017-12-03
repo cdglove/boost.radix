@@ -10,7 +10,7 @@
 #ifndef BOOST_RADIX_CODEC_HPP
 #define BOOST_RADIX_CODEC_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #include <boost/radix/alphabet.hpp>
 #include <boost/radix/common.hpp>
@@ -23,7 +23,7 @@
 //
 namespace boost { namespace radix {
 
-template <typename Tag, std::size_t AlphabetSize>
+template <std::size_t AlphabetSize, typename Tag = void>
 class codec : public alphabet<AlphabetSize>
 {
 public:

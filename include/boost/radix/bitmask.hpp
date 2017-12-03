@@ -10,7 +10,7 @@
 #ifndef BOOST_RADIX_BITMASK_HPP
 #define BOOST_RADIX_BITMASK_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #include <boost/integer/integer_mask.hpp>
 #include <boost/radix/common.hpp>

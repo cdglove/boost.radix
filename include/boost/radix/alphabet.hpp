@@ -10,8 +10,6 @@
 #ifndef BOOST_RADIX_ALPHABET_HPP
 #define BOOST_RADIX_ALPHABET_HPP
 
-#include <boost/config.hpp>
-
 #include <boost/radix/common.hpp>
 
 #include <boost/array.hpp>

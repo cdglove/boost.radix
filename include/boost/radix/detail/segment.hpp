@@ -10,7 +10,7 @@
 #ifndef BOOST_RADIX_DETAIL_SEGMENT_HPP
 #define BOOST_RADIX_DETAIL_SEGMENT_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #include <boost/integer/common_factor.hpp>
 #include <boost/integer/static_log2.hpp>

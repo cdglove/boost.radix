@@ -10,20 +10,21 @@
 #ifndef BOOST_RADIX_SEGMENTUNPACKER_HPP
 #define BOOST_RADIX_SEGMENTUNPACKER_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #include <boost/radix/bitmask.hpp>
-#include <boost/radix/common.hpp>
+
+#include <boost/type_traits/conditional.hpp>
 
 namespace boost { namespace radix {
 
 // ----------------------------------------------------------------------------
 //
 template <std::size_t BitSize>
-struct big_endian_segment_unpacker;
+struct sequencial_segment_unpacker;
 
 template <>
-struct big_endian_segment_unpacker<1>
+struct sequencial_segment_unpacker<1>
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -38,7 +39,7 @@ struct big_endian_segment_unpacker<1>
 };
 
 template <>
-struct big_endian_segment_unpacker<2>
+struct sequencial_segment_unpacker<2>
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -53,7 +54,7 @@ struct big_endian_segment_unpacker<2>
 };
 
 template <>
-struct big_endian_segment_unpacker<3>
+struct sequencial_segment_unpacker<3>
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -73,7 +74,7 @@ struct big_endian_segment_unpacker<3>
 };
 
 template <>
-struct big_endian_segment_unpacker<4>
+struct sequencial_segment_unpacker<4>
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -86,7 +87,7 @@ struct big_endian_segment_unpacker<4>
 };
 
 template <>
-struct big_endian_segment_unpacker<5>
+struct sequencial_segment_unpacker<5>
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -108,7 +109,7 @@ struct big_endian_segment_unpacker<5>
 };
 
 template <>
-struct big_endian_segment_unpacker<6>
+struct sequencial_segment_unpacker<6>
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -124,7 +125,7 @@ struct big_endian_segment_unpacker<6>
 };
 
 template <>
-struct big_endian_segment_unpacker<7>
+struct sequencial_segment_unpacker<7>
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -147,13 +148,14 @@ struct big_endian_segment_unpacker<7>
     };
 };
 
-//// ----------------------------------------------------------------------------
 ////
-//template <std::size_t BitSize>
-//struct little_endian_segment_unpacker;
+///----------------------------------------------------------------------------
+////
+// template <std::size_t BitSize>
+// struct little_endian_segment_unpacker;
 //
-//template <>
-//struct little_endian_segment_unpacker<1>
+// template <>
+// struct little_endian_segment_unpacker<1>
 //{
 //    template <typename PackedSegment, typename UnpackedSegment>
 //    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -168,8 +170,8 @@ struct big_endian_segment_unpacker<7>
 //    }
 //};
 //
-//template <>
-//struct little_endian_segment_unpacker<2>
+// template <>
+// struct little_endian_segment_unpacker<2>
 //{
 //    template <typename PackedSegment, typename UnpackedSegment>
 //    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -183,8 +185,8 @@ struct big_endian_segment_unpacker<7>
 //    };
 //};
 //
-//template <>
-//struct little_endian_segment_unpacker<3>
+// template <>
+// struct little_endian_segment_unpacker<3>
 //{
 //    template <typename PackedSegment, typename UnpackedSegment>
 //    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -203,8 +205,8 @@ struct big_endian_segment_unpacker<7>
 //    }
 //};
 //
-//template <>
-//struct little_endian_segment_unpacker<4>
+// template <>
+// struct little_endian_segment_unpacker<4>
 //{
 //    template <typename PackedSegment, typename UnpackedSegment>
 //    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -216,8 +218,8 @@ struct big_endian_segment_unpacker<7>
 //    }
 //};
 //
-//template <>
-//struct little_endian_segment_unpacker<5>
+// template <>
+// struct little_endian_segment_unpacker<5>
 //{
 //    template <typename PackedSegment, typename UnpackedSegment>
 //    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -238,8 +240,8 @@ struct big_endian_segment_unpacker<7>
 //    }
 //};
 //
-//template <>
-//struct little_endian_segment_unpacker<6>
+// template <>
+// struct little_endian_segment_unpacker<6>
 //{
 //    template <typename PackedSegment, typename UnpackedSegment>
 //    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -254,8 +256,8 @@ struct big_endian_segment_unpacker<7>
 //    }
 //};
 //
-//template <>
-//struct little_endian_segment_unpacker<7>
+// template <>
+// struct little_endian_segment_unpacker<7>
 //{
 //    template <typename PackedSegment, typename UnpackedSegment>
 //    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
@@ -277,39 +279,6 @@ struct big_endian_segment_unpacker<7>
 //        //unpacked[7] = (packed[6] >> 0) & mask<7>::value;
 //    };
 //};
-
-namespace detail
-{
-    template<std::size_t Bits, std::size_t Offset, std::size_t ReadsRemaining>
-    struct static_bitstream_read_op;
-
-    template<std::size_t Bits, std::size_t Offset>
-    struct static_bitstream_read_op<std::size_t Bits, std::size_t Offset, 0>
-    {
-        template <typename PackedSegment, typename UnpackedSegment>
-        static void read(PackedSegment const& packed, UnpackedSegment& unpacked)
-        {
-            // nop.
-        };
-    };
-
-    template<std::size_t Bits, std::size_t Offset, std::size_t ReadsRemaining>
-    struct static_bitstream_read_op;
-    {
-        template <typename PackedSegment, typename UnpackedSegment>
-        static void read(PackedSegment const& packed, UnpackedSegment& unpacked)
-        {
-            static_bitstream_read_op<Bits, Offset+Bits,ReadRemaining-1>::read(packed, unpacked);
-        };
-    };
-
-
-}
-
-struct static_ibitstream
-{
-
-};
 
 }} // namespace boost::radix
 

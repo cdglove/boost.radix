@@ -10,7 +10,7 @@
 #ifndef BOOST_RADIX_DECODE_HPP
 #define BOOST_RADIX_DECODE_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once

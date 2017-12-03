@@ -10,6 +10,8 @@
 #ifndef BOOST_RADIX_COMMON_HPP
 #define BOOST_RADIX_COMMON_HPP
 
+#include <boost/config.hpp>
+
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #pragma once
 #endif

@@ -10,7 +10,7 @@
 #ifndef BOOST_RADIX_SEGMENTPACKER_HPP
 #define BOOST_RADIX_SEGMENTPACKER_HPP
 
-#include <boost/config.hpp>
+#include <boost/radix/common.hpp>
 
 #include <boost/radix/bitmask.hpp>
 #include <boost/radix/common.hpp>

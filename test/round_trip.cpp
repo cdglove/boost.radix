@@ -21,9 +21,27 @@
 
 #include <iostream>
 
+#include <boost/radix/static_sequential_ibitstream.hpp>
+
+struct base64_tag;
+
+namespace boost { namespace radix {
+
+template <>
+struct segment_unpacker_type<boost::radix::codec<64, base64_tag>>
+{
+    typedef static_sequential_ibitstream<
+        required_bits<
+            boost::radix::codec<64, base64_tag>
+        >::value
+    > type;
+};
+
+}} // namespace boost::radix
+
 BOOST_AUTO_TEST_CASE(round_trip_base64)
 {
-    boost::radix::codec<struct base64_tag, 64> base64(
+    boost::radix::codec<64, base64_tag> base64(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 
     std::vector<char> binary_in = generate_bytes(1024);
