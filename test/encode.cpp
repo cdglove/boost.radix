@@ -11,6 +11,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <boost/radix/encode.hpp>
+#include <boost/radix/alphabet.hpp>
 #include <vector>
 #include <array>
 
@@ -40,7 +41,7 @@ BOOST_AUTO_TEST_CASE(encode_chars_binary)
 {
     std::vector<char> buf = get_bit_buffer(4);
     std::string result;
-    boost::radix::encode(buf.begin(), buf.end(), std::back_inserter(result), boost::radix::alphabet("01"));
+    boost::radix::encode(buf.begin(), buf.end(), std::back_inserter(result), boost::radix::alphabet<2>("01"));
     BOOST_TEST(result == "01010101010101010101010101010101");
 }
 
@@ -48,8 +49,8 @@ BOOST_AUTO_TEST_CASE(encode_chars_hex)
 {
     std::vector<unsigned char> buf { 0x01, 0x10, 0x5a, 0xa5, 0xff };
     std::string result;
-    boost::radix::encode(buf.begin(), buf.end(), std::back_inserter(result), boost::radix::alphabet("0123456789ABCDEF"));
+    boost::radix::encode(buf.begin(), buf.end(), std::back_inserter(result), boost::radix::alphabet<16>("0123456789ABCDEF"));
 
-    // Result is switched because big endian representation of 0x01
+    // Result is switched because little endian representation of 0x01
     BOOST_TEST(result == "1001A55AFF");
 }

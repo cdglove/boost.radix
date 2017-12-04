@@ -47,6 +47,8 @@ struct segment_unpacker_type
         type;
 };
 
+// -----------------------------------------------------------------------------
+//
 namespace adl {
 
 template <typename Codec, typename PackedSegment>
@@ -57,6 +59,17 @@ unpack_segment(Codec const& codec, PackedSegment const& packed)
     segment_unpacker_type<Codec>::type::unpack(packed, unpacked);
     return unpacked;
 }
+
+template <typename Codec>
+std::size_t get_encoded_size(std::size_t source_size, Codec const& codec)
+{
+    // By default, size is an integer multiple of the output
+    // segment size.
+    return unpacked_segment_size<Codec>::value *
+           (source_size + (packed_segment_size<Codec>::value - 1) /
+                              packed_segment_size<Codec>::value);
+}
+
 } // namespace adl
 
 // -----------------------------------------------------------------------------
@@ -158,6 +171,15 @@ unpack_and_pad_segment(Codec const& codec, InputBuffer const& buffer)
 }
 
 } // namespace detail
+
+// -----------------------------------------------------------------------------
+//
+template <typename Codec>
+std::size_t encoded_size(std::size_t source_size, Codec const& codec)
+{
+    using boost::radix::adl::get_encoded_size;
+    get_encoded_size(source_size, codec);
+}
 
 // -----------------------------------------------------------------------------
 //

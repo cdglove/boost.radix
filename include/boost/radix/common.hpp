@@ -12,6 +12,8 @@
 
 #include <boost/config.hpp>
 
+#include <cstdint>
+
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #pragma once
 #endif

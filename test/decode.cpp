@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(decode_chars_hex)
     std::vector<char> buf;
     std::string str("0011AAFF1E");
     std::vector<unsigned char> result;
-    boost::radix::alphabet hex("0123456789ABCDEF");
+    boost::radix::alphabet<2> hex("0123456789ABCDEF");
     result.resize(boost::radix::decoded_size(str.length(), hex));
     boost::radix::decode(str.begin(), str.end(), result.begin(), hex);
     BOOST_TEST(result[0] == 0x00U);
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(decode_chars_dec)
     std::vector<char> buf;
     std::string str("001122345689");
     std::vector<unsigned char> result;
-    boost::radix::alphabet hex("0123456789");
-    result.resize(boost::radix::decoded_size(str.length(), hex));
-    boost::radix::decode(str.begin(), str.end(), result.begin(), hex);
+    boost::radix::alphabet<10> dec("0123456789");
+    result.resize(boost::radix::decoded_size(str.length(), dec));
+    boost::radix::decode(str.begin(), str.end(), result.begin(), dec);
 }

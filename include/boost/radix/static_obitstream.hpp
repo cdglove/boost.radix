@@ -47,11 +47,12 @@ private:
         static void do_write(
             UnpackedSegment const& unpacked, PackedSegment& packed, split_write)
         {
-            bits_type first  = packed[Offset / 8] >> Offset % 8;
-            bits_type second = packed[(Offset + Bits) / 8]
-                               << (8 - (Offset % 8));
-            unpacked[SegmentSize - ReadsRemaining] =
-                (first | second) & mask<Bits>::value;
+            bits_type bits = unpacked[SegmentSize - WritesRemaining];
+            packed[Offset / 8] |= bits << Offset % 8;
+
+            // We know this is the first write, so we don't need to |
+            packed[(Offset + Bits) / 8] =
+                (bits & mask<Bits>::value) >> (8 - (Offset % 8));
         }
 
         template <typename UnpackedSegment, typename PackedSegment>
@@ -60,8 +61,8 @@ private:
             PackedSegment& packed,
             single_write)
         {
-            unpacked[SegmentSize - ReadsRemaining] =
-                (packed[Offset / 8] >> Offset % 8) & mask<Bits>::value;
+            bits_type bits = unpacked[SegmentSize - WritesRemaining];
+            packed[Offset / 8] |= (bits & mask<Bits>::value) << Offset % 8;
         }
 
     public:
@@ -74,7 +75,7 @@ private:
                 split_write>::type write_type;
 
             do_write(packed, unpacked, write_type());
-            write_op<Offset + Bits, ReadsRemaining - 1>::write(
+            write_op<Offset + Bits, WritesRemaining - 1>::write(
                 packed, unpacked);
         };
     };
@@ -83,6 +84,8 @@ public:
     template <typename UnpackedSegment, typename PackedSegment>
     static void write(UnpackedSegment const& unpacked, PackedSegment& packed)
     {
+        // zero the buffer to prevent us from having to toggle bits.
+        std::fill(begin(packed), end(packed), 0);
         write_op<Bits, 0, SegmentSize>::read(packed, unpacked);
     }
 };

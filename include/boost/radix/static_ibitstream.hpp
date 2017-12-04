@@ -20,18 +20,6 @@ template <std::size_t Bits, std::size_t SegmentSize>
 class static_ibitstream
 {
 private:
-    template <std::size_t Offset, std::size_t ReadsRemaining>
-    struct read_op;
-
-    template <std::size_t Offset>
-    struct read_op<Offset, 0>
-    {
-        template <typename PackedSegment, typename UnpackedSegment>
-        static void
-        read(PackedSegment const& packed, UnpackedSegment& unpacked){
-            // nop.
-        };
-    };
 
     template <std::size_t Offset, std::size_t ReadsRemaining>
     struct read_op
@@ -44,7 +32,7 @@ private:
         {};
 
         template <typename PackedSegment, typename UnpackedSegment>
-        static void do_read(
+        static void this_read(
             PackedSegment const& packed, UnpackedSegment& unpacked, split_read)
         {
             bits_type first  = packed[Offset / 8] >> Offset % 8;
@@ -56,23 +44,46 @@ private:
         }
 
         template <typename PackedSegment, typename UnpackedSegment>
-        static void do_read(
+        static void this_read(
             PackedSegment const& packed, UnpackedSegment& unpacked, single_read)
         {
             unpacked[SegmentSize - ReadsRemaining] =
                 (packed[Offset / 8] >> Offset % 8) & mask<Bits>::value;
         }
 
+        struct do_read
+        {};
+
+        struct nop_read
+        {};
+
+        template <typename PackedSegment, typename UnpackedSegment>
+        static void next_read(
+            PackedSegment const& packed, UnpackedSegment& unpacked, do_read)
+        {
+            static_ibitstream::read_op<Offset + Bits, ReadsRemaining - 1>::read(packed, unpacked);
+        }
+
+        template <typename PackedSegment, typename UnpackedSegment>
+        static void next_read(
+            PackedSegment const& packed, UnpackedSegment& unpacked, nop_read)
+        {}
+
+
     public:
         template <typename PackedSegment, typename UnpackedSegment>
         static void read(PackedSegment const& packed, UnpackedSegment& unpacked)
         {
             typedef typename boost::conditional<
-                Offset / 8 == (Offset + Bits) / 8, single_read,
-                split_read>::type read_type;
+                Offset / 8 == (Offset + Bits) / 8 || ReadsRemaining == 1, single_read,
+                split_read>::type this_read_type;
 
-            do_read(packed, unpacked, read_type());
-            read_op<Offset + Bits, ReadsRemaining - 1>::read(packed, unpacked);
+            this_read(packed, unpacked, this_read_type());
+
+            typedef typename boost::conditional<
+                ReadsRemaining - 1 == 0, nop_read, do_read>::type next_read_type;
+
+            next_read(packed, unpacked, next_read_type());
         };
     };
 
