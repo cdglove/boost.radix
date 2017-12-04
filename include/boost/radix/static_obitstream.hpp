@@ -13,13 +13,17 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/bitmask.hpp>
+#include <boost/radix/segment.hpp>
 
 namespace boost { namespace radix {
 
-template <std::size_t Bits, std::size_t SegmentSize>
+template <std::size_t Bits>
 class static_obitstream
 {
 private:
+    BOOST_STATIC_CONSTANT(
+        std::size_t, SegmentSize = detail::bits_lcm<Bits>::type::value / Bits);
+
     template <std::size_t Offset, std::size_t ReadsRemaining>
     struct write_op;
 

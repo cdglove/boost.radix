@@ -13,13 +13,16 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/bitmask.hpp>
+#include <boost/radix/detail/bits_lcm.hpp>
 
 namespace boost { namespace radix {
 
-template <std::size_t Bits, std::size_t SegmentSize>
+template <std::size_t Bits>
 class static_ibitstream
 {
 private:
+    BOOST_STATIC_CONSTANT(
+        std::size_t, SegmentSize = detail::bits_lcm<Bits>::type::value / Bits);
 
     template <std::size_t Offset, std::size_t ReadsRemaining>
     struct read_op
@@ -61,7 +64,8 @@ private:
         static void next_read(
             PackedSegment const& packed, UnpackedSegment& unpacked, do_read)
         {
-            static_ibitstream::read_op<Offset + Bits, ReadsRemaining - 1>::read(packed, unpacked);
+            static_ibitstream::read_op<Offset + Bits, ReadsRemaining - 1>::read(
+                packed, unpacked);
         }
 
         template <typename PackedSegment, typename UnpackedSegment>
@@ -69,19 +73,19 @@ private:
             PackedSegment const& packed, UnpackedSegment& unpacked, nop_read)
         {}
 
-
     public:
         template <typename PackedSegment, typename UnpackedSegment>
         static void read(PackedSegment const& packed, UnpackedSegment& unpacked)
         {
             typedef typename boost::conditional<
-                Offset / 8 == (Offset + Bits) / 8 || ReadsRemaining == 1, single_read,
-                split_read>::type this_read_type;
+                Offset / 8 == (Offset + Bits) / 8 || ReadsRemaining == 1,
+                single_read, split_read>::type this_read_type;
 
             this_read(packed, unpacked, this_read_type());
 
             typedef typename boost::conditional<
-                ReadsRemaining - 1 == 0, nop_read, do_read>::type next_read_type;
+                ReadsRemaining - 1 == 0, nop_read, do_read>::type
+                next_read_type;
 
             next_read(packed, unpacked, next_read_type());
         };
