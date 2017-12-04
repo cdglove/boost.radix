@@ -12,6 +12,9 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/radix/segment.hpp>
+#include <boost/radix/static_obitstream.hpp>
+
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #pragma once
 #endif
@@ -19,9 +22,41 @@
 namespace boost { namespace radix {
 
 template <typename Codec>
-std::size_t decoded_size(std::size_t encoded_size, Codec const& codec)
+struct segment_packer_type
 {
-    return codec.decoded_size(encoded_size);
+    typedef static_obitstream<required_bits<Codec>::value> type;
+};
+
+// -----------------------------------------------------------------------------
+//
+namespace adl {
+
+template <typename Codec, typename UnpackedSegment>
+typename packed_segment_type<Codec>::type
+pack_segment(Codec const& codec, UnpackedSegment const& packed)
+{
+    packed_segment_type<Codec>::type packed;
+    segment_packer_type<Codec>::type::pack(unpacked, packed);
+    return unpacked;
+}
+
+template <typename Codec>
+std::size_t get_decoded_size(std::size_t source_size, Codec const& codec)
+{
+    // By default, size is an integer multiple of the output
+    // segment size.
+    return packed_segment_size<Codec>::value *
+           (source_size + (unpacked_segment_size<Codec>::value - 1) /
+                              unpacked_segment_size<Codec>::value);
+}
+
+} // namespace adl
+
+template <typename Codec>
+std::size_t decoded_size(std::size_t source_size, Codec const& codec)
+{
+    using boost::radix::adl::get_decoded_size;
+    return get_decoded_size(source_size, codec);
 }
 
 template <typename InputIterator, typename OutputIterator, typename Codec>
