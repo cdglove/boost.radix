@@ -7,26 +7,17 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_RADIX_DETAIL_SEGMENT_HPP
-#define BOOST_RADIX_DETAIL_SEGMENT_HPP
+#ifndef BOOST_RADIX_SEGMENT_HPP
+#define BOOST_RADIX_SEGMENT_HPP
 
 #include <boost/radix/common.hpp>
 
-#include <boost/integer/common_factor.hpp>
+#include <boost/radix/detail/bits_lcm.hpp>
+
 #include <boost/integer/static_log2.hpp>
+#include <boost/array.hpp>
 
 namespace boost { namespace radix {
-
-namespace detail {
-
-// bits_lcm exists only to keep a comma out of BOOST_STATIC_CONSTANT macros
-template <std::size_t Bits>
-struct bits_lcm
-{
-    typedef typename boost::integer::static_lcm<Bits, 8> type;
-};
-
-} // namespace detail
 
 template <typename Codec>
 struct required_bits
@@ -40,7 +31,7 @@ struct packed_segment_size
 {
     BOOST_STATIC_CONSTANT(
         std::size_t,
-        value = detail::bits_lcm<required_bits<Codec>::value>::type::value / 8);
+        value = detail::bits_lcm<required_bits<Codec>::value>::value / 8);
 };
 
 template <typename Codec>
@@ -48,10 +39,22 @@ struct unpacked_segment_size
 {
     BOOST_STATIC_CONSTANT(
         std::size_t,
-        value = detail::bits_lcm<required_bits<Codec>::value>::type::value /
+        value = detail::bits_lcm<required_bits<Codec>::value>::value /
                 required_bits<Codec>::value);
+};
+
+template <typename Codec>
+struct packed_segment_type
+{
+    typedef boost::array<bits_type, packed_segment_size<Codec>::value> type;
+};
+
+template <typename Codec>
+struct unpacked_segment_type
+{
+    typedef boost::array<bits_type, unpacked_segment_size<Codec>::value> type;
 };
 
 }} // namespace boost::radix
 
-#endif // BOOST_RADIX_DETAIL_SEGMENT_HPP
+#endif // BOOST_RADIX_SEGMENT_HPP
