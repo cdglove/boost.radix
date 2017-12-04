@@ -1,5 +1,5 @@
 //
-// boost/radix/static_ibitstream.hpp
+// boost/radix/static_sequential_ibitstream.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -48,10 +48,11 @@ private:
         {
             // [2, 2, 2, 2]
             bits_type bits = packed[0];
-            unpacked[0]    = (bits >> 6) & mask<2>::value;
-            unpacked[1]    = (bits >> 4) & mask<2>::value;
-            unpacked[2]    = (bits >> 2) & mask<2>::value;
-            unpacked[3]    = (bits >> 0) & mask<2>::value;
+
+            unpacked[0] = (bits >> 6) & mask<2>::value;
+            unpacked[1] = (bits >> 4) & mask<2>::value;
+            unpacked[2] = (bits >> 2) & mask<2>::value;
+            unpacked[3] = (bits >> 0) & mask<2>::value;
         };
     };
 
@@ -85,8 +86,9 @@ private:
         {
             // [4, 4]
             bits_type bits = packed[0];
-            unpacked[0]    = (bits >> 4) & mask<4>::value;
-            unpacked[1]    = (bits >> 0) & mask<4>::value;
+
+            unpacked[0] = (bits >> 4) & mask<4>::value;
+            unpacked[1] = (bits >> 0) & mask<4>::value;
         }
     };
 
