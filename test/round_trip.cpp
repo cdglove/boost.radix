@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(round_trip_base64)
     boost::radix::codec<64, base64_tag> base64(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 
-    std::vector<char> binary_in = generate_bytes(1024);
+    std::vector<boost::radix::bits_type> binary_in = generate_bytes(1024);
 
     std::string encoded_text;
     boost::radix::encode(
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(round_trip_base64)
         encoded_text.begin(), encoded_text.end(),
         std::back_inserter(decoded_binary), base64);
 
-    BOOST_TEST(binary_in == decoded_binary);
+    BOOST_TEST(boost::equal(binary_in, decoded_binary));
 
     std::string ref_encode = base64::encode(
         reinterpret_cast<unsigned char*>(binary_in.data()),
