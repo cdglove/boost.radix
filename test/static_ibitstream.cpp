@@ -18,7 +18,7 @@
 template<std::size_t Bits>
 static void check_bits()
 {
-    int const num_segments = 3;
+    int const num_segments = 10;
     std::size_t const packed_segment_size = boost::radix::detail::bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size = boost::radix::detail::bits_lcm<Bits>::value / Bits;
     std::vector<boost::radix::bits_type> packed = generate_bytes(num_segments * packed_segment_size);
