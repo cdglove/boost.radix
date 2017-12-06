@@ -72,8 +72,8 @@ private:
             unpacked[4] = (packed[1] >> 1) & mask<3>::value;
             unpacked[5] = ((packed[1] << 0) & mask_shift<1, 2>::value) |
                           ((packed[2] >> 6) & mask<2>::value);
-            unpacked[6] = (packed[3] >> 3) & mask<3>::value;
-            unpacked[7] = (packed[3] >> 0) & mask<3>::value;
+            unpacked[6] = (packed[2] >> 3) & mask<3>::value;
+            unpacked[7] = (packed[2] >> 0) & mask<3>::value;
         }
     };
 
@@ -101,7 +101,7 @@ private:
         {
             // [5, 3], [2, 5, 1], [4, 4], [1, 5, 2], [3, 5]
             unpacked[0] = (packed[0] >> 3) & mask<5>::value;
-            unpacked[1] = ((packed[0] >> 2) & mask_shift<3, 2>::value) |
+            unpacked[1] = ((packed[0] << 2) & mask_shift<3, 2>::value) |
                           ((packed[1] >> 6) & mask<2>::value);
             unpacked[2] = (packed[1] >> 1) & mask<5>::value;
             unpacked[3] = ((packed[1] << 4) & mask_shift<1, 4>::value) |
@@ -147,7 +147,7 @@ private:
                           ((packed[2] >> 3) & mask<5>::value);
             unpacked[3] = ((packed[2] << 4) & mask_shift<3, 4>::value) |
                           ((packed[3] >> 4) & mask<4>::value);
-            unpacked[4] = ((packed[3] << 4) & mask_shift<4, 4>::value) |
+            unpacked[4] = ((packed[3] << 3) & mask_shift<4, 3>::value) |
                           ((packed[4] >> 5) & mask<3>::value);
             unpacked[5] = ((packed[4] << 2) & mask_shift<5, 2>::value) |
                           ((packed[5] >> 6) & mask<2>::value);

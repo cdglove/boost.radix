@@ -15,7 +15,6 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/bind.hpp>
-#include <boost/type_traits/make_unsigned.hpp>
 #include <vector>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
@@ -31,7 +30,7 @@ inline std::vector<boost::radix::bits_type> generate_bytes(std::size_t num_bytes
     return binary;
 }
 
-boost::radix::bits_type get_bits_natural(std::vector<boost::radix::bits_type> const& bytes, std::size_t bit_offset, std::size_t num_bits)
+inline boost::radix::bits_type get_bits_natural(std::vector<boost::radix::bits_type> const& bytes, std::size_t bit_offset, std::size_t num_bits)
 {
     using boost::radix::bits_type;
     std::size_t byte_offset = bit_offset / 8;
@@ -51,21 +50,25 @@ boost::radix::bits_type get_bits_natural(std::vector<boost::radix::bits_type> co
     return ret_val;
 }
 
-boost::radix::bits_type get_bits_sequencial(std::vector<boost::radix::bits_type> const& bytes, std::size_t bit_offset, std::size_t num_bits)
+inline boost::radix::bits_type get_bits_sequential(std::vector<boost::radix::bits_type> const& bytes, std::size_t bit_offset, std::size_t num_bits)
 {
     using boost::radix::bits_type;
     std::size_t byte_offset = bit_offset / 8;
     std::size_t bit_in_byte = bit_offset % 8;
     std::size_t read_size = std::min(8 - bit_in_byte, num_bits);
  
-    bits_type ret_val = (bits_type(bytes[byte_offset]) >> (7 - bit_in_byte)) & (bits_type(~0) >> (8 - num_bits));
+    bits_type ret_val = bits_type(bytes[byte_offset]);
+    ret_val >>= 8 - read_size - bit_in_byte;
+    ret_val &= bits_type(~0) >> (8 - read_size);
 
     if(read_size < num_bits)
     {
         std::size_t bits_remaining = num_bits - read_size;
-        bits_type extra_bits = bytes[byte_offset+1];
-        extra_bits >>= (8 - bits_remaining);
-        ret_val |= extra_bits;
+        std::uint16_t temp = ret_val;
+        temp <<= 8;
+        temp |= bytes[byte_offset+1];
+        temp >>= (8 - bits_remaining);
+        ret_val = temp & bits_type(~0);
     }
 
     return ret_val;

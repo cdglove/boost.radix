@@ -19,7 +19,7 @@ function(add_radix_test target)
     add_test(NAME ${radix_test_name} COMMAND ${radix_test_name})
 endfunction()
 
-add_radix_test(static_ibitstream)
+add_radix_test(bitstreams)
 #add_radix_test(obitstream)
 add_radix_test(encode)
 add_radix_test(decode)
