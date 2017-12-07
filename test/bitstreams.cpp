@@ -14,7 +14,9 @@
 #include <boost/array.hpp>
 #include <boost/radix/detail/bits_lcm.hpp>
 #include <boost/radix/static_ibitstream.hpp>
+#include <boost/radix/static_obitstream.hpp>
 #include <boost/radix/static_sequential_ibitstream.hpp>
+#include <boost/radix/static_sequential_obitstream.hpp>
 #include <vector>
 
 template <std::size_t Bits>
@@ -24,6 +26,7 @@ static void check_static_istream(std::size_t num_segments)
         boost::radix::detail::bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size =
         boost::radix::detail::bits_lcm<Bits>::value / Bits;
+
     std::vector<boost::radix::bits_type> packed =
         generate_bytes(num_segments * packed_segment_size);
 
@@ -31,8 +34,7 @@ static void check_static_istream(std::size_t num_segments)
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        typename boost::radix::static_ibitstream<Bits>::unpack(
-            packed, unpacked);
+        boost::radix::static_ibitstream<Bits>::unpack(packed, unpacked);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
         {
@@ -50,6 +52,7 @@ static void check_static_sequential_istream(std::size_t num_segments)
         boost::radix::detail::bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size =
         boost::radix::detail::bits_lcm<Bits>::value / Bits;
+
     std::vector<boost::radix::bits_type> packed =
         generate_bytes(num_segments * packed_segment_size);
 
@@ -57,7 +60,7 @@ static void check_static_sequential_istream(std::size_t num_segments)
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        typename boost::radix::static_sequential_ibitstream<Bits>::unpack(
+        boost::radix::static_sequential_ibitstream<Bits>::unpack(
             packed, unpacked);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
@@ -76,15 +79,15 @@ static void check_static_ostream(std::size_t num_segments)
         boost::radix::detail::bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size =
         boost::radix::detail::bits_lcm<Bits>::value / Bits;
-    std::vector<boost::radix::bits_type> packed =
-        generate_bytes(num_segments * packed_segment_size);
 
-    std::vector<boost::radix::bits_type> unpacked(unpacked_segment_size);
+    std::vector<boost::radix::bits_type> unpacked =
+        generate_bytes(num_segments * unpacked_segment_size, (1 << Bits) - 1);
+
+    std::vector<boost::radix::bits_type> packed(packed_segment_size);
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        typename boost::radix::static_ibitstream<Bits>::unpack(
-            packed, unpacked);
+        boost::radix::static_obitstream<Bits>::pack(unpacked, packed);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
         {
@@ -102,15 +105,16 @@ static void check_static_sequential_ostream(std::size_t num_segments)
         boost::radix::detail::bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size =
         boost::radix::detail::bits_lcm<Bits>::value / Bits;
-    std::vector<boost::radix::bits_type> packed =
-        generate_bytes(num_segments * packed_segment_size);
 
-    std::vector<boost::radix::bits_type> unpacked(unpacked_segment_size);
+    std::vector<boost::radix::bits_type> unpacked =
+        generate_bytes(num_segments * unpacked_segment_size, (1 << Bits) - 1);
+
+    std::vector<boost::radix::bits_type> packed(packed_segment_size);
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        typename boost::radix::static_sequential_ibitstream<Bits>::unpack(
-            packed, unpacked);
+        boost::radix::static_sequential_obitstream<Bits>::pack(
+            unpacked, packed);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
         {
@@ -119,6 +123,54 @@ static void check_static_sequential_ostream(std::size_t num_segments)
             BOOST_TEST(source_bits == unpacked[j]);
         }
     }
+}
+
+template <std::size_t Bits>
+static void check_static_iostream(std::size_t num_segments)
+{
+    std::size_t const packed_segment_size =
+        boost::radix::detail::bits_lcm<Bits>::value / 8;
+    std::size_t const unpacked_segment_size =
+        boost::radix::detail::bits_lcm<Bits>::value / Bits;
+
+    std::vector<boost::radix::bits_type> packed_source =
+        generate_bytes(num_segments * packed_segment_size);
+
+    std::vector<boost::radix::bits_type> unpacked(unpacked_segment_size);
+	std::vector<boost::radix::bits_type> packed_result(packed_segment_size);
+    for(std::size_t i = 0; i < num_segments; ++i)
+    {
+        boost::radix::static_ibitstream<Bits>::unpack(packed_source, unpacked);
+		boost::radix::static_obitstream<Bits>::pack(unpacked, packed_result);
+        for(std::size_t j = 0; j < packed_segment_size; ++j)
+        {
+            BOOST_TEST(packed_source[j] == packed_result[j]);
+        }
+    }
+}
+
+template <std::size_t Bits>
+static void check_static_sequential_iostream(std::size_t num_segments)
+{
+	std::size_t const packed_segment_size =
+		boost::radix::detail::bits_lcm<Bits>::value / 8;
+	std::size_t const unpacked_segment_size =
+		boost::radix::detail::bits_lcm<Bits>::value / Bits;
+
+	std::vector<boost::radix::bits_type> packed_source =
+		generate_bytes(num_segments * packed_segment_size);
+
+	std::vector<boost::radix::bits_type> unpacked(unpacked_segment_size);
+	std::vector<boost::radix::bits_type> packed_result(packed_segment_size);
+	for (std::size_t i = 0; i < num_segments; ++i)
+	{
+		boost::radix::static_sequential_ibitstream<Bits>::unpack(packed_source, unpacked);
+		boost::radix::static_sequential_obitstream<Bits>::pack(unpacked, packed_result);
+		for (std::size_t j = 0; j < packed_segment_size; ++j)
+		{
+			BOOST_TEST(packed_source[j] == packed_result[j]);
+		}
+	}
 }
 
 BOOST_AUTO_TEST_CASE(static_ibitstream)
@@ -155,7 +207,7 @@ BOOST_AUTO_TEST_CASE(static_sequential_ibitstream)
     }
 }
 
-BOOST_AUTO_TEST_CASE(static_ibitstream)
+BOOST_AUTO_TEST_CASE(static_obitstream)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.
@@ -172,7 +224,7 @@ BOOST_AUTO_TEST_CASE(static_ibitstream)
     }
 }
 
-BOOST_AUTO_TEST_CASE(static_sequential_ibitstream)
+BOOST_AUTO_TEST_CASE(static_sequential_obitstream)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.
@@ -187,4 +239,38 @@ BOOST_AUTO_TEST_CASE(static_sequential_ibitstream)
         check_static_sequential_ostream<6>(segments[i]);
         check_static_sequential_ostream<7>(segments[i]);
     }
+}
+
+BOOST_AUTO_TEST_CASE(static_iobitstream)
+{
+    // Testing 1 segment lets us catch buffer overflows.
+    // Testing 10 gives us more data and tests the segment boundaries.
+    boost::array<std::size_t, 2> segments = {1, 10};
+    for(int i = 0; i < segments.size(); ++i)
+    {
+        check_static_iostream<1>(segments[i]);
+        check_static_iostream<2>(segments[i]);
+        check_static_iostream<3>(segments[i]);
+        check_static_iostream<4>(segments[i]);
+        check_static_iostream<5>(segments[i]);
+        check_static_iostream<6>(segments[i]);
+        check_static_iostream<7>(segments[i]);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(static_sequential_iobitstream)
+{
+	// Testing 1 segment lets us catch buffer overflows.
+	// Testing 10 gives us more data and tests the segment boundaries.
+	boost::array<std::size_t, 2> segments = { 1, 10 };
+	for (int i = 0; i < segments.size(); ++i)
+	{
+		check_static_sequential_iostream<1>(segments[i]);
+		check_static_sequential_iostream<2>(segments[i]);
+		check_static_sequential_iostream<3>(segments[i]);
+		check_static_sequential_iostream<4>(segments[i]);
+		check_static_sequential_iostream<5>(segments[i]);
+		check_static_sequential_iostream<6>(segments[i]);
+		check_static_sequential_iostream<7>(segments[i]);
+	}
 }

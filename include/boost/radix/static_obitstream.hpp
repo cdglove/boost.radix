@@ -24,20 +24,7 @@ private:
     BOOST_STATIC_CONSTANT(
         std::size_t, SegmentSize = detail::bits_lcm<Bits>::type::value / Bits);
 
-    template <std::size_t Offset, std::size_t ReadsRemaining>
-    struct write_op;
-
-    template <std::size_t Offset>
-    struct write_op<Offset, 0>
-    {
-        template <typename UnpackedSegment, typename PackedSegment>
-        static void
-        write(UnpackedSegment const& unpacked, PackedSegment& packed){
-            // nop
-        };
-    };
-
-    template <std::size_t Offset, std::size_t ReadsRemaining>
+    template <std::size_t Offset, std::size_t WritesRemaining>
     struct write_op
     {
     private:
@@ -48,7 +35,7 @@ private:
         {};
 
         template <typename UnpackedSegment, typename PackedSegment>
-        static void do_write(
+        static void this_write(
             UnpackedSegment const& unpacked, PackedSegment& packed, split_write)
         {
             bits_type bits = unpacked[SegmentSize - WritesRemaining];
@@ -60,7 +47,7 @@ private:
         }
 
         template <typename UnpackedSegment, typename PackedSegment>
-        static void do_write(
+        static void this_write(
             UnpackedSegment const& unpacked,
             PackedSegment& packed,
             single_write)
@@ -69,28 +56,51 @@ private:
             packed[Offset / 8] |= (bits & mask<Bits>::value) << Offset % 8;
         }
 
+        struct do_write
+        {};
+
+        struct nop_write
+        {};
+
+		template <typename UnpackedSegment, typename PackedSegment>
+        static void next_write(
+			UnpackedSegment const& unpacked, PackedSegment& packed, do_write)
+        {
+            write_op<Offset + Bits, WritesRemaining - 1>::write(
+                unpacked, packed);
+        }
+
+		template <typename UnpackedSegment, typename PackedSegment>
+        static void next_write(UnpackedSegment const&, PackedSegment&, nop_write)
+        {}
+
     public:
         template <typename UnpackedSegment, typename PackedSegment>
         static void
         write(UnpackedSegment const& unpacked, PackedSegment& packed)
         {
             typedef typename boost::conditional<
-                Offset / 8 == (Offset + Bits) / 8, single_write,
-                split_write>::type write_type;
+                (Offset / 8 == (Offset + Bits) / 8) || (WritesRemaining == 1),
+                single_write, split_write>::type this_write_type;
 
-            do_write(packed, unpacked, write_type());
-            write_op<Offset + Bits, WritesRemaining - 1>::write(
-                packed, unpacked);
+            this_write(unpacked, packed, this_write_type());
+
+            typedef typename boost::conditional<
+                WritesRemaining - 1 == 0, nop_write, do_write>::type
+				next_write_type;
+
+            next_write(unpacked, packed, next_write_type());
         };
     };
 
 public:
     template <typename UnpackedSegment, typename PackedSegment>
-    static void write(UnpackedSegment const& unpacked, PackedSegment& packed)
+    static void pack(UnpackedSegment const& unpacked, PackedSegment& packed)
     {
-        // zero the buffer to prevent us from having to toggle bits.
-        std::fill(begin(packed), end(packed), 0);
-        write_op<Bits, 0, SegmentSize>::read(packed, unpacked);
+		// We need to zero the first bytes, the rest will be taken care
+		// of with split write.
+		packed[0] = 0;
+        write_op<0, SegmentSize>::write(unpacked, packed);
     }
 };
 

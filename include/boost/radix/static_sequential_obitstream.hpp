@@ -49,7 +49,7 @@ private:
             bits_type packed_bits = 0;
             for(int i = 0, j = 7; i < 8; ++i, --j)
             {
-                packed_bits |= unpacked[0] << j;
+                packed_bits |= unpacked[i] << j;
             }
 
             packed[0] = packed_bits;
@@ -140,7 +140,7 @@ private:
             // [7, 1], [6, 2], [5, 3], [4, 4], [3, 5], [2, 6], [1, 7]
             packed[0] = (unpacked[0] << 1) | (unpacked[1] >> 6);
             packed[1] = (unpacked[1] << 2) | (unpacked[2] >> 5);
-            packed[2] = (unpacked[2] << 6) | (unpacked[3] >> 4);
+            packed[2] = (unpacked[2] << 3) | (unpacked[3] >> 4);
             packed[3] = (unpacked[3] << 4) | (unpacked[4] >> 3);
             packed[4] = (unpacked[4] << 5) | (unpacked[5] >> 2);
             packed[5] = (unpacked[5] << 6) | (unpacked[6] >> 1);

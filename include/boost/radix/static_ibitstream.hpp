@@ -64,7 +64,7 @@ private:
         static void next_read(
             PackedSegment const& packed, UnpackedSegment& unpacked, do_read)
         {
-            static_ibitstream::read_op<Offset + Bits, ReadsRemaining - 1>::read(
+            read_op<Offset + Bits, ReadsRemaining - 1>::read(
                 packed, unpacked);
         }
 
@@ -78,7 +78,7 @@ private:
         static void read(PackedSegment const& packed, UnpackedSegment& unpacked)
         {
             typedef typename boost::conditional<
-                Offset / 8 == (Offset + Bits) / 8 || ReadsRemaining == 1,
+                Offset / 8 == (Offset + Bits) / 8 || ReadsRemaining == 1,	
                 single_read, split_read>::type this_read_type;
 
             this_read(packed, unpacked, this_read_type());
