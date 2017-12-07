@@ -33,9 +33,9 @@ namespace adl {
 
 template <typename Codec, typename UnpackedSegment>
 typename packed_segment_type<Codec>::type
-pack_segment(Codec const& codec, UnpackedSegment const& packed)
+pack_segment(Codec const& codec, UnpackedSegment const& unpacked)
 {
-    packed_segment_type<Codec>::type packed;
+    typename packed_segment_type<Codec>::type packed;
     segment_packer_type<Codec>::type::pack(unpacked, packed);
     return unpacked;
 }

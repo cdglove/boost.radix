@@ -39,7 +39,7 @@ template <typename Codec, typename PackedSegment>
 typename unpacked_segment_type<Codec>::type
 unpack_segment(Codec const& codec, PackedSegment const& packed)
 {
-    unpacked_segment_type<Codec>::type unpacked;
+    typename unpacked_segment_type<Codec>::type unpacked;
     segment_unpacker_type<Codec>::type::unpack(packed, unpacked);
     return unpacked;
 }
