@@ -26,26 +26,27 @@ namespace boost { namespace radix {
 template <std::size_t AlphabetSize, typename Tag = void>
 class codec : public alphabet<AlphabetSize>
 {
+    typedef alphabet<AlphabetSize> alphabet_type;
 public:
     template <typename Iterator>
     codec(Iterator first, Iterator last)
-        : alphabet(first, last)
+        : alphabet_type(first, last)
     {}
 
     template <typename Iterator>
     codec(Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
-        : alphabet(first, last, pad_bits, pad_char)
+        : alphabet_type(first, last, pad_bits, pad_char)
     {}
 
     explicit codec(char_type const* chars)
-        : alphabet(chars)
+        : alphabet_type(chars)
     {}
 
     codec(
         boost::basic_string_view<char_type> chars,
         bits_type pad_bits,
         char_type pad_char)
-        : alphabet(chars, pad_bits, bad_char)
+        : alphabet_type(chars, pad_bits, pad_char)
     {}
 };
 

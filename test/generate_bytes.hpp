@@ -21,7 +21,7 @@
 # pragma once
 #endif
 
-inline std::vector<boost::radix::bits_type> generate_bytes(std::size_t num_bytes, std::size_t max_value = 255)
+inline std::vector<boost::radix::bits_type> generate_bytes(std::size_t num_bytes, int max_value = 255)
 {
     std::vector<boost::radix::bits_type> binary;
     boost::random::mt19937 rng;
