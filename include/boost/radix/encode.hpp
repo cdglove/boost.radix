@@ -60,55 +60,6 @@ std::size_t get_encoded_size(std::size_t source_size, Codec const& codec)
 //
 namespace detail {
 
-template <typename Codec>
-class packed_segment_result
-{
-public:
-
-    typedef typename packed_segment_type<Codec>::type container;
-    typedef typename container::iterator iterator;
-    typedef typename container::reference reference;
-    typedef typename container::const_reference const_reference;
-
-    packed_segment_result()
-        : size_(packed_segment_size<Codec>::value)
-    {}
-
-    reference operator[](std::size_t idx)
-    {
-        return container_[idx];
-    }
-
-    const_reference operator[](std::size_t idx) const
-    {
-        return container_[idx];
-    }
-
-    iterator begin()
-    {
-        return container_.begin();
-    }
-
-    iterator end()
-    {
-		return begin() + size();
-    }
-
-	void pop_back()
-	{
-		--size_;
-	}
-
-    std::size_t size() const
-    {
-        return size_;
-    }
-
-private:
-
-    container container_;
-    std::size_t size_;
-};
 
 template <typename Codec>
 struct bits_to_char_mapper
@@ -126,7 +77,7 @@ struct bits_to_char_mapper
 };
 
 template <typename Iterator, typename EndIterator, typename Codec>
-packed_segment_result<Codec>
+packed_segment_type<Codec>
 get_packed_segment(Iterator& first, EndIterator last, Codec const& codec)
 {
     packed_segment_result<Codec> buffer;

@@ -13,6 +13,7 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/detail/bits_lcm.hpp>
+#include <boost/radix/detail/segment_buffer.hpp>
 
 #include <boost/integer/static_log2.hpp>
 #include <boost/array.hpp>
@@ -43,17 +44,17 @@ struct unpacked_segment_size
                 required_bits<Codec>::value);
 };
 
-template <typename Codec>
-struct packed_segment_type
-{
-    typedef boost::array<bits_type, packed_segment_size<Codec>::value> type;
-};
-
-template <typename Codec>
-struct unpacked_segment_type
-{
-    typedef boost::array<bits_type, unpacked_segment_size<Codec>::value> type;
-};
+//template <typename Codec>
+//struct packed_segment_type
+//{
+//    typedef boost::array<bits_type, packed_segment_size<Codec>::value> type;
+//};
+//
+//template <typename Codec>
+//struct unpacked_segment_type
+//{
+//    typedef boost::array<bits_type, unpacked_segment_size<Codec>::value> type;
+//};
 
 }} // namespace boost::radix
 
