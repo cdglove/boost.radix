@@ -22,6 +22,7 @@
 #include <iostream>
 
 #include <boost/radix/static_sequential_ibitstream.hpp>
+#include <boost/radix/static_sequential_obitstream.hpp>
 
 struct base64_tag;
 
@@ -37,7 +38,26 @@ struct segment_unpacker_type<boost::radix::codec<64, base64_tag>>
     > type;
 };
 
+template <>
+struct segment_packer_type<boost::radix::codec<64, base64_tag>>
+{
+	typedef static_sequential_obitstream<
+		required_bits<
+		boost::radix::codec<64, base64_tag>
+		>::value
+	> type;
+};
+
 }} // namespace boost::radix
+
+struct is_equal_unsigned
+{
+	template<typename T1, typename T2>
+	bool operator()(T1 c1, T2 c2) const
+	{
+        return static_cast<unsigned char>(c1) == static_cast<unsigned char>(c2);
+	}
+};
 
 BOOST_AUTO_TEST_CASE(round_trip_base64)
 {
@@ -51,7 +71,7 @@ BOOST_AUTO_TEST_CASE(round_trip_base64)
         binary_in.begin(), binary_in.end(), std::back_inserter(encoded_text),
         base64);
 
-    std::vector<char> decoded_binary;
+    std::vector<boost::radix::bits_type> decoded_binary;
     boost::radix::decode(
         encoded_text.begin(), encoded_text.end(),
         std::back_inserter(decoded_binary), base64);
@@ -64,5 +84,5 @@ BOOST_AUTO_TEST_CASE(round_trip_base64)
     std::string ref_decode = base64::decode(ref_encode);
 
     BOOST_TEST(ref_encode == encoded_text);
-    BOOST_TEST(boost::equal(ref_decode, decoded_binary));
+    BOOST_TEST(boost::equal(ref_decode, decoded_binary, is_equal_unsigned()));
 }

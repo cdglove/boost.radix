@@ -12,20 +12,22 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/array.hpp>
+
 namespace boost { namespace radix { namespace detail {
 
-template <typename Container>
+template <typename ElementType, std::size_t Size>
 class segment_buffer
 {
 public:
-    typedef typename Container container;
+    typedef typename boost::array<ElementType, Size> container;
     typedef typename container::iterator iterator;
-    typedef typename container::const_iterator iterator;
+    typedef typename container::const_iterator const_iterator;
     typedef typename container::reference reference;
     typedef typename container::const_reference const_reference;
 
     segment_buffer()
-        : size_(container.size())
+        : size_(Size)
     {}
 
     reference operator[](std::size_t idx)
@@ -57,9 +59,16 @@ public:
     {
         return begin() + size();
     }
+
     void pop_back()
     {
         --size_;
+    }
+
+    void resize(std::size_t size)
+    {
+        BOOST_ASSERT(size <= container_.size());
+        size_ = size;
     }
 
     std::size_t size() const
