@@ -13,7 +13,7 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/segment.hpp>
-#include <boost/radix/static_obitstream.hpp>
+#include <boost/radix/static_obitstream_lsb.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #pragma once
@@ -24,7 +24,7 @@ namespace boost { namespace radix {
 template <typename Codec>
 struct segment_packer_type
 {
-    typedef static_obitstream<required_bits<Codec>::value> type;
+    typedef static_obitstream_lsb<required_bits<Codec>::value> type;
 };
 
 template <typename Codec>

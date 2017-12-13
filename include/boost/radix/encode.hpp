@@ -13,7 +13,7 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/segment.hpp>
-#include <boost/radix/static_ibitstream.hpp>
+#include <boost/radix/static_ibitstream_lsb.hpp>
 
 #include <boost/array.hpp>
 
@@ -28,7 +28,7 @@ namespace boost { namespace radix {
 template <typename Codec>
 struct segment_unpacker_type
 {
-    typedef static_ibitstream<required_bits<Codec>::value> type;
+    typedef static_ibitstream_lsb<required_bits<Codec>::value> type;
 };
 
 template <typename Codec>

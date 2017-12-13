@@ -21,8 +21,8 @@
 
 #include <iostream>
 
-#include <boost/radix/static_sequential_ibitstream.hpp>
-#include <boost/radix/static_sequential_obitstream.hpp>
+#include <boost/radix/static_ibitstream_msb.hpp>
+#include <boost/radix/static_obitstream_msb.hpp>
 
 struct base64_tag;
 
@@ -31,7 +31,7 @@ namespace boost { namespace radix {
 template <>
 struct segment_unpacker_type<boost::radix::codec<64, base64_tag>>
 {
-    typedef static_sequential_ibitstream<
+    typedef static_ibitstream_msb<
         required_bits<
             boost::radix::codec<64, base64_tag>
         >::value
@@ -41,7 +41,7 @@ struct segment_unpacker_type<boost::radix::codec<64, base64_tag>>
 template <>
 struct segment_packer_type<boost::radix::codec<64, base64_tag>>
 {
-	typedef static_sequential_obitstream<
+	typedef static_obitstream_msb<
 		required_bits<
 		boost::radix::codec<64, base64_tag>
 		>::value

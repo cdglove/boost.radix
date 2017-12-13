@@ -1,5 +1,5 @@
 //
-// boost/radix/static_sequential_ibitstream.hpp
+// boost/radix/static_ibitstream_msb.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -150,7 +150,7 @@ struct sequencial_segment_unpacker<7>
 } // namespace detail
 
 template <std::size_t Bits>
-struct static_sequential_ibitstream
+struct static_ibitstream_msb
 {
     template <typename PackedSegment, typename UnpackedSegment>
     static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)

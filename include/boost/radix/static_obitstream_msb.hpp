@@ -1,5 +1,5 @@
 //
-// boost/radix/static_sequential_obitstream.hpp
+// boost/radix/static_obitstream_msb.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -148,7 +148,7 @@ struct sequencial_segment_packer<7>
 } // namespace detail
 
 template <std::size_t Bits>
-struct static_sequential_obitstream
+struct static_obitstream_msb
 {
     template <typename UnpackedSegment, typename PackedSegment>
     static void pack(UnpackedSegment const& unpacked, PackedSegment& packed)

@@ -1,5 +1,5 @@
 //
-// boost/radix/static_ibitstream.hpp
+// boost/radix/static_ibitstream_lsb.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -18,7 +18,7 @@
 namespace boost { namespace radix {
 
 template <std::size_t Bits>
-class static_obitstream
+class static_obitstream_lsb
 {
 private:
     BOOST_STATIC_CONSTANT(
