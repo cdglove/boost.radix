@@ -15,7 +15,7 @@
 #include <cstdint>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-#pragma once
+#    pragma once
 #endif
 
 namespace boost { namespace radix {

@@ -151,7 +151,8 @@ template <std::size_t Bits>
 struct static_obitstream_msb
 {
     template <typename UnpackedSegment, typename PackedSegment>
-    void operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
+    void
+    operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
     {
         BOOST_ASSERT(detail::check_bits<Bits>(unpacked) == 0);
         detail::sequencial_segment_packer<Bits>::pack(unpacked, packed);

@@ -20,7 +20,7 @@
 #include <boost/type_traits/make_unsigned.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-#pragma once
+#    pragma once
 #endif
 
 namespace boost { namespace radix { namespace detail {

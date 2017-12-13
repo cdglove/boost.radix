@@ -62,16 +62,17 @@ private:
         struct nop_write
         {};
 
-		template <typename UnpackedSegment, typename PackedSegment>
+        template <typename UnpackedSegment, typename PackedSegment>
         static void next_write(
-			UnpackedSegment const& unpacked, PackedSegment& packed, do_write)
+            UnpackedSegment const& unpacked, PackedSegment& packed, do_write)
         {
             write_op<Offset + Bits, WritesRemaining - 1>::write(
                 unpacked, packed);
         }
 
-		template <typename UnpackedSegment, typename PackedSegment>
-        static void next_write(UnpackedSegment const&, PackedSegment&, nop_write)
+        template <typename UnpackedSegment, typename PackedSegment>
+        static void
+        next_write(UnpackedSegment const&, PackedSegment&, nop_write)
         {}
 
     public:
@@ -87,7 +88,7 @@ private:
 
             typedef typename boost::conditional<
                 WritesRemaining - 1 == 0, nop_write, do_write>::type
-				next_write_type;
+                next_write_type;
 
             next_write(unpacked, packed, next_write_type());
         };
@@ -95,11 +96,12 @@ private:
 
 public:
     template <typename UnpackedSegment, typename PackedSegment>
-    void operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
+    void
+    operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
     {
-		// We need to zero the first bytes, the rest will be taken care
-		// of with split write.
-		packed[0] = 0;
+        // We need to zero the first bytes, the rest will be taken care
+        // of with split write.
+        packed[0] = 0;
         write_op<0, SegmentSize>::write(unpacked, packed);
     }
 };

@@ -16,7 +16,7 @@
 #include <boost/radix/common.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-#pragma once
+#    pragma once
 #endif
 
 // -----------------------------------------------------------------------------
@@ -27,6 +27,7 @@ template <std::size_t AlphabetSize, typename Tag = void>
 class codec : public alphabet<AlphabetSize>
 {
     typedef alphabet<AlphabetSize> alphabet_type;
+
 public:
     template <typename Iterator>
     codec(Iterator first, Iterator last)

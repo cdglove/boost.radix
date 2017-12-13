@@ -108,7 +108,8 @@ void decode(
         ::boost::radix::detail::get_unpacked_segment(
             first, last, codec, unpacked_segment);
 
-        boost::array<bits_type, packed_segment_size<Codec>::value> packed_segment;
+        boost::array<bits_type, packed_segment_size<Codec>::value>
+            packed_segment;
         packer(unpacked_segment, packed_segment);
 
         // If we hit the end, we can't write out everything.
