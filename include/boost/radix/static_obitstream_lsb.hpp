@@ -95,7 +95,7 @@ private:
 
 public:
     template <typename UnpackedSegment, typename PackedSegment>
-    static void pack(UnpackedSegment const& unpacked, PackedSegment& packed)
+    void operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
     {
 		// We need to zero the first bytes, the rest will be taken care
 		// of with split write.

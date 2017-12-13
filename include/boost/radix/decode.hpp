@@ -16,34 +16,20 @@
 #include <boost/radix/static_obitstream_lsb.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-#pragma once
+#    pragma once
 #endif
 
 namespace boost { namespace radix {
-
-template <typename Codec>
-struct segment_packer_type
-{
-    typedef static_obitstream_lsb<required_bits<Codec>::value> type;
-};
-
-template <typename Codec>
-struct segment_packer_result
-{
-    typedef boost::array<bits_type, packed_segment_size<Codec>::value> type;
-};
 
 // -----------------------------------------------------------------------------
 //
 namespace adl {
 
-template <typename Codec, typename UnpackedSegment>
-typename segment_packer_result<Codec>::type
-pack_segment(Codec const& codec, UnpackedSegment const& unpacked)
+template <typename Codec>
+static_obitstream_lsb<required_bits<Codec>::value>
+get_segment_packer(Codec const& codec)
 {
-    typename segment_packer_result<Codec>::type packed;
-    segment_packer_type<Codec>::type::pack(unpacked, packed);
-    return packed;
+    return static_obitstream_lsb<required_bits<Codec>::value>();
 }
 
 template <typename Codec>
@@ -60,22 +46,19 @@ std::size_t get_decoded_size(std::size_t source_size, Codec const& codec)
 
 namespace detail {
 
-template <typename Codec>
-struct unpacked_segment_buffer_type
+template <
+    typename Iterator,
+    typename EndIterator,
+    typename Codec,
+    typename UnpackedSegment>
+void get_unpacked_segment(
+    Iterator& first,
+    EndIterator last,
+    Codec const& codec,
+    UnpackedSegment& buffer)
 {
-    typedef
-        typename segment_buffer<bits_type, unpacked_segment_size<Codec>::value>
-            type;
-};
-
-template <typename Iterator, typename EndIterator, typename Codec>
-typename unpacked_segment_buffer_type<Codec>::type
-get_unpacked_segment(Iterator& first, EndIterator last, Codec const& codec)
-{
-    typedef typename unpacked_segment_buffer_type<Codec>::type segment_buffer;
-    segment_buffer buffer;
-    segment_buffer::iterator bbegin = buffer.begin();
-    segment_buffer::iterator bend   = buffer.end();
+    UnpackedSegment::iterator bbegin = buffer.begin();
+    UnpackedSegment::iterator bend   = buffer.end();
 
     while(first != last && bbegin != bend)
     {
@@ -90,23 +73,12 @@ get_unpacked_segment(Iterator& first, EndIterator last, Codec const& codec)
         buffer.resize(std::distance(buffer.begin(), bbegin));
         std::fill(bbegin, bend, 0);
     }
-
-    return buffer;
-}
-
-template <typename Codec, typename InputBuffer>
-typename segment_packer_result<Codec>::type
-call_pack_segment(Codec const& codec, InputBuffer const& buffer)
-{
-    using boost::radix::adl::pack_segment;
-    typename segment_packer_result<Codec>::type packed =
-        pack_segment(codec, buffer);
-
-    return packed;
 }
 
 } // namespace detail
 
+// -----------------------------------------------------------------------------
+//
 template <typename Codec>
 std::size_t decoded_size(std::size_t source_size, Codec const& codec)
 {
@@ -114,25 +86,30 @@ std::size_t decoded_size(std::size_t source_size, Codec const& codec)
     return get_decoded_size(source_size, codec);
 }
 
+// -----------------------------------------------------------------------------
+//
 template <
     typename InputIterator,
     typename InputEndIterator,
     typename OutputIterator,
-    typename Codec>
+    typename Codec,
+    typename SegmentPacker>
 void decode(
     InputIterator first,
     InputEndIterator last,
     OutputIterator out,
-    Codec const& codec)
+    Codec const& codec,
+    SegmentPacker packer)
 {
     while(true)
     {
-        typename detail::unpacked_segment_buffer_type<Codec>::type
-            unpacked_segment = ::boost::radix::detail::get_unpacked_segment(
-                first, last, codec);
+        detail::segment_buffer<bits_type, unpacked_segment_size<Codec>::value>
+            unpacked_segment;
+        ::boost::radix::detail::get_unpacked_segment(
+            first, last, codec, unpacked_segment);
 
-        typename segment_packer_result<Codec>::type packed_segment =
-            ::boost::radix::detail::call_pack_segment(codec, unpacked_segment);
+        boost::array<bits_type, packed_segment_size<Codec>::value> packed_segment;
+        packer(unpacked_segment, packed_segment);
 
         // If we hit the end, we can't write out everything.
         if(first == last)
@@ -151,6 +128,23 @@ void decode(
 
         out = std::copy(packed_segment.begin(), packed_segment.end(), out);
     }
+}
+
+// -----------------------------------------------------------------------------
+//
+template <
+    typename InputIterator,
+    typename InputEndIterator,
+    typename OutputIterator,
+    typename Codec>
+void decode(
+    InputIterator first,
+    InputEndIterator last,
+    OutputIterator out,
+    Codec const& codec)
+{
+    using boost::radix::adl::get_segment_packer;
+    decode(first, last, out, codec, get_segment_packer(codec));
 }
 
 }} // namespace boost::radix

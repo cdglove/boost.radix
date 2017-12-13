@@ -93,7 +93,7 @@ private:
 
 public:
     template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    void operator()(PackedSegment const& packed, UnpackedSegment& unpacked) const
     {
         read_op<0, SegmentSize>::read(packed, unpacked);
     }

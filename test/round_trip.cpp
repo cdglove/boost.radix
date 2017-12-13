@@ -11,7 +11,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "base64_reference.hpp"
-#include "generate_bytes.hpp"
 #include <algorithm>
 #include <boost/radix/codec.hpp>
 #include <boost/radix/decode.hpp>
@@ -24,39 +23,35 @@
 #include <boost/radix/static_ibitstream_msb.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
+#include "common.hpp"
+
 struct base64_tag;
 
 namespace boost { namespace radix {
 
-template <>
-struct segment_unpacker_type<boost::radix::codec<64, base64_tag>>
+static_ibitstream_msb<required_bits<boost::radix::codec<64, base64_tag>>::value>
+    get_segment_unpacker(boost::radix::codec<64, base64_tag> const&)
 {
-    typedef static_ibitstream_msb<
-        required_bits<
-            boost::radix::codec<64, base64_tag>
-        >::value
-    > type;
-};
+    return static_ibitstream_msb<
+        required_bits<boost::radix::codec<64, base64_tag>>::value>();
+}
 
-template <>
-struct segment_packer_type<boost::radix::codec<64, base64_tag>>
+static_obitstream_msb<required_bits<boost::radix::codec<64, base64_tag>>::value>
+    get_segment_packer(boost::radix::codec<64, base64_tag> const&)
 {
-	typedef static_obitstream_msb<
-		required_bits<
-		boost::radix::codec<64, base64_tag>
-		>::value
-	> type;
-};
+    return static_obitstream_msb<
+        required_bits<boost::radix::codec<64, base64_tag>>::value>();
+}
 
 }} // namespace boost::radix
 
 struct is_equal_unsigned
 {
-	template<typename T1, typename T2>
-	bool operator()(T1 c1, T2 c2) const
-	{
+    template <typename T1, typename T2>
+    bool operator()(T1 c1, T2 c2) const
+    {
         return static_cast<unsigned char>(c1) == static_cast<unsigned char>(c2);
-	}
+    }
 };
 
 BOOST_AUTO_TEST_CASE(round_trip_base64)
@@ -64,14 +59,14 @@ BOOST_AUTO_TEST_CASE(round_trip_base64)
     boost::radix::codec<64, base64_tag> base64(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 
-    std::vector<boost::radix::bits_type> binary_in = generate_bytes(1024);
+    std::vector<bits_type> binary_in = generate_random_bytes(1024);
 
     std::string encoded_text;
     boost::radix::encode(
         binary_in.begin(), binary_in.end(), std::back_inserter(encoded_text),
         base64);
 
-    std::vector<boost::radix::bits_type> decoded_binary;
+    std::vector<bits_type> decoded_binary;
     boost::radix::decode(
         encoded_text.begin(), encoded_text.end(),
         std::back_inserter(decoded_binary), base64);
