@@ -13,10 +13,10 @@
 #include "generate_bytes.hpp"
 #include <boost/array.hpp>
 #include <boost/radix/detail/bits_lcm.hpp>
-#include <boost/radix/static_ibitstream.hpp>
-#include <boost/radix/static_obitstream.hpp>
-#include <boost/radix/static_sequential_ibitstream.hpp>
-#include <boost/radix/static_sequential_obitstream.hpp>
+#include <boost/radix/static_ibitstream_lsb.hpp>
+#include <boost/radix/static_obitstream_lsb.hpp>
+#include <boost/radix/static_ibitstream_msb.hpp>
+#include <boost/radix/static_obitstream_msb.hpp>
 #include <vector>
 
 template <std::size_t Bits>
@@ -34,7 +34,7 @@ static void check_static_istream(std::size_t num_segments)
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        boost::radix::static_ibitstream<Bits>::unpack(packed, unpacked);
+        boost::radix::static_ibitstream_lsb<Bits>::unpack(packed, unpacked);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
         {
@@ -60,7 +60,7 @@ static void check_static_sequential_istream(std::size_t num_segments)
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        boost::radix::static_sequential_ibitstream<Bits>::unpack(
+        boost::radix::static_ibitstream_msb<Bits>::unpack(
             packed, unpacked);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
@@ -87,7 +87,7 @@ static void check_static_ostream(std::size_t num_segments)
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        boost::radix::static_obitstream<Bits>::pack(unpacked, packed);
+        boost::radix::static_obitstream_lsb<Bits>::pack(unpacked, packed);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
         {
@@ -113,7 +113,7 @@ static void check_static_sequential_ostream(std::size_t num_segments)
 
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        boost::radix::static_sequential_obitstream<Bits>::pack(
+        boost::radix::static_obitstream_msb<Bits>::pack(
             unpacked, packed);
         for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
             ++j, bit += Bits)
@@ -140,8 +140,8 @@ static void check_static_iostream(std::size_t num_segments)
 	std::vector<boost::radix::bits_type> packed_result(packed_segment_size);
     for(std::size_t i = 0; i < num_segments; ++i)
     {
-        boost::radix::static_ibitstream<Bits>::unpack(packed_source, unpacked);
-		boost::radix::static_obitstream<Bits>::pack(unpacked, packed_result);
+        boost::radix::static_ibitstream_lsb<Bits>::unpack(packed_source, unpacked);
+		boost::radix::static_obitstream_lsb<Bits>::pack(unpacked, packed_result);
         for(std::size_t j = 0; j < packed_segment_size; ++j)
         {
             BOOST_TEST(packed_source[j] == packed_result[j]);
@@ -164,8 +164,8 @@ static void check_static_sequential_iostream(std::size_t num_segments)
 	std::vector<boost::radix::bits_type> packed_result(packed_segment_size);
 	for (std::size_t i = 0; i < num_segments; ++i)
 	{
-		boost::radix::static_sequential_ibitstream<Bits>::unpack(packed_source, unpacked);
-		boost::radix::static_sequential_obitstream<Bits>::pack(unpacked, packed_result);
+		boost::radix::static_ibitstream_msb<Bits>::unpack(packed_source, unpacked);
+		boost::radix::static_obitstream_msb<Bits>::pack(unpacked, packed_result);
 		for (std::size_t j = 0; j < packed_segment_size; ++j)
 		{
 			BOOST_TEST(packed_source[j] == packed_result[j]);
@@ -173,7 +173,7 @@ static void check_static_sequential_iostream(std::size_t num_segments)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(static_ibitstream)
+BOOST_AUTO_TEST_CASE(static_ibitstream_lsb)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(static_ibitstream)
     }
 }
 
-BOOST_AUTO_TEST_CASE(static_sequential_ibitstream)
+BOOST_AUTO_TEST_CASE(static_ibitstream_msb)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(static_sequential_ibitstream)
     }
 }
 
-BOOST_AUTO_TEST_CASE(static_obitstream)
+BOOST_AUTO_TEST_CASE(static_obitstream_lsb)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(static_obitstream)
     }
 }
 
-BOOST_AUTO_TEST_CASE(static_sequential_obitstream)
+BOOST_AUTO_TEST_CASE(static_obitstream_msb)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.

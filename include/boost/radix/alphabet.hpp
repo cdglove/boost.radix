@@ -17,7 +17,7 @@
 #include <boost/utility/string_view.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-#pragma once
+#    pragma once
 #endif
 
 namespace boost { namespace radix {
