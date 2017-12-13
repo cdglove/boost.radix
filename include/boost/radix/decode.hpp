@@ -13,7 +13,7 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/segment.hpp>
-#include <boost/radix/static_obitstream_lsb.hpp>
+#include <boost/radix/static_obitstream_msb.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
@@ -26,10 +26,10 @@ namespace boost { namespace radix {
 namespace adl {
 
 template <typename Codec>
-static_obitstream_lsb<required_bits<Codec>::value>
+static_obitstream_msb<required_bits<Codec>::value>
 get_segment_packer(Codec const& codec)
 {
-    return static_obitstream_lsb<required_bits<Codec>::value>();
+    return static_obitstream_msb<required_bits<Codec>::value>();
 }
 
 template <typename Codec>

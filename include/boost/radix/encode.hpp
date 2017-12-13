@@ -13,7 +13,7 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/segment.hpp>
-#include <boost/radix/static_ibitstream_lsb.hpp>
+#include <boost/radix/static_ibitstream_msb.hpp>
 
 #include <boost/array.hpp>
 
@@ -40,10 +40,10 @@ std::size_t get_encoded_size(std::size_t source_size, Codec const& codec)
 }
 
 template <typename Codec>
-static_ibitstream_lsb<required_bits<Codec>::value>
+static_ibitstream_msb<required_bits<Codec>::value>
 get_segment_unpacker(Codec const& codec)
 {
-    return static_ibitstream_lsb<required_bits<Codec>::value>();
+    return static_ibitstream_msb<required_bits<Codec>::value>();
 }
 
 } // namespace adl
