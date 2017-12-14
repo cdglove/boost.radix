@@ -39,7 +39,7 @@ inline std::vector<char_type> generate_alphabet(std::size_t bits)
 {
     BOOST_ASSERT(bits < 8);
     std::vector<char_type> alphabet;
-    char_type c = 0;
+    bits_type c = 0;
     for(bits_type i = 0; i < (1 << bits); ++i)
     {
         BOOST_ASSERT(i <= c);
@@ -48,15 +48,6 @@ inline std::vector<char_type> generate_alphabet(std::size_t bits)
     }
 
     return alphabet;
-}
-
-inline std::vector<bits_type>
-generate_01_bit_pattern_bytes(std::size_t num_bytes)
-{
-    std::vector<bits_type> binary(num_bytes);
-    bits_type pattern = 0x55; // 01010101b;
-    std::fill(binary.begin(), binary.end(), pattern);
-    return binary;
 }
 
 inline bits_type get_bits_lsb(
@@ -135,6 +126,8 @@ inline void set_bits_lsb(
 
     if(bit_in_byte + num_bits > 8)
         bytes[byte_offset+1] = (current_value & 0xff00) >> 8;
+
+    BOOST_ASSERT(get_bits_lsb(bytes, bit_offset, num_bits) == value);
 }
 
 inline void set_bits_msb(
@@ -164,6 +157,8 @@ inline void set_bits_msb(
 
     if(bit_in_byte + num_bits > 8)
         bytes[byte_offset + 1] = current_value & 0xff;
+
+    BOOST_ASSERT(get_bits_msb(bytes, bit_offset, num_bits) == value);
 }
 
 inline std::vector<bits_type> generate_all_permutations_msb(std::size_t bits)
