@@ -72,18 +72,18 @@ BOOST_AUTO_TEST_CASE(encode_three_bit_msb)
 
 BOOST_AUTO_TEST_CASE(encode_three_bit_lsb)
 {
-    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(1);
+    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(3 /* lcm(3,8) / 8 */);
     std::string result;
     boost::radix::encode(
         buf.begin(), buf.end(), std::back_inserter(result),
         boost::radix::alphabet<8>("01234567"),
-        boost::radix::static_ibitstream_lsb<2>());
+        boost::radix::static_ibitstream_lsb<3>());
     BOOST_TEST(result == "52525252");
 }
 
 BOOST_AUTO_TEST_CASE(encode_four_bit_msb)
 {
-    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(3 /* lcm(3,8) / 8 */);
+    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(1);
     std::string result;
     boost::radix::encode(
         buf.begin(), buf.end(), std::back_inserter(result),
@@ -99,5 +99,26 @@ BOOST_AUTO_TEST_CASE(encode_four_bit_lsb)
         buf.begin(), buf.end(), std::back_inserter(result),
         boost::radix::alphabet<16>("0123456789ABCDEF"),
         boost::radix::static_ibitstream_lsb<4>());
-    BOOST_TEST(result == "AA");
+    BOOST_TEST(result == "55");
+}
+
+BOOST_AUTO_TEST_CASE(encode_five_bit_msb)
+{
+    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(5/* lcm(5,8) / 8 */ );
+    std::string result;
+    boost::radix::encode(
+        buf.begin(), buf.end(), std::back_inserter(result),
+        boost::radix::alphabet<32>("0123456789ABCDEFGHIJKLMNOPQRSTU"));
+    BOOST_TEST(result == "ALALALAL");
+}
+
+BOOST_AUTO_TEST_CASE(encode_five_bit_lsb)
+{
+    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(5);
+    std::string result;
+    boost::radix::encode(
+        buf.begin(), buf.end(), std::back_inserter(result),
+        boost::radix::alphabet<32>("0123456789ABCDEFGHIJKLMNOPQRSTU"),
+        boost::radix::static_ibitstream_lsb<5>());
+    BOOST_TEST(result == "LALALALA");
 }
