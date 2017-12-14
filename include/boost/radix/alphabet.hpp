@@ -62,7 +62,7 @@ public:
 
     bits_type bits_from_char(char_type index) const
     {
-        return bits_[index];
+        return bits_[(unsigned char)(index)];
     }
 
     char_type get_pad_char() const

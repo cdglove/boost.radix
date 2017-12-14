@@ -35,6 +35,21 @@ generate_random_bytes(std::size_t num_bytes, int max_value = 255)
     return binary;
 }
 
+inline std::vector<char_type> generate_alphabet(std::size_t bits)
+{
+    BOOST_ASSERT(bits < 8);
+    std::vector<char_type> alphabet;
+    char_type c = 0;
+    for(bits_type i = 0; i < (1 << bits); ++i)
+    {
+        BOOST_ASSERT(i <= c);
+        alphabet.push_back(c);
+        c += 2;
+    }
+
+    return alphabet;
+}
+
 inline std::vector<bits_type>
 generate_01_bit_pattern_bytes(std::size_t num_bytes)
 {
@@ -92,5 +107,102 @@ inline bits_type get_bits_msb(
 
     return ret_val;
 }
+
+inline void set_bits_lsb(
+    std::vector<bits_type>& bytes,
+    bits_type value,
+    std::size_t bit_offset,
+    std::size_t num_bits)
+{
+    std::size_t byte_offset = bit_offset / 8;
+    std::size_t bit_in_byte = bit_offset % 8;
+
+    std::uint16_t current_value = bytes[byte_offset];
+
+    // This is only to guiard against reading off the end of the array
+    if(bit_in_byte + num_bits > 8)
+        current_value |= bytes[byte_offset+1] << 8;
+
+    std::uint16_t mask = (~(std::uint16_t(~0) << num_bits)) << bit_in_byte;
+    std::uint16_t value16 = std::uint16_t(value) << bit_in_byte;
+   
+    // Unset the bits we're about to write to.
+    current_value &= ~mask;
+    
+    //  Set the bits we care about.
+    current_value |= value16;
+    bytes[byte_offset] = current_value & 0xff;
+
+    if(bit_in_byte + num_bits > 8)
+        bytes[byte_offset+1] = (current_value & 0xff00) >> 8;
+}
+
+inline void set_bits_msb(
+    std::vector<bits_type>& bytes,
+    bits_type value,
+    std::size_t bit_offset,
+    std::size_t num_bits)
+{
+    std::size_t byte_offset = bit_offset / 8;
+    std::size_t bit_in_byte = bit_offset % 8;
+   
+    std::uint16_t current_value = bytes[byte_offset] << 8;
+
+    // This is only to guiard against reading off the end of the array
+    if(bit_in_byte + num_bits > 8)
+        current_value |= std::uint16_t(bytes[byte_offset + 1]);
+
+    std::uint16_t mask    = (~(std::uint16_t(~0) << num_bits)) << (16 - num_bits - bit_in_byte);
+    std::uint16_t value16 = std::uint16_t(value) << (16 - num_bits - bit_in_byte);
+
+    // Unset the bits we're about to write to.
+    current_value &= ~mask;
+
+    //  Set the bits we care about.
+    current_value |= value16;
+    bytes[byte_offset] = (current_value & 0xff00) >> 8;
+
+    if(bit_in_byte + num_bits > 8)
+        bytes[byte_offset + 1] = current_value & 0xff;
+}
+
+inline std::vector<bits_type> generate_all_permutations_msb(std::size_t bits)
+{
+    BOOST_ASSERT(bits < 8);
+    int values = 1 << static_cast<int>(bits);
+    std::vector<bits_type> data(((bits * values) + 7) / 8, 0);
+    std::size_t offset = 0;
+    for(bits_type i = 0; i < (1 << bits); ++i)
+    {
+        set_bits_msb(data, i, offset, bits);
+        offset += bits;
+    }
+
+    return data;
+}
+
+inline std::vector<bits_type> generate_all_permutations_lsb(std::size_t bits)
+{
+    BOOST_ASSERT(bits < 8);
+    int values = 1 << static_cast<int>(bits);
+    std::vector<bits_type> data(((bits * values) + 7) / 8, 0);
+    std::size_t offset = 0;
+    for(bits_type i = 0; i < (1 << bits); ++i)
+    {
+        set_bits_lsb(data, i, offset, bits);
+        offset += bits;
+    }
+
+    return data;
+}
+
+struct is_equal_unsigned
+{
+    template <typename T1, typename T2>
+    bool operator()(T1 c1, T2 c2) const
+    {
+        return static_cast<unsigned char>(c1) == static_cast<unsigned char>(c2);
+    }
+};
 
 #endif // BOOST_RADIX_TEST_GENERATE_BYTES_HPP

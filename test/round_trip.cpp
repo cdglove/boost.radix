@@ -45,15 +45,6 @@ static_obitstream_msb<required_bits<boost::radix::codec<64, base64_tag>>::value>
 
 }} // namespace boost::radix
 
-struct is_equal_unsigned
-{
-    template <typename T1, typename T2>
-    bool operator()(T1 c1, T2 c2) const
-    {
-        return static_cast<unsigned char>(c1) == static_cast<unsigned char>(c2);
-    }
-};
-
 BOOST_AUTO_TEST_CASE(round_trip_base64)
 {
     boost::radix::codec<64, base64_tag> base64(

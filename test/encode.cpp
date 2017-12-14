@@ -62,7 +62,8 @@ BOOST_AUTO_TEST_CASE(encode_two_bit_lsb)
 
 BOOST_AUTO_TEST_CASE(encode_three_bit_msb)
 {
-    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(3 /* lcm(3,8) / 8 */);
+    std::vector<bits_type> buf =
+        generate_01_bit_pattern_bytes(3 /* lcm(3,8) / 8 */);
     std::string result;
     boost::radix::encode(
         buf.begin(), buf.end(), std::back_inserter(result),
@@ -72,7 +73,8 @@ BOOST_AUTO_TEST_CASE(encode_three_bit_msb)
 
 BOOST_AUTO_TEST_CASE(encode_three_bit_lsb)
 {
-    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(3 /* lcm(3,8) / 8 */);
+    std::vector<bits_type> buf =
+        generate_01_bit_pattern_bytes(3 /* lcm(3,8) / 8 */);
     std::string result;
     boost::radix::encode(
         buf.begin(), buf.end(), std::back_inserter(result),
@@ -104,7 +106,8 @@ BOOST_AUTO_TEST_CASE(encode_four_bit_lsb)
 
 BOOST_AUTO_TEST_CASE(encode_five_bit_msb)
 {
-    std::vector<bits_type> buf = generate_01_bit_pattern_bytes(5/* lcm(5,8) / 8 */ );
+    std::vector<bits_type> buf =
+        generate_01_bit_pattern_bytes(5 /* lcm(5,8) / 8 */);
     std::string result;
     boost::radix::encode(
         buf.begin(), buf.end(), std::back_inserter(result),
@@ -121,4 +124,27 @@ BOOST_AUTO_TEST_CASE(encode_five_bit_lsb)
         boost::radix::alphabet<32>("0123456789ABCDEFGHIJKLMNOPQRSTU"),
         boost::radix::static_ibitstream_lsb<5>());
     BOOST_TEST(result == "LALALALA");
+}
+
+BOOST_AUTO_TEST_CASE(encode_six_bit_msb)
+{
+    std::vector<char_type> alphabet = generate_alphabet(6);
+    std::vector<bits_type> data     = generate_all_permutations_msb(6);
+    std::string result;
+    boost::radix::encode(
+        data.begin(), data.end(), std::back_inserter(result),
+        boost::radix::alphabet<1 << 6>(alphabet.begin(), alphabet.end()));
+    BOOST_TEST(boost::equal(result, alphabet, is_equal_unsigned()));
+}
+
+BOOST_AUTO_TEST_CASE(encode_six_bit_lsb)
+{
+    std::vector<char_type> alphabet = generate_alphabet(6);
+    std::vector<bits_type> data     = generate_all_permutations_lsb(6);
+    std::string result;
+    boost::radix::encode(
+        data.begin(), data.end(), std::back_inserter(result),
+        boost::radix::alphabet<1 << 6>(alphabet.begin(), alphabet.end()),
+        boost::radix::static_ibitstream_lsb<6>());
+    BOOST_TEST(boost::equal(result, alphabet, is_equal_unsigned()));
 }
