@@ -7,8 +7,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_RADIX_STATICIBITSTREAM_HPP
-#define BOOST_RADIX_STATICIBITSTREAM_HPP
+#ifndef BOOST_RADIX_STATICIBITSTREAMLSB_HPP
+#define BOOST_RADIX_STATICIBITSTREAMLSB_HPP
 
 #include <boost/radix/common.hpp>
 
@@ -101,4 +101,4 @@ public:
 
 }} // namespace boost::radix
 
-#endif // BOOST_RADIX_STATICIBITSTREAM_HPP
+#endif // BOOST_RADIX_STATICIBITSTREAMLSB_HPP

@@ -7,8 +7,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_RADIX_STATICSEQUENTIALIBITSTREAM_HPP
-#define BOOST_RADIX_STATICSEQUENTIALIBITSTREAM_HPP
+#ifndef BOOST_RADIX_STATICIBITSTREAMMSB_HPP
+#define BOOST_RADIX_STATICIBITSTREAMMSB_HPP
 
 #include <boost/radix/common.hpp>
 
@@ -65,7 +65,7 @@ struct sequencial_segment_unpacker<3>
                       ((packed[1] >> 7) & mask<1>::value);
         unpacked[3] = (packed[1] >> 4) & mask<3>::value;
         unpacked[4] = (packed[1] >> 1) & mask<3>::value;
-        unpacked[5] = ((packed[1] << 0) & mask_shift<1, 2>::value) |
+        unpacked[5] = ((packed[1] << 2) & mask_shift<1, 2>::value) |
                       ((packed[2] >> 6) & mask<2>::value);
         unpacked[6] = (packed[2] >> 3) & mask<3>::value;
         unpacked[7] = (packed[2] >> 0) & mask<3>::value;
@@ -162,4 +162,4 @@ struct static_ibitstream_msb
 
 }} // namespace boost::radix
 
-#endif // BOOST_RADIX_STATICSEQUENTIALIBITSTREAM_HPP
+#endif // BOOST_RADIX_STATICIBITSTREAMMSB_HPP
