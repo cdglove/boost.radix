@@ -101,8 +101,10 @@ void decode(
     Codec const& codec,
     SegmentPacker packer)
 {
+    std::size_t total = 0;
     while(true)
     {
+        std::size_t dist = std::distance(first, last);
         detail::segment_buffer<bits_type, unpacked_segment_size<Codec>::value>
             unpacked_segment;
         ::boost::radix::detail::get_unpacked_segment(
@@ -115,18 +117,24 @@ void decode(
         // If we hit the end, we can't write out everything.
         if(first == last)
         {
-            std::size_t total_bits =
-                unpacked_segment.size() * required_bits<Codec>::value;
+            std::size_t bits_to_write =
+                packed_segment_size<Codec>::value * required_bits<Codec>::value;
+            
+            std::size_t bytes_to_write = (bits_to_write + 7) / 8;
 
-            std::size_t total_bytes = ((total_bits + 7) / 8) - 1;
-
+            if((unpacked_segment_size<Codec>::value - unpacked_segment.size()) < bytes_to_write)
+                bytes_to_write -= (unpacked_segment_size<Codec>::value - unpacked_segment.size());
+            else
+                bytes_to_write = 1;
+         
             std::copy(
-                packed_segment.begin(), packed_segment.begin() + total_bytes,
+                packed_segment.begin(), packed_segment.begin() + bytes_to_write,
                 out);
 
             break;
         }
 
+        total += packed_segment.size();
         out = std::copy(packed_segment.begin(), packed_segment.end(), out);
     }
 }

@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(static_ibitstream_msb)
         check_static_istream_msb<5>(segments[i]);
         check_static_istream_msb<6>(segments[i]);
         check_static_istream_msb<7>(segments[i]);
-    }
+    }   
 }
 
 BOOST_AUTO_TEST_CASE(static_obitstream_lsb)

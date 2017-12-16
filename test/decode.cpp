@@ -1,5 +1,5 @@
 //
-// test/decode.hpp
+// test/ibstream.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -10,55 +10,106 @@
 #define BOOST_TEST_MODULE TestDecode
 #include <boost/test/unit_test.hpp>
 
+#include <array>
 #include <boost/radix/alphabet.hpp>
 #include <boost/radix/decode.hpp>
+#include <boost/radix/static_obitstream_lsb.hpp>
 #include <vector>
-#include <array>
 
-//template<typename T>
-//T get_expected_bits(int idx, int num_bits)
-//{
-//    T ret = 0;
-//    int start_bit = (idx * num_bits) % 2;
-//    for(int i = 0; i < num_bits; ++i)
-//    {
-//        ret |= ((i + start_bit) % 2) << i;
-//    }
-//    return ret;
-//}
-//
-//BOOST_AUTO_TEST_CASE(decode_chars_binary)
-//{
-//    std::vector<char> buf;
-//    std::string str("01010101010101010101010101010101");
-//    std::vector<char> result;
-//    boost::radix::alphabet<2> binary("01");
-//    result.resize(boost::radix::decoded_size(str.length(), binary));
-//    boost::radix::decode(str.begin(), str.end(), result.begin(), binary);
-//    BOOST_TEST(std::count(result.begin(), result.end(), get_expected_bits<char>(0, 8)) == result.size());
-//}
-//
-//BOOST_AUTO_TEST_CASE(decode_chars_hex)
-//{
-//    std::vector<char> buf;
-//    std::string str("0011AAFF1E");
-//    std::vector<unsigned char> result;
-//    boost::radix::alphabet<2> hex("0123456789ABCDEF");
-//    result.resize(boost::radix::decoded_size(str.length(), hex));
-//    boost::radix::decode(str.begin(), str.end(), result.begin(), hex);
-//    BOOST_TEST(result[0] == 0x00U);
-//    BOOST_TEST(result[1] == 0x11U);
-//    BOOST_TEST(result[2] == 0xAAU);
-//    BOOST_TEST(result[3] == 0xFFU);
-//    BOOST_TEST(result[4] == 0xE1U);
-//}
-//
-//BOOST_AUTO_TEST_CASE(decode_chars_dec)
-//{
-//    std::vector<char> buf;
-//    std::string str("001122345689");
-//    std::vector<unsigned char> result;
-//    boost::radix::alphabet<10> dec("0123456789");
-//    result.resize(boost::radix::decoded_size(str.length(), dec));
-//    boost::radix::decode(str.begin(), str.end(), result.begin(), dec);
-//}
+#include "common.hpp"
+
+template <std::size_t Bits>
+void test_decode_msb()
+{
+    std::vector<char_type> alphabet = generate_alphabet(Bits);
+    std::vector<bits_type> data = generate_all_permutations_msb(Bits);
+    std::vector<bits_type> result;
+    boost::radix::decode(
+        alphabet.begin(), alphabet.end(), std::back_inserter(result),
+        boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
+        boost::radix::static_obitstream_msb<Bits>());
+    BOOST_TEST(boost::equal(data, result, is_equal_unsigned()));
+}
+
+template <std::size_t Bits>
+void test_decode_lsb()
+{
+    std::vector<char_type> alphabet = generate_alphabet(Bits);
+    std::vector<bits_type> data = generate_all_permutations_lsb(Bits);
+    std::vector<bits_type> result;
+    boost::radix::decode(
+        alphabet.begin(), alphabet.end(), std::back_inserter(result),
+        boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
+        boost::radix::static_obitstream_lsb<Bits>());
+    BOOST_TEST(boost::equal(data, result, is_equal_unsigned()));
+}
+
+BOOST_AUTO_TEST_CASE(decode_one_bit_msb)
+{
+    test_decode_msb<1>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_one_bit_lsb)
+{
+    test_decode_lsb<1>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_two_bit_msb)
+{
+    test_decode_msb<2>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_two_bit_lsb)
+{
+    test_decode_lsb<2>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_three_bit_msb)
+{
+    test_decode_msb<3>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_three_bit_lsb)
+{
+    test_decode_lsb<3>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_four_bit_msb)
+{
+    test_decode_msb<4>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_four_bit_lsb)
+{
+    test_decode_lsb<4>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_five_bit_msb)
+{
+    test_decode_msb<5>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_five_bit_lsb)
+{
+    test_decode_lsb<5>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_six_bit_msb)
+{
+    test_decode_msb<6>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_six_bit_lsb)
+{
+    test_decode_lsb<6>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_seven_bit_msb)
+{
+    test_decode_msb<7>();
+}
+
+BOOST_AUTO_TEST_CASE(decode_seven_bit_lsb)
+{
+    test_decode_lsb<7>();
+}
