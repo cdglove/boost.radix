@@ -22,7 +22,7 @@
 using boost::radix::detail::bits_lcm;
 
 template <std::size_t Bits>
-static void check_static_istream(std::size_t num_segments)
+static void check_static_istream_lsb(std::size_t num_segments)
 {
     std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
@@ -45,7 +45,7 @@ static void check_static_istream(std::size_t num_segments)
 }
 
 template <std::size_t Bits>
-static void check_static_sequential_istream(std::size_t num_segments)
+static void check_static_istream_msb(std::size_t num_segments)
 {
     std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
@@ -68,7 +68,7 @@ static void check_static_sequential_istream(std::size_t num_segments)
 }
 
 template <std::size_t Bits>
-static void check_static_ostream(std::size_t num_segments)
+static void check_static_ostream_lsb(std::size_t num_segments)
 {
     std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
@@ -91,7 +91,7 @@ static void check_static_ostream(std::size_t num_segments)
 }
 
 template <std::size_t Bits>
-static void check_static_sequential_ostream(std::size_t num_segments)
+static void check_static_ostream_msb(std::size_t num_segments)
 {
     std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
@@ -114,7 +114,7 @@ static void check_static_sequential_ostream(std::size_t num_segments)
 }
 
 template <std::size_t Bits>
-static void check_static_iostream(std::size_t num_segments)
+static void check_static_iostream_lsb(std::size_t num_segments)
 {
     std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
@@ -138,7 +138,7 @@ static void check_static_iostream(std::size_t num_segments)
 }
 
 template <std::size_t Bits>
-static void check_static_sequential_iostream(std::size_t num_segments)
+static void check_static_iostream_msb(std::size_t num_segments)
 {
     std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
     std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
