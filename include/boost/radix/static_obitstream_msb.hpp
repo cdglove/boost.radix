@@ -13,7 +13,7 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/bitmask.hpp>
-#include <boost/radix/detail/bits_lcm.hpp>
+#include <boost/radix/detail/bits.hpp>
 
 namespace boost { namespace radix {
 

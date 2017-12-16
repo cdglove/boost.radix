@@ -12,11 +12,10 @@
 
 #include <boost/radix/common.hpp>
 
-#include <boost/radix/detail/bits_lcm.hpp>
+#include <boost/radix/detail/bits.hpp>
 #include <boost/radix/detail/segment_buffer.hpp>
 
 #include <boost/array.hpp>
-#include <boost/integer/static_log2.hpp>
 
 namespace boost { namespace radix {
 
@@ -24,7 +23,7 @@ template <typename Codec>
 struct required_bits
 {
     BOOST_STATIC_CONSTANT(
-        std::size_t, value = boost::static_log2<Codec::alphabet_size>::value);
+        std::size_t, value = bits::from_alphabet_size<Codec::alphabet_size>::value);
 };
 
 template <typename Codec>
@@ -32,7 +31,7 @@ struct packed_segment_size
 {
     BOOST_STATIC_CONSTANT(
         std::size_t,
-        value = detail::bits_lcm<required_bits<Codec>::value>::value / 8);
+        value = bits::to_packed_segment_size<required_bits<Codec>::value>::value);
 };
 
 template <typename Codec>
@@ -40,8 +39,7 @@ struct unpacked_segment_size
 {
     BOOST_STATIC_CONSTANT(
         std::size_t,
-        value = detail::bits_lcm<required_bits<Codec>::value>::value /
-                required_bits<Codec>::value);
+        value = bits::to_unpacked_segment_size<required_bits<Codec>::value>::value);
 };
 
 }} // namespace boost::radix

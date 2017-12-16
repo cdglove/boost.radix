@@ -12,34 +12,47 @@
 
 #include "common.hpp"
 #include <boost/array.hpp>
-#include <boost/radix/detail/bits_lcm.hpp>
+#include <boost/radix/detail/bits.hpp>
 #include <boost/radix/static_ibitstream_lsb.hpp>
 #include <boost/radix/static_ibitstream_msb.hpp>
 #include <boost/radix/static_obitstream_lsb.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 #include <vector>
 
-using boost::radix::detail::bits_lcm;
-
 template <std::size_t Bits>
 static void check_static_istream_lsb(std::size_t num_segments)
 {
-    std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
-    std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
+    std::size_t const packed_segment_size =
+        boost::radix::bits::to_packed_segment_size<Bits>::value;
+    std::size_t const unpacked_segment_size =
+        boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::vector<bits_type> packed =
-        generate_random_bytes(num_segments * packed_segment_size);
+    std::size_t max_value = ~((~0) << Bits);
 
+    // Checking every bit combination in every position would be possible, though
+    // it would take a long time, so instead we check to make sure we can extract every
+    // bit combination from every posision, with all zeros in one pass and all ones
+    // in a second pass.
+    std::vector<bits_type> packed(packed_segment_size);
     std::vector<bits_type> unpacked(unpacked_segment_size);
 
-    for(std::size_t i = 0; i < num_segments; ++i)
+    for(std::size_t i = 0; i < max_value; ++i)
     {
-        boost::radix::static_ibitstream_lsb<Bits>()(packed, unpacked);
-        for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
-            ++j, bit += Bits)
+        std::size_t offset = 0;
+        bits_type value = bits_type(i);
+        for(std::size_t j = 0; j < unpacked_segment_size; ++j)
         {
-            bits_type source_bits = get_bits_lsb(packed, bit, Bits);
-            BOOST_TEST(source_bits == unpacked[j]);
+            std::fill(packed.begin(), packed.end(), 0);
+            set_bits_lsb(packed, value, offset, Bits);
+            boost::radix::static_ibitstream_lsb<Bits>()(packed, unpacked);
+            BOOST_TEST(unpacked[j] == value);
+
+            std::fill(packed.begin(), packed.end(), bits_type(~0));
+            set_bits_lsb(packed, value, offset, Bits);
+            boost::radix::static_ibitstream_lsb<Bits>()(packed, unpacked);
+            BOOST_TEST(unpacked[j] == value);
+
+            offset += Bits;
         }
     }
 }
@@ -47,22 +60,37 @@ static void check_static_istream_lsb(std::size_t num_segments)
 template <std::size_t Bits>
 static void check_static_istream_msb(std::size_t num_segments)
 {
-    std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
-    std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
+    std::size_t const packed_segment_size =
+        boost::radix::bits::to_packed_segment_size<Bits>::value;
+    std::size_t const unpacked_segment_size =
+        boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::vector<bits_type> packed =
-        generate_random_bytes(num_segments * packed_segment_size);
+    std::size_t max_value = ~((~0) << Bits);
 
+    // Checking every bit combination in every position would be possible, though
+    // it would take a long time, so instead we check to make sure we can extract every
+    // bit combination from every posision, with all zeros in one pass and all ones
+    // in a second pass.
+    std::vector<bits_type> packed(packed_segment_size);
     std::vector<bits_type> unpacked(unpacked_segment_size);
 
-    for(std::size_t i = 0; i < num_segments; ++i)
+    for(std::size_t i = 0; i < max_value; ++i)
     {
-        boost::radix::static_ibitstream_msb<Bits>()(packed, unpacked);
-        for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
-            ++j, bit += Bits)
+        std::size_t offset = 0;
+        bits_type value = bits_type(i);
+        for(std::size_t j = 0; j < unpacked_segment_size; ++j)
         {
-            bits_type source_bits = get_bits_msb(packed, bit, Bits);
-            BOOST_TEST(source_bits == unpacked[j]);
+            std::fill(packed.begin(), packed.end(), 0);
+            set_bits_msb(packed, value, offset, Bits);
+            boost::radix::static_ibitstream_msb<Bits>()(packed, unpacked);
+            BOOST_TEST(unpacked[j] == value);
+
+            std::fill(packed.begin(), packed.end(), bits_type(~0));
+            set_bits_msb(packed, value, offset, Bits);
+            boost::radix::static_ibitstream_msb<Bits>()(packed, unpacked);
+            BOOST_TEST(unpacked[j] == value);
+
+            offset += Bits;
         }
     }
 }
@@ -70,22 +98,37 @@ static void check_static_istream_msb(std::size_t num_segments)
 template <std::size_t Bits>
 static void check_static_ostream_lsb(std::size_t num_segments)
 {
-    std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
-    std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
+    std::size_t const packed_segment_size =
+        boost::radix::bits::to_packed_segment_size<Bits>::value;
+    std::size_t const unpacked_segment_size =
+        boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::vector<bits_type> unpacked = generate_random_bytes(
-        num_segments * unpacked_segment_size, (1 << Bits) - 1);
+    std::size_t max_value = ~((~0) << Bits);
 
+    // Checking every bit combination in every position would be possible, though
+    // it would take a long time, so instead we check to make sure we can extract every
+    // bit combination from every posision, with all zeros in one pass and all ones
+    // in a second pass.
     std::vector<bits_type> packed(packed_segment_size);
+    std::vector<bits_type> unpacked(unpacked_segment_size);
 
-    for(std::size_t i = 0; i < num_segments; ++i)
+    for(std::size_t i = 0; i < max_value; ++i)
     {
-        boost::radix::static_obitstream_lsb<Bits>()(unpacked, packed);
-        for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
-            ++j, bit += Bits)
+        std::size_t offset = 0;
+        bits_type value = bits_type(i);
+        for(std::size_t j = 0; j < unpacked_segment_size; ++j)
         {
-            bits_type source_bits = get_bits_lsb(packed, bit, Bits);
-            BOOST_TEST(source_bits == unpacked[j]);
+            std::fill(unpacked.begin(), unpacked.end(), 0);
+            unpacked[j] = value;
+            boost::radix::static_obitstream_lsb<Bits>()(unpacked, packed);
+            BOOST_TEST(get_bits_lsb(packed, offset, Bits) == value);
+
+            std::fill(unpacked.begin(), unpacked.end(), max_value);
+            unpacked[j] = value;
+            boost::radix::static_obitstream_lsb<Bits>()(unpacked, packed);
+            BOOST_TEST(get_bits_lsb(packed, offset, Bits) == value);
+
+            offset += Bits;
         }
     }
 }
@@ -93,22 +136,37 @@ static void check_static_ostream_lsb(std::size_t num_segments)
 template <std::size_t Bits>
 static void check_static_ostream_msb(std::size_t num_segments)
 {
-    std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
-    std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
+    std::size_t const packed_segment_size =
+        boost::radix::bits::to_packed_segment_size<Bits>::value;
+    std::size_t const unpacked_segment_size =
+        boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::vector<bits_type> unpacked = generate_random_bytes(
-        num_segments * unpacked_segment_size, (1 << Bits) - 1);
+    std::size_t max_value = ~((~0) << Bits);
 
+    // Checking every bit combination in every position would be possible, though
+    // it would take a long time, so instead we check to make sure we can extract every
+    // bit combination from every posision, with all zeros in one pass and all ones
+    // in a second pass.
     std::vector<bits_type> packed(packed_segment_size);
+    std::vector<bits_type> unpacked(unpacked_segment_size);
 
-    for(std::size_t i = 0; i < num_segments; ++i)
+    for(std::size_t i = 0; i < max_value; ++i)
     {
-        boost::radix::static_obitstream_msb<Bits>()(unpacked, packed);
-        for(std::size_t j = 0, bit = 0; j < unpacked_segment_size;
-            ++j, bit += Bits)
+        std::size_t offset = 0;
+        bits_type value = bits_type(i);
+        for(std::size_t j = 0; j < unpacked_segment_size; ++j)
         {
-            bits_type source_bits = get_bits_msb(packed, bit, Bits);
-            BOOST_TEST(source_bits == unpacked[j]);
+            std::fill(unpacked.begin(), unpacked.end(), 0);
+            unpacked[j] = value;
+            boost::radix::static_obitstream_msb<Bits>()(unpacked, packed);
+            BOOST_TEST(get_bits_msb(packed, offset, Bits) == value);
+
+            std::fill(unpacked.begin(), unpacked.end(), max_value);
+            unpacked[j] = value;
+            boost::radix::static_obitstream_msb<Bits>()(unpacked, packed);
+            BOOST_TEST(get_bits_msb(packed, offset, Bits) == value);
+
+            offset += Bits;
         }
     }
 }
@@ -116,23 +174,40 @@ static void check_static_ostream_msb(std::size_t num_segments)
 template <std::size_t Bits>
 static void check_static_iostream_lsb(std::size_t num_segments)
 {
-    std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
-    std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
+    std::size_t const packed_segment_size =
+        boost::radix::bits::to_packed_segment_size<Bits>::value;
+    std::size_t const unpacked_segment_size =
+        boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::vector<bits_type> packed_source =
-        generate_random_bytes(num_segments * packed_segment_size);
+    std::size_t max_value = ~((~0) << Bits);
 
-    std::vector<bits_type> unpacked(unpacked_segment_size);
-    std::vector<bits_type> packed_result(packed_segment_size);
-    for(std::size_t i = 0; i < num_segments; ++i)
+    // Checking every bit combination in every position would be possible, though
+    // it would take a long time, so instead we check to make sure we can extract every
+    // bit combination from every posision, with all zeros in one pass and all ones
+    // in a second pass.
+    std::vector<bits_type> packed(packed_segment_size);
+    std::vector<bits_type> unpacked_source(unpacked_segment_size);
+    std::vector<bits_type> unpacked_result(unpacked_segment_size);
+
+    for(std::size_t i = 0; i < max_value; ++i)
     {
-        boost::radix::static_ibitstream_lsb<Bits>()(
-            packed_source, unpacked);
-        boost::radix::static_obitstream_lsb<Bits>()(
-            unpacked, packed_result);
-        for(std::size_t j = 0; j < packed_segment_size; ++j)
+        std::size_t offset = 0;
+        bits_type value = bits_type(i);
+        for(std::size_t j = 0; j < unpacked_segment_size; ++j)
         {
-            BOOST_TEST(packed_source[j] == packed_result[j]);
+            std::fill(unpacked_source.begin(), unpacked_source.end(), 0);
+            unpacked_source[j] = value;
+            boost::radix::static_obitstream_lsb<Bits>()(unpacked_source, packed);
+            boost::radix::static_ibitstream_lsb<Bits>()(packed, unpacked_result);
+            BOOST_TEST(unpacked_source == unpacked_result);
+
+            std::fill(unpacked_source.begin(), unpacked_source.end(), max_value);
+            unpacked_source[j] = value;
+            boost::radix::static_obitstream_lsb<Bits>()(unpacked_source, packed);
+            boost::radix::static_ibitstream_lsb<Bits>()(packed, unpacked_result);
+            BOOST_TEST(unpacked_source == unpacked_result);
+
+            offset += Bits;
         }
     }
 }
@@ -140,23 +215,40 @@ static void check_static_iostream_lsb(std::size_t num_segments)
 template <std::size_t Bits>
 static void check_static_iostream_msb(std::size_t num_segments)
 {
-    std::size_t const packed_segment_size   = bits_lcm<Bits>::value / 8;
-    std::size_t const unpacked_segment_size = bits_lcm<Bits>::value / Bits;
+    std::size_t const packed_segment_size =
+        boost::radix::bits::to_packed_segment_size<Bits>::value;
+    std::size_t const unpacked_segment_size =
+        boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::vector<bits_type> packed_source =
-        generate_random_bytes(num_segments * packed_segment_size);
+    std::size_t max_value = ~((~0) << Bits);
 
-    std::vector<bits_type> unpacked(unpacked_segment_size);
-    std::vector<bits_type> packed_result(packed_segment_size);
-    for(std::size_t i = 0; i < num_segments; ++i)
+    // Checking every bit combination in every position would be possible, though
+    // it would take a long time, so instead we check to make sure we can extract every
+    // bit combination from every posision, with all zeros in one pass and all ones
+    // in a second pass.
+    std::vector<bits_type> packed(packed_segment_size);
+    std::vector<bits_type> unpacked_source(unpacked_segment_size);
+    std::vector<bits_type> unpacked_result(unpacked_segment_size);
+
+    for(std::size_t i = 0; i < max_value; ++i)
     {
-        boost::radix::static_ibitstream_msb<Bits>()(
-            packed_source, unpacked);
-        boost::radix::static_obitstream_msb<Bits>()(
-            unpacked, packed_result);
-        for(std::size_t j = 0; j < packed_segment_size; ++j)
+        std::size_t offset = 0;
+        bits_type value = bits_type(i);
+        for(std::size_t j = 0; j < unpacked_segment_size; ++j)
         {
-            BOOST_TEST(packed_source[j] == packed_result[j]);
+            std::fill(unpacked_source.begin(), unpacked_source.end(), 0);
+            unpacked_source[j] = value;
+            boost::radix::static_obitstream_msb<Bits>()(unpacked_source, packed);
+            boost::radix::static_ibitstream_msb<Bits>()(packed, unpacked_result);
+            BOOST_TEST(unpacked_source == unpacked_result);
+
+            std::fill(unpacked_source.begin(), unpacked_source.end(), max_value);
+            unpacked_source[j] = value;
+            boost::radix::static_obitstream_msb<Bits>()(unpacked_source, packed);
+            boost::radix::static_ibitstream_msb<Bits>()(packed, unpacked_result);
+            BOOST_TEST(unpacked_source == unpacked_result);
+
+            offset += Bits;
         }
     }
 }
@@ -192,7 +284,7 @@ BOOST_AUTO_TEST_CASE(static_ibitstream_msb)
         check_static_istream_msb<5>(segments[i]);
         check_static_istream_msb<6>(segments[i]);
         check_static_istream_msb<7>(segments[i]);
-    }   
+    }
 }
 
 BOOST_AUTO_TEST_CASE(static_obitstream_lsb)
@@ -229,7 +321,7 @@ BOOST_AUTO_TEST_CASE(static_obitstream_msb)
     }
 }
 
-BOOST_AUTO_TEST_CASE(static_iobitstream)
+BOOST_AUTO_TEST_CASE(static_iobitstream_lsb)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.
@@ -246,7 +338,7 @@ BOOST_AUTO_TEST_CASE(static_iobitstream)
     }
 }
 
-BOOST_AUTO_TEST_CASE(static_sequential_iobitstream)
+BOOST_AUTO_TEST_CASE(static_iobitstream_msb)
 {
     // Testing 1 segment lets us catch buffer overflows.
     // Testing 10 gives us more data and tests the segment boundaries.

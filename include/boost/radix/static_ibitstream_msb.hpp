@@ -65,7 +65,7 @@ struct sequencial_segment_unpacker<3>
                       ((packed[1] >> 7) & mask<1>::value);
         unpacked[3] = (packed[1] >> 4) & mask<3>::value;
         unpacked[4] = (packed[1] >> 1) & mask<3>::value;
-        unpacked[5] = ((packed[1] << 0) & mask_shift<1, 2>::value) |
+        unpacked[5] = ((packed[1] << 2) & mask_shift<1, 2>::value) |
                       ((packed[2] >> 6) & mask<2>::value);
         unpacked[6] = (packed[2] >> 3) & mask<3>::value;
         unpacked[7] = (packed[2] >> 0) & mask<3>::value;
@@ -143,7 +143,7 @@ struct sequencial_segment_unpacker<7>
         unpacked[5] = ((packed[4] << 2) & mask_shift<5, 2>::value) |
                       ((packed[5] >> 6) & mask<2>::value);
         unpacked[6] = ((packed[5] << 1) & mask_shift<6, 1>::value) |
-                      ((packed[6] >> 6) & mask<1>::value);
+                      ((packed[6] >> 7) & mask<1>::value);
         unpacked[7] = (packed[6] >> 0) & mask<7>::value;
     };
 };
