@@ -168,13 +168,13 @@ BOOST_AUTO_TEST_CASE(static_ibitstream_lsb)
     boost::array<std::size_t, 2> segments = {1, 10};
     for(int i = 0; i < segments.size(); ++i)
     {
-        check_static_istream<1>(segments[i]);
-        check_static_istream<2>(segments[i]);
-        check_static_istream<3>(segments[i]);
-        check_static_istream<4>(segments[i]);
-        check_static_istream<5>(segments[i]);
-        check_static_istream<6>(segments[i]);
-        check_static_istream<7>(segments[i]);
+        check_static_istream_lsb<1>(segments[i]);
+        check_static_istream_lsb<2>(segments[i]);
+        check_static_istream_lsb<3>(segments[i]);
+        check_static_istream_lsb<4>(segments[i]);
+        check_static_istream_lsb<5>(segments[i]);
+        check_static_istream_lsb<6>(segments[i]);
+        check_static_istream_lsb<7>(segments[i]);
     }
 }
 
@@ -185,14 +185,14 @@ BOOST_AUTO_TEST_CASE(static_ibitstream_msb)
     boost::array<std::size_t, 2> segments = {1, 10};
     for(int i = 0; i < segments.size(); ++i)
     {
-        check_static_sequential_istream<1>(segments[i]);
-        check_static_sequential_istream<2>(segments[i]);
-        check_static_sequential_istream<3>(segments[i]);
-        check_static_sequential_istream<4>(segments[i]);
-        check_static_sequential_istream<5>(segments[i]);
-        check_static_sequential_istream<6>(segments[i]);
-        check_static_sequential_istream<7>(segments[i]);
-    }
+        check_static_istream_msb<1>(segments[i]);
+        check_static_istream_msb<2>(segments[i]);
+        check_static_istream_msb<3>(segments[i]);
+        check_static_istream_msb<4>(segments[i]);
+        check_static_istream_msb<5>(segments[i]);
+        check_static_istream_msb<6>(segments[i]);
+        check_static_istream_msb<7>(segments[i]);
+    }   
 }
 
 BOOST_AUTO_TEST_CASE(static_obitstream_lsb)
@@ -202,13 +202,13 @@ BOOST_AUTO_TEST_CASE(static_obitstream_lsb)
     boost::array<std::size_t, 2> segments = {1, 10};
     for(int i = 0; i < segments.size(); ++i)
     {
-        check_static_ostream<1>(segments[i]);
-        check_static_ostream<2>(segments[i]);
-        check_static_ostream<3>(segments[i]);
-        check_static_ostream<4>(segments[i]);
-        check_static_ostream<5>(segments[i]);
-        check_static_ostream<6>(segments[i]);
-        check_static_ostream<7>(segments[i]);
+        check_static_ostream_lsb<1>(segments[i]);
+        check_static_ostream_lsb<2>(segments[i]);
+        check_static_ostream_lsb<3>(segments[i]);
+        check_static_ostream_lsb<4>(segments[i]);
+        check_static_ostream_lsb<5>(segments[i]);
+        check_static_ostream_lsb<6>(segments[i]);
+        check_static_ostream_lsb<7>(segments[i]);
     }
 }
 
@@ -219,13 +219,13 @@ BOOST_AUTO_TEST_CASE(static_obitstream_msb)
     boost::array<std::size_t, 2> segments = {1, 10};
     for(int i = 0; i < segments.size(); ++i)
     {
-        check_static_sequential_ostream<1>(segments[i]);
-        check_static_sequential_ostream<2>(segments[i]);
-        check_static_sequential_ostream<3>(segments[i]);
-        check_static_sequential_ostream<4>(segments[i]);
-        check_static_sequential_ostream<5>(segments[i]);
-        check_static_sequential_ostream<6>(segments[i]);
-        check_static_sequential_ostream<7>(segments[i]);
+        check_static_ostream_msb<1>(segments[i]);
+        check_static_ostream_msb<2>(segments[i]);
+        check_static_ostream_msb<3>(segments[i]);
+        check_static_ostream_msb<4>(segments[i]);
+        check_static_ostream_msb<5>(segments[i]);
+        check_static_ostream_msb<6>(segments[i]);
+        check_static_ostream_msb<7>(segments[i]);
     }
 }
 
@@ -236,13 +236,13 @@ BOOST_AUTO_TEST_CASE(static_iobitstream)
     boost::array<std::size_t, 2> segments = {1, 10};
     for(int i = 0; i < segments.size(); ++i)
     {
-        check_static_iostream<1>(segments[i]);
-        check_static_iostream<2>(segments[i]);
-        check_static_iostream<3>(segments[i]);
-        check_static_iostream<4>(segments[i]);
-        check_static_iostream<5>(segments[i]);
-        check_static_iostream<6>(segments[i]);
-        check_static_iostream<7>(segments[i]);
+        check_static_iostream_lsb<1>(segments[i]);
+        check_static_iostream_lsb<2>(segments[i]);
+        check_static_iostream_lsb<3>(segments[i]);
+        check_static_iostream_lsb<4>(segments[i]);
+        check_static_iostream_lsb<5>(segments[i]);
+        check_static_iostream_lsb<6>(segments[i]);
+        check_static_iostream_lsb<7>(segments[i]);
     }
 }
 
@@ -253,12 +253,12 @@ BOOST_AUTO_TEST_CASE(static_sequential_iobitstream)
     boost::array<std::size_t, 2> segments = {1, 10};
     for(int i = 0; i < segments.size(); ++i)
     {
-        check_static_sequential_iostream<1>(segments[i]);
-        check_static_sequential_iostream<2>(segments[i]);
-        check_static_sequential_iostream<3>(segments[i]);
-        check_static_sequential_iostream<4>(segments[i]);
-        check_static_sequential_iostream<5>(segments[i]);
-        check_static_sequential_iostream<6>(segments[i]);
-        check_static_sequential_iostream<7>(segments[i]);
+        check_static_iostream_msb<1>(segments[i]);
+        check_static_iostream_msb<2>(segments[i]);
+        check_static_iostream_msb<3>(segments[i]);
+        check_static_iostream_msb<4>(segments[i]);
+        check_static_iostream_msb<5>(segments[i]);
+        check_static_iostream_msb<6>(segments[i]);
+        check_static_iostream_msb<7>(segments[i]);
     }
 }
