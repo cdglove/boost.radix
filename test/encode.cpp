@@ -18,32 +18,34 @@
 
 #include "common.hpp"
 
-template <std::size_t Bits>
-void test_encode_msb()
+template <std::size_t Bits, typename DataGenerator, typename Encoder>
+void test_encode(DataGenerator data_generator, Encoder encoder)
 {
     std::vector<char_type> alphabet = generate_alphabet(Bits);
-    std::vector<bits_type> data     = generate_all_permutations_msb(Bits);
+    std::vector<bits_type> data     = data_generator(Bits);
     std::string result;
     boost::radix::encode(
         data.begin(), data.end(), std::back_inserter(result),
         boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
-        boost::radix::static_ibitstream_msb<Bits>());
+        encoder);
     BOOST_TEST(std::equal(
         alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
 }
 
 template <std::size_t Bits>
+void test_encode_msb()
+{
+    test_encode<Bits>(
+        generate_all_permutations_msb,
+        boost::radix::static_ibitstream_msb<Bits>());
+}
+
+template <std::size_t Bits>
 void test_encode_lsb()
 {
-    std::vector<char_type> alphabet = generate_alphabet(Bits);
-    std::vector<bits_type> data     = generate_all_permutations_lsb(Bits);
-    std::string result;
-    boost::radix::encode(
-        data.begin(), data.end(), std::back_inserter(result),
-        boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
+    test_encode<Bits>(
+        generate_all_permutations_lsb,
         boost::radix::static_ibitstream_lsb<Bits>());
-    BOOST_TEST(std::equal(
-        alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
 }
 
 BOOST_AUTO_TEST_CASE(encode_one_bit_msb)

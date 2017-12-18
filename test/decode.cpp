@@ -6,7 +6,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-    
+
 #define BOOST_TEST_MODULE TestDecode
 #include <boost/test/unit_test.hpp>
 
@@ -18,35 +18,38 @@
 
 #include "common.hpp"
 
-template <std::size_t Bits>
-void test_decode_msb()
+template <std::size_t Bits, typename DataGenerator, typename Decoder>
+void test_decode(DataGenerator data_generator, Decoder decoder)
 {
     std::vector<char_type> alphabet = generate_alphabet(Bits);
-    std::vector<bits_type> data = generate_all_permutations_msb(Bits);
+    std::vector<bits_type> data     = data_generator(Bits);
     std::vector<bits_type> result;
     boost::radix::decode(
         alphabet.begin(), alphabet.end(), std::back_inserter(result),
         boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
-        boost::radix::static_obitstream_msb<Bits>());
+        decoder);
     BOOST_TEST(boost::equal(data, result, is_equal_unsigned()));
+}
+
+template <std::size_t Bits>
+void test_decode_msb()
+{
+    test_decode<Bits>(
+        generate_all_permutations_msb,
+        boost::radix::static_obitstream_msb<Bits>());
 }
 
 template <std::size_t Bits>
 void test_decode_lsb()
 {
-    std::vector<char_type> alphabet = generate_alphabet(Bits);
-    std::vector<bits_type> data = generate_all_permutations_lsb(Bits);
-    std::vector<bits_type> result;
-    boost::radix::decode(
-        alphabet.begin(), alphabet.end(), std::back_inserter(result),
-        boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
+    test_decode<Bits>(
+        generate_all_permutations_lsb,
         boost::radix::static_obitstream_lsb<Bits>());
-    BOOST_TEST(boost::equal(data, result, is_equal_unsigned()));
 }
 
 BOOST_AUTO_TEST_CASE(decode_one_bit_msb)
 {
-    test_decode_msb<1>();
+    test_decode_lsb<1>();
 }
 
 BOOST_AUTO_TEST_CASE(decode_one_bit_lsb)
