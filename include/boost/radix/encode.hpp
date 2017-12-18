@@ -101,8 +101,11 @@ void unpack_segment(
 }
 
 template <typename Codec, typename PackedBuffer, typename UnpackedBuffer>
-void pad_segment(
-    Codec const& codec, PackedBuffer const& packed, UnpackedBuffer& unpacked)
+void maybe_pad_segment(
+    Codec const& codec,
+    PackedBuffer const& packed,
+    UnpackedBuffer& unpacked,
+    boost::true_type)
 {
     std::size_t bits_written = packed.size() * 8;
     std::size_t bytes_written =
@@ -112,6 +115,14 @@ void pad_segment(
     while(bytes_written < unpacked.size())
         unpacked[bytes_written++] = codec.get_pad_bits();
 }
+
+template <typename Codec, typename PackedBuffer, typename UnpackedBuffer>
+void maybe_pad_segment(
+    Codec const& codec,
+    PackedBuffer const& packed,
+    UnpackedBuffer& unpacked,
+    boost::false_type)
+{}
 
 } // namespace detail
 
@@ -154,11 +165,9 @@ void encode(
 
         if(first == last)
         {
-            if(requires_pad<Codec>::type::value)
-            {
-                ::boost::radix::detail::pad_segment(
-                    codec, packed_segment, unpacked_segment);
-            }
+            ::boost::radix::detail::maybe_pad_segment(
+                codec, packed_segment, unpacked_segment,
+                requires_pad<Codec>::type());
 
             out = std::transform(
                 unpacked_segment.begin(), unpacked_segment.end(), out,
