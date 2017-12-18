@@ -55,23 +55,36 @@ void get_unpacked_segment(
     Iterator& first,
     EndIterator last,
     Codec const& codec,
-    UnpackedSegment& buffer)
+    UnpackedSegment& unpacked)
 {
-    UnpackedSegment::iterator bbegin = buffer.begin();
-    UnpackedSegment::iterator bend   = buffer.end();
+    UnpackedSegment::iterator ubegin = unpacked.begin();
+    UnpackedSegment::iterator uend   = unpacked.end();
 
-    while(first != last && bbegin != bend)
+    while(first != last && ubegin != uend)
     {
-        *bbegin++ = codec.bits_from_char(*first++);
+        *ubegin++ = codec.bits_from_char(*first++);
     }
 
     if(first == last)
     {
-        // cglover: seems maybe bits_from_char should just write 0 when it hits
-        // the pad?
-        bbegin = std::find(buffer.begin(), bbegin, codec.get_pad_bits());
-        buffer.resize(std::distance(buffer.begin(), bbegin));
-        std::fill(bbegin, bend, 0);
+        ubegin = std::find(unpacked.begin(), ubegin, codec.get_pad_bits());
+        if(ubegin != uend)
+        {
+            // We need to at least fill out the current byte, so we make it up.
+            std::size_t bits_written = std::distance(unpacked.begin(), ubegin) *
+                                       required_bits<Codec>::value;
+            std::size_t bytes_written  = bits_written / 8;
+            std::size_t bytes_to_write = (bits_written + 7) / 8;
+            std::size_t bits_to_write  = bytes_to_write * 8;
+            while(bits_written < bits_to_write)
+            {
+                *ubegin++ = 0;
+                bits_written += required_bits<Codec>::value;
+            }
+        }
+
+        unpacked.resize(std::distance(unpacked.begin(), ubegin));
+        std::fill(ubegin, uend, 0);
     }
 }
 
@@ -117,18 +130,14 @@ void decode(
         // If we hit the end, we can't write out everything.
         if(first == last)
         {
-            std::size_t bits_to_write =
-                packed_segment_size<Codec>::value * required_bits<Codec>::value;
-            
-            std::size_t bytes_to_write = (bits_to_write + 7) / 8;
+            std::size_t pad_size =
+                unpacked_segment_size<Codec>::value - unpacked_segment.size();
+            std::size_t pad_size_bits = pad_size * required_bits<Codec>::value;
+            std::size_t empty_bytes   = (pad_size_bits + 7) / 8;
 
-            if((unpacked_segment_size<Codec>::value - unpacked_segment.size()) < bytes_to_write)
-                bytes_to_write -= (unpacked_segment_size<Codec>::value - unpacked_segment.size());
-            else
-                bytes_to_write = 1;
-         
             std::copy(
-                packed_segment.begin(), packed_segment.begin() + bytes_to_write,
+                packed_segment.begin(),
+                packed_segment.begin() + packed_segment.size() - empty_bytes,
                 out);
 
             break;

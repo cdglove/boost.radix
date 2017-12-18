@@ -76,18 +76,18 @@ void get_packed_segment(
     Iterator& first,
     EndIterator last,
     Codec const& codec,
-    PackedSegment& buffer)
+    PackedSegment& packed)
 {
-    PackedSegment::iterator bbegin = buffer.begin();
-    PackedSegment::iterator bend   = buffer.end();
+    PackedSegment::iterator pbegin = packed.begin();
+    PackedSegment::iterator pend   = packed.end();
 
-    while(first != last && bbegin != bend)
+    while(first != last && pbegin != pend)
     {
-        *bbegin++ = *first++;
+        *pbegin++ = *first++;
     }
 
-    buffer.resize(std::distance(buffer.begin(), bbegin));
-    std::fill(bbegin, bend, 0);
+    packed.resize(std::distance(packed.begin(), pbegin));
+    std::fill(pbegin, pend, 0);
 }
 
 template <typename Codec, typename PackedSegment, typename UnpackedSegment>
@@ -103,9 +103,13 @@ template <typename Codec, typename PackedBuffer, typename UnpackedBuffer>
 void pad_segment(
     Codec const& codec, PackedBuffer const& packed, UnpackedBuffer& unpacked)
 {
-    std::size_t pad = packed.size();
-    while(pad < packed_segment_size<Codec>::value)
-        unpacked[++pad] = codec.get_pad_bits();
+    std::size_t bits_written = packed.size() * 8;
+    std::size_t bytes_written =
+        (bits_written + (required_bits<Codec>::value - 1)) /
+        required_bits<Codec>::value;
+
+    while(bytes_written < unpacked.size())
+        unpacked[bytes_written++] = codec.get_pad_bits();
 }
 
 } // namespace detail
@@ -134,7 +138,7 @@ void encode(
     Codec const& codec,
     SegmentUnpacker unpacker)
 {
-    while(first != last)
+    while(true)
     {
         detail::segment_buffer<bits_type, packed_segment_size<Codec>::value>
             packed_segment;
@@ -147,8 +151,17 @@ void encode(
 
         unpacker(packed_segment, unpacked_segment);
 
-        ::boost::radix::detail::pad_segment(
-            codec, packed_segment, unpacked_segment);
+        if(first == last)
+        {
+            ::boost::radix::detail::pad_segment(
+                codec, packed_segment, unpacked_segment);
+
+            out = std::transform(
+                unpacked_segment.begin(), unpacked_segment.end(), out,
+                ::boost::radix::detail::bits_to_char_mapper<Codec>(codec));
+
+            break;
+        }
 
         out = std::transform(
             unpacked_segment.begin(), unpacked_segment.end(), out,
