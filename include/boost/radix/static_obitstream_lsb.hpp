@@ -15,6 +15,10 @@
 #include <boost/radix/bitmask.hpp>
 #include <boost/radix/segment.hpp>
 
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#    pragma once
+#endif
+
 namespace boost { namespace radix {
 
 template <std::size_t Bits>

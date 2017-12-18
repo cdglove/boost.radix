@@ -17,6 +17,10 @@
 
 #include <boost/array.hpp>
 
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#    pragma once
+#endif
+
 namespace boost { namespace radix {
 
 template <typename Codec>
