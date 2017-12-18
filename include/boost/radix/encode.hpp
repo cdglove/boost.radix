@@ -12,6 +12,7 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/radix/pad.hpp>
 #include <boost/radix/segment.hpp>
 #include <boost/radix/static_ibitstream_msb.hpp>
 
@@ -153,8 +154,11 @@ void encode(
 
         if(first == last)
         {
-            ::boost::radix::detail::pad_segment(
-                codec, packed_segment, unpacked_segment);
+            if(requires_pad<Codec>::type::value)
+            {
+                ::boost::radix::detail::pad_segment(
+                    codec, packed_segment, unpacked_segment);
+            }
 
             out = std::transform(
                 unpacked_segment.begin(), unpacked_segment.end(), out,

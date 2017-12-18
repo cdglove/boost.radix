@@ -12,6 +12,7 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/radix/pad.hpp>
 #include <boost/radix/segment.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
@@ -76,7 +77,7 @@ void get_unpacked_segment(
             std::size_t bytes_written  = bits_written / 8;
             std::size_t bytes_to_write = (bits_written + 7) / 8;
             std::size_t bits_to_write  = bytes_to_write * 8;
-            while(bits_written < bits_to_write)
+            while((bits_written + required_bits<Codec>::value) <= bits_to_write)
             {
                 *ubegin++ = 0;
                 bits_written += required_bits<Codec>::value;
@@ -130,14 +131,15 @@ void decode(
         // If we hit the end, we can't write out everything.
         if(first == last)
         {
-            std::size_t pad_size =
+            std::size_t slack_size =
                 unpacked_segment_size<Codec>::value - unpacked_segment.size();
-            std::size_t pad_size_bits = pad_size * required_bits<Codec>::value;
-            std::size_t empty_bytes   = (pad_size_bits + 7) / 8;
+            std::size_t slack_size_bits =
+                slack_size * required_bits<Codec>::value;
+            std::size_t empty_bytes = (slack_size_bits + 7) / 8;
+            std::size_t output_size = packed_segment.size() - empty_bytes;
 
             std::copy(
-                packed_segment.begin(),
-                packed_segment.begin() + packed_segment.size() - empty_bytes,
+                packed_segment.begin(), packed_segment.begin() + output_size,
                 out);
 
             break;
