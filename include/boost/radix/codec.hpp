@@ -13,7 +13,6 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/alphabet.hpp>
-#include <boost/radix/common.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
