@@ -12,9 +12,10 @@ find_package(Boost REQUIRED unit_test_framework)
 ##############################################################################
 # Helper function to add tests
 ##############################################################################
-function(add_radix_test target)
-    set(radix_test_name test.radix.${target})
-    add_executable(${radix_test_name} "${target}.cpp")
+function(add_radix_test target_file)
+	string(REPLACE "/" "." target_name ${target_file}) 
+    set(radix_test_name boost.radix.test.${target_name})
+    add_executable(${radix_test_name} "${target_file}.cpp")
     target_link_libraries(${radix_test_name} PRIVATE radix Boost::unit_test_framework)
     add_test(NAME ${radix_test_name} COMMAND ${radix_test_name})
 endfunction()
@@ -24,3 +25,4 @@ add_radix_test(bitstreams)
 add_radix_test(encode)
 add_radix_test(decode)
 add_radix_test(round_trip)
+add_radix_test(codec/rfc4648)
