@@ -199,6 +199,26 @@ void encode(
     encode(first, last, out, codec, get_segment_unpacker(codec));
 }
 
+// -----------------------------------------------------------------------------
+//
+template <typename OutputIterator, typename Codec>
+void encode(boost::string_view input, OutputIterator out, Codec const& codec)
+{
+    using boost::radix::adl::get_segment_unpacker;
+    encode(input.begin(), input.end(), out, codec, get_segment_unpacker(codec));
+}
+
+// -----------------------------------------------------------------------------
+//
+template <typename Codec>
+std::string encode(boost::string_view input, Codec const& codec)
+{
+    using boost::radix::adl::get_segment_unpacker;
+    std::string result;
+    result.reserve(encoded_size(input.size(), codec));
+    encode(input.begin(), input.end(), out, codec, get_segment_unpacker(codec));
+}
+
 }} // namespace boost::radix
 
 #endif // BOOST_RADIX_ENCODE_HPP

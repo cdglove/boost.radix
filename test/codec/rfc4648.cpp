@@ -22,8 +22,8 @@
 
 BOOST_AUTO_TEST_CASE(base64)
 {
-	// std::string result;
-	// boost::radix::encode(
+	std::string result;
+	boost::radix::encode(
 }
 
 BOOST_AUTO_TEST_CASE(base64url)

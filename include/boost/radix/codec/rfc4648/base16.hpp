@@ -20,7 +20,7 @@
 #    pragma once
 #endif
 
-namespace boost { namespace radix { namespace codec { namespace rfc4648 {
+namespace boost { namespace radix { namespace codecs { namespace rfc4648 {
 
 class base16 : public codec<16>
 {

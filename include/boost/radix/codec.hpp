@@ -1,5 +1,5 @@
 //
-// boost/radix/codec.hpp
+// boost/radix/codec_base.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
