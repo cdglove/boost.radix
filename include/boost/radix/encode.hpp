@@ -132,7 +132,7 @@ template <typename Codec>
 std::size_t encoded_size(std::size_t source_size, Codec const& codec)
 {
     using boost::radix::adl::get_encoded_size;
-    get_encoded_size(source_size, codec);
+    return get_encoded_size(source_size, codec);
 }
 
 // -----------------------------------------------------------------------------
@@ -150,6 +150,9 @@ void encode(
     Codec const& codec,
     SegmentUnpacker unpacker)
 {
+    if(first == last)
+        return;
+
     while(true)
     {
         detail::segment_buffer<bits_type, packed_segment_size<Codec>::value>
@@ -197,26 +200,6 @@ void encode(
 {
     using boost::radix::adl::get_segment_unpacker;
     encode(first, last, out, codec, get_segment_unpacker(codec));
-}
-
-// -----------------------------------------------------------------------------
-//
-template <typename OutputIterator, typename Codec>
-void encode(boost::string_view input, OutputIterator out, Codec const& codec)
-{
-    using boost::radix::adl::get_segment_unpacker;
-    encode(input.begin(), input.end(), out, codec, get_segment_unpacker(codec));
-}
-
-// -----------------------------------------------------------------------------
-//
-template <typename Codec>
-std::string encode(boost::string_view input, Codec const& codec)
-{
-    using boost::radix::adl::get_segment_unpacker;
-    std::string result;
-    result.reserve(encoded_size(input.size(), codec));
-    encode(input.begin(), input.end(), out, codec, get_segment_unpacker(codec));
 }
 
 }} // namespace boost::radix

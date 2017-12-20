@@ -101,6 +101,7 @@ BOOST_AUTO_TEST_CASE(encode_five_bit_lsb)
 BOOST_AUTO_TEST_CASE(encode_six_bit_msb)
 {
     test_encode_msb<6>();
+}
 
 BOOST_AUTO_TEST_CASE(encode_six_bit_lsb)
 {

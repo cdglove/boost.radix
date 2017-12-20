@@ -34,19 +34,23 @@ public:
     {}
 
     template <typename Iterator>
-    codec(Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
-        : alphabet_type(first, last, pad_bits, pad_char)
+    codec(
+        Iterator first,
+        Iterator last,
+        char_type pad_char,
+        bits_type pad_bits = ~bits_type(0))
+        : alphabet_type(first, last, pad_char, pad_bits)
     {}
 
-    explicit codec(char_type const* chars)
+    explicit codec(boost::basic_string_view<char_type> chars)
         : alphabet_type(chars)
     {}
 
     codec(
         boost::basic_string_view<char_type> chars,
-        bits_type pad_bits,
-        char_type pad_char)
-        : alphabet_type(chars, pad_bits, pad_char)
+        char_type pad_char,
+        bits_type pad_bits = ~bits_type(0))
+        : alphabet_type(chars, pad_char, pad_bits)
     {}
 };
 

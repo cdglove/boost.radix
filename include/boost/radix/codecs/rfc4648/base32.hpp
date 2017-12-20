@@ -26,7 +26,7 @@ class base32 : public codec<32>
 {
 public:
     base32()
-        : codec("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", "=")
+        : codec("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", '=')
     {}
 };
 

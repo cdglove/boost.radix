@@ -32,27 +32,30 @@ public:
     template <typename Iterator>
     alphabet(Iterator first, Iterator last)
     {
-        init_from_iterators(first, last, bits_type(~0U), '=');
+        init_from_iterators(first, last, '=', ~bits_type(0));
     }
 
     template <typename Iterator>
     alphabet(
-        Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
+        Iterator first,
+        Iterator last,
+        char_type pad_char,
+        bits_type pad_bits = ~bits_type(0))
     {
-        init_from_iterators(first, last, pad_bits, pad_char);
+        init_from_iterators(first, last, pad_char, pad_bits);
     }
 
     explicit alphabet(boost::basic_string_view<char_type> chars)
     {
-        init_from_iterators(chars.begin(), chars.end(), bits_type(~0U), '=');
+        init_from_iterators(chars.begin(), chars.end(), '=', ~bits_type(0));
     }
 
     alphabet(
         boost::basic_string_view<char_type> chars,
-        bits_type pad_bits,
-        char_type pad_char)
+        char_type pad_char,
+        bits_type pad_bits = ~bits_type(0))
     {
-        init_from_iterators(chars.begin(), chars.end());
+        init_from_iterators(chars.begin(), chars.end(), pad_char, pad_bits);
     }
 
     char_type char_from_bits(bits_type index) const
@@ -89,7 +92,7 @@ public:
 private:
     template <typename Iterator>
     void init_from_iterators(
-        Iterator first, Iterator last, bits_type pad_bits, char_type pad_char)
+        Iterator first, Iterator last, char_type pad_char, bits_type pad_bits)
     {
         std::fill(std::copy(first, last, chars_.begin()), chars_.end(), '\0');
 

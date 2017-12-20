@@ -26,7 +26,7 @@ class base64 : public codec<64>
 {
 public:
     base64()
-        : codec("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "=")
+        : codec("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", '=')
     {}
 };
 
