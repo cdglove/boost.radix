@@ -36,8 +36,8 @@ void encode(Range const& input, OutputIterator out, Codec const& codec)
 
 // -----------------------------------------------------------------------------
 //
-template <typename Range, typename Codec>
-std::string encode(Range const& input, Codec const& codec)
+template <typename CharType, typename Codec>
+std::string encode(boost::basic_string_view<CharType> input, Codec const& codec)
 {
     using boost::radix::adl::get_segment_unpacker;
     std::string result;
@@ -55,9 +55,9 @@ std::string encode(Range const& input, Codec const& codec)
 // -----------------------------------------------------------------------------
 //
 template <typename Codec>
-std::string encode_string(boost::string_view input, Codec const& codec)
+std::string encode(char const* input, Codec const& codec)
 {
-    return encode(boost::make_iterator_range(input.begin(), input.end()), codec);
+    return encode(boost::string_view(input), codec);
 }
 
 }} // namespace boost::radix
@@ -66,23 +66,63 @@ BOOST_AUTO_TEST_CASE(base64)
 {
     boost::radix::codecs::rfc4648::base64 codec;
 
-    BOOST_TEST(boost::radix::encode_string("", codec) == "");
-    BOOST_TEST(boost::radix::encode_string("f", codec) == "Zg==");
-    BOOST_TEST(boost::radix::encode_string("fo", codec) == "Zm8=");
-    BOOST_TEST(boost::radix::encode_string("foo", codec) == "Zm9v");
-    BOOST_TEST(boost::radix::encode_string("foob", codec) == "Zm9vYg==");
-    BOOST_TEST(boost::radix::encode_string("fooba", codec) == "Zm9vYmE=");
-    BOOST_TEST(boost::radix::encode_string("foobar", codec) == "Zm9vYmFy");
+    BOOST_TEST(boost::radix::encode("", codec) == "");
+    BOOST_TEST(boost::radix::encode("f", codec) == "Zg==");
+    BOOST_TEST(boost::radix::encode("fo", codec) == "Zm8=");
+    BOOST_TEST(boost::radix::encode("foo", codec) == "Zm9v");
+    BOOST_TEST(boost::radix::encode("foob", codec) == "Zm9vYg==");
+    BOOST_TEST(boost::radix::encode("fooba", codec) == "Zm9vYmE=");
+    BOOST_TEST(boost::radix::encode("foobar", codec) == "Zm9vYmFy");
 }
 
 BOOST_AUTO_TEST_CASE(base64url)
-{}
+{   
+    boost::radix::codecs::rfc4648::base64url codec;
+
+    BOOST_TEST(boost::radix::encode("", codec) == "");
+    BOOST_TEST(boost::radix::encode("f", codec) == "Zg==");
+    BOOST_TEST(boost::radix::encode("fo", codec) == "Zm8=");
+    BOOST_TEST(boost::radix::encode("foo", codec) == "Zm9v");
+    BOOST_TEST(boost::radix::encode("foob", codec) == "Zm9vYg==");
+    BOOST_TEST(boost::radix::encode("fooba", codec) == "Zm9vYmE=");
+    BOOST_TEST(boost::radix::encode("foobar", codec) == "Zm9vYmFy");
+}
 
 BOOST_AUTO_TEST_CASE(base32)
-{}
+{
+    boost::radix::codecs::rfc4648::base32 codec;
+
+    BOOST_TEST(boost::radix::encode("", codec) == "");
+    BOOST_TEST(boost::radix::encode("f", codec) == "MY======");
+    BOOST_TEST(boost::radix::encode("fo", codec) == "MZXQ====");
+    BOOST_TEST(boost::radix::encode("foo", codec) == "MZXW6===");
+    BOOST_TEST(boost::radix::encode("foob", codec) == "MZXW6YQ=");
+    BOOST_TEST(boost::radix::encode("fooba", codec) == "MZXW6YTB");
+    BOOST_TEST(boost::radix::encode("foobar", codec) == "MZXW6YTBOI======");
+}
 
 BOOST_AUTO_TEST_CASE(base32hex)
-{}
+{
+    boost::radix::codecs::rfc4648::base32hex codec;
+
+    BOOST_TEST(boost::radix::encode("", codec) == "");
+    BOOST_TEST(boost::radix::encode("f", codec) == "CO============");
+    BOOST_TEST(boost::radix::encode("fo", codec) == "CPNG========");
+    BOOST_TEST(boost::radix::encode("foo", codec) == "CPNMU======");
+    BOOST_TEST(boost::radix::encode("foob", codec) == "CPNMUOG==");
+    BOOST_TEST(boost::radix::encode("fooba", codec) == "CPNMUOJ1");
+    BOOST_TEST(boost::radix::encode("foobar", codec) == "CPNMUOJ1E8============");
+}
 
 BOOST_AUTO_TEST_CASE(base16)
-{}
+{
+    boost::radix::codecs::rfc4648::base16 codec;
+
+    BOOST_TEST(boost::radix::encode("", codec) == "");
+    BOOST_TEST(boost::radix::encode("f", codec) == "66");
+    BOOST_TEST(boost::radix::encode("fo", codec) == "666F");
+    BOOST_TEST(boost::radix::encode("foo", codec) == "666F6F");
+    BOOST_TEST(boost::radix::encode("foob", codec) == "666F6F62");
+    BOOST_TEST(boost::radix::encode("fooba", codec) == "666F6F6261");
+    BOOST_TEST(boost::radix::encode("foobar", codec) == "666F6F626172");
+}
