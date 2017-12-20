@@ -106,12 +106,12 @@ BOOST_AUTO_TEST_CASE(base32hex)
     boost::radix::codecs::rfc4648::base32hex codec;
 
     BOOST_TEST(boost::radix::encode("", codec) == "");
-    BOOST_TEST(boost::radix::encode("f", codec) == "CO============");
-    BOOST_TEST(boost::radix::encode("fo", codec) == "CPNG========");
-    BOOST_TEST(boost::radix::encode("foo", codec) == "CPNMU======");
-    BOOST_TEST(boost::radix::encode("foob", codec) == "CPNMUOG==");
+    BOOST_TEST(boost::radix::encode("f", codec) == "CO======");
+    BOOST_TEST(boost::radix::encode("fo", codec) == "CPNG====");
+    BOOST_TEST(boost::radix::encode("foo", codec) == "CPNMU===");
+    BOOST_TEST(boost::radix::encode("foob", codec) == "CPNMUOG=");
     BOOST_TEST(boost::radix::encode("fooba", codec) == "CPNMUOJ1");
-    BOOST_TEST(boost::radix::encode("foobar", codec) == "CPNMUOJ1E8============");
+    BOOST_TEST(boost::radix::encode("foobar", codec) == "CPNMUOJ1E8======");
 }
 
 BOOST_AUTO_TEST_CASE(base16)
