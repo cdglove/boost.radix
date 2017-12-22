@@ -34,6 +34,11 @@ add_radix_test(decode)
 add_radix_test(codec/rfc4648)
 
 if(Radix_BUILD_BENCHMARKS)
+	include(ExternalProject)
+	set(BENCHMARK_DOWNLOAD_DEPENDENCIES ON)
+	set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
+	set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "")
 	ExternalProject_Add(benchmark 
-		GIT_REPOSITORY https://github.com/google/benchmark.git)
+		GIT_REPOSITORY https://github.com/google/benchmark.git
+		GIT_TAG v1.3.0)
 endif()
