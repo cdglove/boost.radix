@@ -26,7 +26,8 @@
 // -----------------------------------------------------------------------------
 //
 template <typename CharType, typename Codec>
-std::basic_string<boost::radix::char_type> encode_string(boost::basic_string_view<CharType> input, Codec const& codec)
+std::basic_string<boost::radix::char_type>
+encode_string(boost::basic_string_view<CharType> input, Codec const& codec)
 {
     using boost::radix::adl::get_segment_unpacker;
     std::string result;
@@ -44,11 +45,11 @@ std::basic_string<boost::radix::char_type> encode_string(boost::basic_string_vie
 // -----------------------------------------------------------------------------
 //
 template <typename Codec>
-std::basic_string<boost::radix::char_type> encode_string(char const* input, Codec const& codec)
+std::basic_string<boost::radix::char_type>
+encode_string(char const* input, Codec const& codec)
 {
     return encode_string(boost::string_view(input), codec);
 }
-
 
 BOOST_AUTO_TEST_CASE(base64)
 {
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE(base64)
 }
 
 BOOST_AUTO_TEST_CASE(base64url)
-{   
+{
     boost::radix::codecs::rfc4648::base64url codec;
 
     BOOST_TEST(encode_string("", codec) == "");
