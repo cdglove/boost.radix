@@ -54,10 +54,6 @@ add_custom_target(boost.radix.ide SOURCES ${BOOST_RADIX_HEADERS})
 ##############################################################################
 enable_testing()
 
-if(Radix_BUILD_BENCHMARKS)
-	add_subdirectory(benchmark)
-endif()
-
 if(Radix_BUILD_DOCS)
 	add_subdirectory(doc)
 endif()
