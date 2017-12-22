@@ -79,8 +79,8 @@ void get_packed_segment(
     Codec const& codec,
     PackedSegment& packed)
 {
-    PackedSegment::iterator pbegin = packed.begin();
-    PackedSegment::iterator pend   = packed.end();
+    typename PackedSegment::iterator pbegin = packed.begin();
+    typename PackedSegment::iterator pend   = packed.end();
 
     while(first != last && pbegin != pend)
     {
@@ -89,15 +89,6 @@ void get_packed_segment(
 
     packed.resize(std::distance(packed.begin(), pbegin));
     std::fill(pbegin, pend, 0);
-}
-
-template <typename Codec, typename PackedSegment, typename UnpackedSegment>
-void unpack_segment(
-    Codec const& codec, PackedSegment const& packed, UnpackedSegment& unpacked)
-{
-    using boost::radix::adl::unpack_segment;
-    unpack_segment(codec, packed, unpacked);
-    return unpacked;
 }
 
 template <typename Codec, typename PackedBuffer, typename UnpackedBuffer>
@@ -170,7 +161,7 @@ void encode(
         {
             ::boost::radix::detail::maybe_pad_segment(
                 codec, packed_segment, unpacked_segment,
-                requires_pad<Codec>::type());
+                typename requires_pad<Codec>::type());
 
             out = std::transform(
                 unpacked_segment.begin(), unpacked_segment.end(), out,

@@ -58,8 +58,8 @@ void get_unpacked_segment(
     Codec const& codec,
     UnpackedSegment& unpacked)
 {
-    UnpackedSegment::iterator ubegin = unpacked.begin();
-    UnpackedSegment::iterator uend   = unpacked.end();
+    typename UnpackedSegment::iterator ubegin = unpacked.begin();
+    typename UnpackedSegment::iterator uend   = unpacked.end();
 
     while(first != last && ubegin != uend)
     {
