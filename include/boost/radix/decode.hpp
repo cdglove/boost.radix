@@ -115,10 +115,11 @@ void decode(
     Codec const& codec,
     SegmentPacker packer)
 {
-    std::size_t total = 0;
+    if(first == last)
+        return;
+
     while(true)
     {
-        std::size_t dist = std::distance(first, last);
         detail::segment_buffer<bits_type, unpacked_segment_size<Codec>::value>
             unpacked_segment;
         ::boost::radix::detail::get_unpacked_segment(
@@ -145,7 +146,6 @@ void decode(
             break;
         }
 
-        total += packed_segment.size();
         out = std::copy(packed_segment.begin(), packed_segment.end(), out);
     }
 }
@@ -164,7 +164,7 @@ void decode(
     Codec const& codec)
 {
     using boost::radix::adl::get_segment_packer;
-    decode(first, last, out, codec, get_segment_packer(codec));
+    boost::radix::decode(first, last, out, codec, get_segment_packer(codec));
 }
 
 }} // namespace boost::radix

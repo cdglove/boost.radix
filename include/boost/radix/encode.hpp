@@ -199,7 +199,7 @@ void encode(
     Codec const& codec)
 {
     using boost::radix::adl::get_segment_unpacker;
-    encode(first, last, out, codec, get_segment_unpacker(codec));
+    boost::radix::encode(first, last, out, codec, get_segment_unpacker(codec));
 }
 
 }} // namespace boost::radix

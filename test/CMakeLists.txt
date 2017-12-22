@@ -21,8 +21,6 @@ function(add_radix_test target_file)
 endfunction()
 
 add_radix_test(bitstreams)
-#add_radix_test(obitstream)
 add_radix_test(encode)
 add_radix_test(decode)
-add_radix_test(round_trip)
 add_radix_test(codec/rfc4648)

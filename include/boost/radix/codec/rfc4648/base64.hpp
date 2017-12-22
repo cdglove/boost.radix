@@ -6,27 +6,26 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-// Based on https://tools.ietf.org/html/rfc4648
-//
 
 #ifndef BOOST_RADIX_CODEC_RFC4648_BASE64_HPP
 #define BOOST_RADIX_CODEC_RFC4648_BASE64_HPP
 
 #include <boost/radix/common.hpp>
 
-#include <boost/radix/codec.hpp>
+#include <boost/radix/basic_codec.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
 #endif
 
-namespace boost { namespace radix { namespace codecs { namespace rfc4648 {
+namespace boost { namespace radix { namespace codec { namespace rfc4648 {
 
-class base64 : public codec<64>
+// Based on spec from https://tools.ietf.org/html/rfc4648
+class base64 : public basic_codec<64>
 {
 public:
     base64()
-        : codec("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", '=')
+        : basic_codec("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", '=')
     {}
 };
 

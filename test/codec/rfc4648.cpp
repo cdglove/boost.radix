@@ -10,11 +10,11 @@
 #define BOOST_TEST_MODULE TestRfc4648
 #include <boost/test/unit_test.hpp>
 
-#include <boost/radix/codecs/rfc4648/base16.hpp>
-#include <boost/radix/codecs/rfc4648/base32.hpp>
-#include <boost/radix/codecs/rfc4648/base32hex.hpp>
-#include <boost/radix/codecs/rfc4648/base64.hpp>
-#include <boost/radix/codecs/rfc4648/base64url.hpp>
+#include <boost/radix/codec/rfc4648/base16.hpp>
+#include <boost/radix/codec/rfc4648/base32.hpp>
+#include <boost/radix/codec/rfc4648/base32hex.hpp>
+#include <boost/radix/codec/rfc4648/base64.hpp>
+#include <boost/radix/codec/rfc4648/base64url.hpp>
 #include <boost/radix/decode.hpp>
 #include <boost/radix/encode.hpp>
 
@@ -77,7 +77,7 @@ decode_string(char const* input, Codec const& codec)
 
 BOOST_AUTO_TEST_CASE(base64)
 {
-    boost::radix::codecs::rfc4648::base64 codec;
+    boost::radix::codec::rfc4648::base64 codec;
 
     BOOST_TEST(encode_string("", codec) == "");
     BOOST_TEST(encode_string("f", codec) == "Zg==");
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(base64)
 
 BOOST_AUTO_TEST_CASE(base64url)
 {
-    boost::radix::codecs::rfc4648::base64url codec;
+    boost::radix::codec::rfc4648::base64url codec;
 
     BOOST_TEST(encode_string("", codec) == "");
     BOOST_TEST(encode_string("f", codec) == "Zg==");
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(base64url)
 
 BOOST_AUTO_TEST_CASE(base32)
 {
-    boost::radix::codecs::rfc4648::base32 codec;
+    boost::radix::codec::rfc4648::base32 codec;
 
     BOOST_TEST(encode_string("", codec) == "");
     BOOST_TEST(encode_string("f", codec) == "MY======");
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(base32)
 
 BOOST_AUTO_TEST_CASE(base32hex)
 {
-    boost::radix::codecs::rfc4648::base32hex codec;
+    boost::radix::codec::rfc4648::base32hex codec;
 
     BOOST_TEST(encode_string("", codec) == "");
     BOOST_TEST(encode_string("f", codec) == "CO======");
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(base32hex)
 
 BOOST_AUTO_TEST_CASE(base16)
 {
-    boost::radix::codecs::rfc4648::base16 codec;
+    boost::radix::codec::rfc4648::base16 codec;
 
     BOOST_TEST(encode_string("", codec) == "");
     BOOST_TEST(encode_string("f", codec) == "66");

@@ -1,5 +1,5 @@
 //
-// boost/radix/codec_base.hpp
+// boost/radix/basic_codec.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -7,8 +7,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_RADIX_CODEC_HPP
-#define BOOST_RADIX_CODEC_HPP
+#ifndef BOOST_RADIX_BASICCODEC_HPP
+#define BOOST_RADIX_BASICCODEC_HPP
 
 #include <boost/radix/common.hpp>
 
@@ -23,18 +23,18 @@
 namespace boost { namespace radix {
 
 template <std::size_t AlphabetSize, typename Tag = void>
-class codec : public alphabet<AlphabetSize>
+class basic_codec : public alphabet<AlphabetSize>
 {
     typedef alphabet<AlphabetSize> alphabet_type;
 
 public:
     template <typename Iterator>
-    codec(Iterator first, Iterator last)
+    basic_codec(Iterator first, Iterator last)
         : alphabet_type(first, last)
     {}
 
     template <typename Iterator>
-    codec(
+    basic_codec(
         Iterator first,
         Iterator last,
         char_type pad_char,
@@ -42,11 +42,11 @@ public:
         : alphabet_type(first, last, pad_char, pad_bits)
     {}
 
-    explicit codec(boost::basic_string_view<char_type> chars)
-        : alphabet_type(chars)
+    explicit basic_codec(boost::basic_string_view<char_type> alphabet)
+        : alphabet_type(alphabet)
     {}
 
-    codec(
+    basic_codec(
         boost::basic_string_view<char_type> chars,
         char_type pad_char,
         bits_type pad_bits = ~bits_type(0))
@@ -56,4 +56,4 @@ public:
 
 }} // namespace boost::radix
 
-#endif // BOOST_RADIX_CODEC_HPP
+#endif // BOOST_RADIX_BASICCODEC_HPP
