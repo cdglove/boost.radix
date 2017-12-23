@@ -20,25 +20,7 @@ function(add_radix_test target_file)
     add_test(NAME ${radix_test_name} COMMAND ${radix_test_name})
 endfunction()
 
-function(add_radix_bench target_file)
-	string(REPLACE "/" "." target_name ${target_file}) 
-    set(radix_test_name boost.radix.bench.${target_name})
-    add_executable(${radix_test_name} "${target_file}.cpp")
-    target_link_libraries(${radix_test_name} PRIVATE radix benchmark)
-    add_test(NAME ${radix_test_name} COMMAND ${radix_test_name})
-endfunction()
-
 add_radix_test(bitstreams)
 add_radix_test(encode)
 add_radix_test(decode)
 add_radix_test(codec/rfc4648)
-
-if(Radix_BUILD_BENCHMARKS)
-	include(ExternalProject)
-	set(BENCHMARK_DOWNLOAD_DEPENDENCIES ON)
-	set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
-	set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "")
-	ExternalProject_Add(benchmark 
-		GIT_REPOSITORY https://github.com/google/benchmark.git
-		GIT_TAG v1.3.0)
-endif()
