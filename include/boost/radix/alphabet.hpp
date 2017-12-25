@@ -12,6 +12,8 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/radix/detail/bits.hpp>
+
 #include <boost/array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/utility/string_view.hpp>
@@ -27,6 +29,10 @@ class alphabet
 {
 public:
     BOOST_STATIC_ASSERT(Size < std::size_t(1) << 63);
+    BOOST_STATIC_ASSERT(
+        Size == std::size_t(1)
+                    << boost::radix::bits::from_alphabet_size<Size>::value &&
+        "AlphabetSize must me a power-of-two");
     BOOST_STATIC_CONSTANT(std::size_t, alphabet_size = Size);
 
     template <typename Iterator>
