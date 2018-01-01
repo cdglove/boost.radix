@@ -12,6 +12,7 @@
 
 #include <boost/radix/common.hpp>
 
+#include <boost/radix/basic_codec_traits.hpp>
 #include <boost/radix/pad.hpp>
 #include <boost/radix/segment.hpp>
 #include <boost/radix/static_ibitstream_msb.hpp>
@@ -47,6 +48,10 @@ get_segment_unpacker(Codec const& codec)
     return static_ibitstream_msb<required_bits<Codec>::value>();
 }
 
+template <typename Codec, typename OutputIterator>
+OutputIterator wrap_output_iterator(Codec const&, OutputIterator out)
+{}
+
 } // namespace adl
 
 // -----------------------------------------------------------------------------
@@ -68,6 +73,8 @@ struct bits_to_char_mapper
     Codec const& codec_;
 };
 
+// -----------------------------------------------------------------------------
+//
 template <
     typename Iterator,
     typename EndIterator,
@@ -91,6 +98,8 @@ void get_packed_segment(
     std::fill(pbegin, pend, 0);
 }
 
+// -----------------------------------------------------------------------------
+//
 template <typename Codec, typename PackedBuffer, typename UnpackedBuffer>
 void maybe_pad_segment(
     Codec const& codec,
@@ -114,6 +123,66 @@ void maybe_pad_segment(
     UnpackedBuffer& unpacked,
     boost::false_type)
 {}
+
+// -----------------------------------------------------------------------------
+//
+template <typename InnerIterator, std::size_t MaxLineLength>
+struct line_break_iterator : std::iterator<std::output_iterator_tag, char_type>
+{
+    line_break_iterator(InnerIterator iter)
+        : iter_(iter)
+        , char_(0)
+    {}
+
+    line_break_iterator& operator++()
+    {
+        iter_++;
+        return *this;
+    }
+
+    line_break_iterator& operator++(int)
+    {
+        ++iter_;
+        return *this;
+    }
+
+    line_break_iterator& operator*()
+    {
+        return *this;
+    }
+
+    template <typename T>
+    line_break_iterator& operator=(T const& t)
+    {
+        ++char_;
+        if(char_ == MaxLineLength)
+        {
+            *iter_++ = '\n';
+            char_    = 0;
+        }
+
+        *iter_ = t;
+        return *this;
+    }
+
+    InnerIterator iter_;
+    std::size_t char_;
+};
+
+template <typename Codec, typename OutputIterator>
+line_break_iterator<OutputIterator, max_encoded_line_length<Codec>::value>
+maybe_wrap_output_iterator(Codec const&, OutputIterator out, boost::true_type)
+{
+    return line_break_iterator<
+        OutputIterator, max_encoded_line_length<Codec>::value>(out);
+}
+
+template <typename Codec, typename OutputIterator>
+OutputIterator
+maybe_wrap_output_iterator(Codec const&, OutputIterator out, boost::false_type)
+{
+    return out;
+}
 
 // -----------------------------------------------------------------------------
 //
@@ -191,7 +260,10 @@ void encode(
 {
     using boost::radix::adl::get_segment_unpacker;
     boost::radix::detail::encode_impl(
-        first, last, out, codec, get_segment_unpacker(codec));
+        first, last,
+        ::boost::radix::detail::maybe_wrap_output_iterator(
+            codec, out, typename requires_line_breaks<Codec>::type()),
+        codec, get_segment_unpacker(codec));
 }
 
 }} // namespace boost::radix
