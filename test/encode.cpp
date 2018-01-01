@@ -11,12 +11,49 @@
 #include <boost/test/unit_test.hpp>
 
 #include <array>
-#include <boost/radix/alphabet.hpp>
+#include <boost/radix/basic_codec.hpp>
 #include <boost/radix/encode.hpp>
 #include <boost/radix/static_ibitstream_lsb.hpp>
+#include <boost/radix/static_ibitstream_msb.hpp>
 #include <vector>
 
 #include "common.hpp"
+
+template <std::size_t Bits>
+class msb_codec
+    : public boost::radix::basic_codec<
+          boost::radix::bits::to_alphabet_size<Bits>::value>
+{
+public:
+    msb_codec()
+        : basic_codec(generate_alphabet(Bits))
+    {}
+};
+
+template <std::size_t Bits>
+boost::radix::static_ibitstream_msb<Bits>
+get_segment_unpacker(msb_codec<Bits> const&)
+{
+    return boost::radix::static_ibitstream_msb<Bits>();
+}
+
+template <std::size_t Bits>
+class lsb_codec
+    : public boost::radix::basic_codec<
+          boost::radix::bits::to_alphabet_size<Bits>::value>
+{
+public:
+    lsb_codec()
+        : basic_codec(generate_alphabet(Bits))
+    {}
+};
+
+template <std::size_t Bits>
+boost::radix::static_ibitstream_lsb<Bits>
+get_segment_unpacker(lsb_codec<Bits> const&)
+{
+    return boost::radix::static_ibitstream_lsb<Bits>();
+}
 
 template <std::size_t Bits, typename DataGenerator, typename Encoder>
 void test_encode(DataGenerator data_generator, Encoder encoder)
@@ -25,9 +62,7 @@ void test_encode(DataGenerator data_generator, Encoder encoder)
     std::vector<bits_type> data     = data_generator(Bits);
     std::string result;
     boost::radix::encode(
-        data.begin(), data.end(), std::back_inserter(result),
-        boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
-        encoder);
+        data.begin(), data.end(), std::back_inserter(result), encoder);
     BOOST_TEST(std::equal(
         alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
 }
@@ -35,17 +70,13 @@ void test_encode(DataGenerator data_generator, Encoder encoder)
 template <std::size_t Bits>
 void test_encode_msb()
 {
-    test_encode<Bits>(
-        generate_all_permutations_msb,
-        boost::radix::static_ibitstream_msb<Bits>());
+    test_encode<Bits>(generate_all_permutations_msb, msb_codec<Bits>());
 }
 
 template <std::size_t Bits>
 void test_encode_lsb()
 {
-    test_encode<Bits>(
-        generate_all_permutations_lsb,
-        boost::radix::static_ibitstream_lsb<Bits>());
+    test_encode<Bits>(generate_all_permutations_lsb, lsb_codec<Bits>());
 }
 
 BOOST_AUTO_TEST_CASE(encode_one_bit_msb)

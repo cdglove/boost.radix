@@ -89,17 +89,6 @@ void get_unpacked_segment(
     }
 }
 
-} // namespace detail
-
-// -----------------------------------------------------------------------------
-//
-template <typename Codec>
-std::size_t decoded_size(std::size_t source_size, Codec const& codec)
-{
-    using boost::radix::adl::get_decoded_size;
-    return get_decoded_size(source_size, codec);
-}
-
 // -----------------------------------------------------------------------------
 //
 template <
@@ -108,7 +97,7 @@ template <
     typename OutputIterator,
     typename Codec,
     typename SegmentPacker>
-void decode(
+void decode_impl(
     InputIterator first,
     InputEndIterator last,
     OutputIterator out,
@@ -150,6 +139,17 @@ void decode(
     }
 }
 
+} // namespace detail
+
+// -----------------------------------------------------------------------------
+//
+template <typename Codec>
+std::size_t decoded_size(std::size_t source_size, Codec const& codec)
+{
+    using boost::radix::adl::get_decoded_size;
+    return get_decoded_size(source_size, codec);
+}
+
 // -----------------------------------------------------------------------------
 //
 template <
@@ -164,7 +164,7 @@ void decode(
     Codec const& codec)
 {
     using boost::radix::adl::get_segment_packer;
-    boost::radix::decode(first, last, out, codec, get_segment_packer(codec));
+    boost::radix::detail::decode_impl(first, last, out, codec, get_segment_packer(codec));
 }
 
 }} // namespace boost::radix

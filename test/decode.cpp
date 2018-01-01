@@ -11,12 +11,48 @@
 #include <boost/test/unit_test.hpp>
 
 #include <array>
-#include <boost/radix/alphabet.hpp>
+#include <boost/radix/basic_codec.hpp>
 #include <boost/radix/decode.hpp>
 #include <boost/radix/static_obitstream_lsb.hpp>
 #include <vector>
 
 #include "common.hpp"
+
+template <std::size_t Bits>
+class msb_codec
+    : public boost::radix::basic_codec<
+          boost::radix::bits::to_alphabet_size<Bits>::value>
+{
+public:
+    msb_codec()
+        : basic_codec(generate_alphabet(Bits))
+    {}
+};
+
+template <std::size_t Bits>
+boost::radix::static_obitstream_msb<Bits>
+get_segment_packer(msb_codec<Bits> const&)
+{
+    return boost::radix::static_obitstream_msb<Bits>();
+}
+
+template <std::size_t Bits>
+class lsb_codec
+    : public boost::radix::basic_codec<
+          boost::radix::bits::to_alphabet_size<Bits>::value>
+{
+public:
+    lsb_codec()
+        : basic_codec(generate_alphabet(Bits))
+    {}
+};
+
+template <std::size_t Bits>
+boost::radix::static_obitstream_lsb<Bits>
+get_segment_packer(lsb_codec<Bits> const&)
+{
+    return boost::radix::static_obitstream_lsb<Bits>();
+}
 
 template <std::size_t Bits, typename DataGenerator, typename Decoder>
 void test_decode(DataGenerator data_generator, Decoder decoder)
@@ -25,26 +61,20 @@ void test_decode(DataGenerator data_generator, Decoder decoder)
     std::vector<bits_type> data     = data_generator(Bits);
     std::vector<bits_type> result;
     boost::radix::decode(
-        alphabet.begin(), alphabet.end(), std::back_inserter(result),
-        boost::radix::alphabet<1 << Bits>(alphabet.begin(), alphabet.end()),
-        decoder);
+        alphabet.begin(), alphabet.end(), std::back_inserter(result), decoder);
     BOOST_TEST(boost::equal(data, result, is_equal_unsigned()));
 }
 
 template <std::size_t Bits>
 void test_decode_msb()
 {
-    test_decode<Bits>(
-        generate_all_permutations_msb,
-        boost::radix::static_obitstream_msb<Bits>());
+    test_decode<Bits>(generate_all_permutations_msb, msb_codec<Bits>());
 }
 
 template <std::size_t Bits>
 void test_decode_lsb()
 {
-    test_decode<Bits>(
-        generate_all_permutations_lsb,
-        boost::radix::static_obitstream_lsb<Bits>());
+    test_decode<Bits>(generate_all_permutations_lsb, lsb_codec<Bits>());
 }
 
 BOOST_AUTO_TEST_CASE(decode_one_bit_msb)

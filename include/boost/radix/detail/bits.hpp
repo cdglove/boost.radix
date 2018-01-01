@@ -37,6 +37,13 @@ struct from_alphabet_size
 };
 
 template <std::size_t Bits>
+struct to_alphabet_size
+{
+    BOOST_STATIC_CONSTANT(
+        std::size_t, value = 1 << Bits);
+};
+
+template <std::size_t Bits>
 struct to_packed_segment_size
 {
     BOOST_STATIC_CONSTANT(

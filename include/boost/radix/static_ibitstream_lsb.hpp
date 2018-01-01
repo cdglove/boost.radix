@@ -15,6 +15,8 @@
 #include <boost/radix/bitmask.hpp>
 #include <boost/radix/detail/bits.hpp>
 
+#include <boost/type_traits/conditional.hpp>
+
 namespace boost { namespace radix {
 
 template <std::size_t Bits>
