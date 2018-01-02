@@ -1,5 +1,5 @@
 //
-// boost/radix/basic_codec_traits.hpp
+// boost/radix/codec_traits/whitespace.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -7,8 +7,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_RADIX_BASICCODECTRAITS_HPP
-#define BOOST_RADIX_BASICCODECTRAITS_HPP
+#ifndef BOOST_RADIX_CODECTRAITS_WHITESPACE_HPP
+#define BOOST_RADIX_CODECTRAITS_WHITESPACE_HPP
 
 #include <boost/radix/common.hpp>
 
@@ -19,7 +19,7 @@
 #    pragma once
 #endif
 
-namespace boost { namespace radix {
+namespace boost { namespace radix { namespace codec_traits {
 
 template <typename Codec>
 struct max_encoded_line_length
@@ -36,6 +36,6 @@ struct requires_line_breaks
         boost::false_type>::type type;
 };
 
-}} // namespace boost::radix
+}}} // namespace boost::radix::codec_traits
 
-#endif // BOOST_RADIX_BASICCODECTRAITS_HPP
+#endif // BOOST_RADIX_CODECTRAITS_WHITESPACE_HPP

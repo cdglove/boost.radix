@@ -13,7 +13,7 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/bitmask.hpp>
-#include <boost/radix/segment.hpp>
+#include <boost/radix/codec_traits/segment.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once

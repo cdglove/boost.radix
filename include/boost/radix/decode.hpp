@@ -12,8 +12,8 @@
 
 #include <boost/radix/common.hpp>
 
-#include <boost/radix/pad.hpp>
-#include <boost/radix/segment.hpp>
+#include <boost/radix/codec_traits/pad.hpp>
+#include <boost/radix/codec_traits/segment.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
@@ -27,15 +27,18 @@ namespace boost { namespace radix {
 namespace adl {
 
 template <typename Codec>
-static_obitstream_msb<required_bits<Codec>::value>
+static_obitstream_msb<codec_traits::required_bits<Codec>::value>
 get_segment_packer(Codec const& codec)
 {
-    return static_obitstream_msb<required_bits<Codec>::value>();
+    return static_obitstream_msb<codec_traits::required_bits<Codec>::value>();
 }
 
 template <typename Codec>
 std::size_t get_decoded_size(std::size_t source_size, Codec const& codec)
 {
+    using boost::radix::codec_traits::packed_segment_size;
+    using boost::radix::codec_traits::unpacked_segment_size;
+
     // By default, size is an integer multiple of the output
     // segment size.
     return packed_segment_size<Codec>::value *
@@ -58,6 +61,8 @@ void get_unpacked_segment(
     Codec const& codec,
     UnpackedSegment& unpacked)
 {
+    using boost::radix::codec_traits::required_bits;
+
     typename UnpackedSegment::iterator ubegin = unpacked.begin();
     typename UnpackedSegment::iterator uend   = unpacked.end();
 
@@ -104,6 +109,10 @@ void decode_impl(
     Codec const& codec,
     SegmentPacker packer)
 {
+    using boost::radix::codec_traits::packed_segment_size;
+    using boost::radix::codec_traits::required_bits;
+    using boost::radix::codec_traits::unpacked_segment_size;
+
     if(first == last)
         return;
 
@@ -164,7 +173,8 @@ void decode(
     Codec const& codec)
 {
     using boost::radix::adl::get_segment_packer;
-    boost::radix::detail::decode_impl(first, last, out, codec, get_segment_packer(codec));
+    boost::radix::detail::decode_impl(
+        first, last, out, codec, get_segment_packer(codec));
 }
 
 }} // namespace boost::radix

@@ -1,5 +1,5 @@
 //
-// boost/radix/pad.hpp
+// boost/radix/codec_traits/pad.hpp
 //
 // Copyright (c) Chris Glover, 2017
 //
@@ -7,19 +7,19 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_RADIX_PAD_HPP
-#define BOOST_RADIX_PAD_HPP
+#ifndef BOOST_RADIX_CODECTRAITS_PAD_HPP
+#define BOOST_RADIX_CODECTRAITS_PAD_HPP
 
 #include <boost/radix/common.hpp>
 
-#include <boost/radix/segment.hpp>
+#include <boost/radix/codec_traits/segment.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
 #endif
 
-namespace boost { namespace radix {
+namespace boost { namespace radix { namespace codec_traits {
 
 namespace detail {
 
@@ -73,9 +73,11 @@ struct requires_pad_impl<7>
 template <typename Codec>
 struct requires_pad
 {
-    typedef typename detail::requires_pad_impl<required_bits<Codec>::value>::type type;
+    typedef
+        typename detail::requires_pad_impl<required_bits<Codec>::value>::type
+            type;
 };
 
-}} // namespace boost::radix
+}}} // namespace boost::radix::codec_traits
 
-#endif // BOOST_RADIX_PAD_HPP
+#endif // BOOST_RADIX_CODECTRAITS_PAD_HPP

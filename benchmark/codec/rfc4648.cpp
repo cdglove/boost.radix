@@ -26,22 +26,22 @@ struct base64_lsb : boost::radix::codec::rfc4648::base64
 {};
 
 boost::radix::static_obitstream_lsb<
-    boost::radix::required_bits<base64_lsb>::value>
+    boost::radix::codec_traits::required_bits<base64_lsb>::value>
 get_segment_packer(base64_lsb const&)
 {
     return boost::radix::static_obitstream_lsb<
-        boost::radix::required_bits<base64_lsb>::value>();
+        boost::radix::codec_traits::required_bits<base64_lsb>::value>();
 }
 
 boost::radix::static_ibitstream_lsb<
-    boost::radix::required_bits<base64_lsb>::value>
+    boost::radix::codec_traits::required_bits<base64_lsb>::value>
 get_segment_unpacker(base64_lsb const&)
 {
     return boost::radix::static_ibitstream_lsb<
-        boost::radix::required_bits<base64_lsb>::value>();
+        boost::radix::codec_traits::required_bits<base64_lsb>::value>();
 }
 
-//static void Base64_Encode_BackInserter(benchmark::State& state)
+// static void Base64_Encode_BackInserter(benchmark::State& state)
 //{
 //    boost::radix::codec::rfc4648::base64 codec;
 //
@@ -57,14 +57,14 @@ get_segment_unpacker(base64_lsb const&)
 //    state.SetBytesProcessed(
 //        int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-//BENCHMARK(Base64_Encode_BackInserter)
+// BENCHMARK(Base64_Encode_BackInserter)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
 //    ->Arg(64 * 1024)
 //    ->Arg(1024 * 1024);
 //
-//static void Base64_Decode_BackInserter(benchmark::State& state)
+// static void Base64_Decode_BackInserter(benchmark::State& state)
 //{
 //    boost::radix::codec::rfc4648::base64 codec;
 //
@@ -78,13 +78,14 @@ get_segment_unpacker(base64_lsb const&)
 //    {
 //        std::vector<bits_type> result;
 //        boost::radix::decode(
-//            encoded.begin(), encoded.end(), std::back_inserter(result), codec);
+//            encoded.begin(), encoded.end(), std::back_inserter(result),
+//            codec);
 //    }
 //
 //    state.SetBytesProcessed(
 //        int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-//BENCHMARK(Base64_Decode_BackInserter)
+// BENCHMARK(Base64_Decode_BackInserter)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
@@ -137,7 +138,7 @@ BENCHMARK(Base64_Lsb_Encode_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-//static void Base64_Decode_OutputDirect(benchmark::State& state)
+// static void Base64_Decode_OutputDirect(benchmark::State& state)
 //{
 //    boost::radix::codec::rfc4648::base64 codec;
 //
@@ -157,14 +158,14 @@ BENCHMARK(Base64_Lsb_Encode_OutputDirect)
 //    state.SetBytesProcessed(
 //        int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-//BENCHMARK(Base64_Decode_OutputDirect)
+// BENCHMARK(Base64_Decode_OutputDirect)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
 //    ->Arg(64 * 1024)
 //    ->Arg(1024 * 1024);
 
-//static void Base64_Lsb_Decode_OutputDirect(benchmark::State& state)
+// static void Base64_Lsb_Decode_OutputDirect(benchmark::State& state)
 //{
 //    base64_lsb codec;
 //
@@ -184,7 +185,7 @@ BENCHMARK(Base64_Lsb_Encode_OutputDirect)
 //    state.SetBytesProcessed(
 //        int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-//BENCHMARK(Base64_Lsb_Decode_OutputDirect)
+// BENCHMARK(Base64_Lsb_Decode_OutputDirect)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
