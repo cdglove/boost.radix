@@ -64,6 +64,11 @@ public:
         init_from_iterators(chars.begin(), chars.end(), pad_char, pad_bits);
     }
 
+    bool has_char(char_type index) const
+    {
+        return bits_[index] != Size || index == get_pad_char();
+    }
+
     char_type char_from_bits(bits_type index) const
     {
         return chars_[index];
@@ -101,7 +106,7 @@ private:
         Iterator first, Iterator last, char_type pad_char, bits_type pad_bits)
     {
         std::fill(std::copy(first, last, chars_.begin()), chars_.end(), '\0');
-
+        std::fill(bits_.begin(), bits_.end(), Size);
         for(bits_type i = 0; i < Size; ++i)
         {
             bits_[static_cast<bits_type>(chars_[i])] = i;

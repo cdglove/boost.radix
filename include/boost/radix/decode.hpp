@@ -14,6 +14,7 @@
 
 #include <boost/radix/codec_traits/pad.hpp>
 #include <boost/radix/codec_traits/segment.hpp>
+#include <boost/radix/codec_traits/validation.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
@@ -21,6 +22,66 @@
 #endif
 
 namespace boost { namespace radix {
+
+namespace detail {
+
+template <typename Codec>
+bool handle_whitespace_character(
+    Codec const& codec, char_type c, handler::assert)
+{
+    BOOST_ASSERT(!std::isspace(c));
+    return true;
+}
+
+template <typename Codec>
+bool handle_whitespace_character(
+    Codec const& codec, char_type c, handler::exception)
+{
+    if(std::isspace(c))
+    {
+        BOOST_THROW_EXCEPTION(invalid_whitespace());
+    }
+    return true;
+}
+
+template <typename Codec>
+bool handle_whitespace_character(
+    Codec const& codec, char_type c, handler::ignore)
+{
+    if(std::isspace(c))
+        return false;
+    return true;
+}
+
+template <typename Codec>
+bool handle_nonalphabet_character(
+    Codec const& codec, char_type c, handler::assert)
+{
+    BOOST_ASSERT(codec.has_char(c));
+    return true;
+}
+
+template <typename Codec>
+bool handle_nonalphabet_character(
+    Codec const& codec, char_type c, handler::exception)
+{
+    if(!codec.has_char(c))
+    {
+        BOOST_THROW_EXCEPTION(nonalphabet_character());
+    }
+    return true;
+}
+
+template <typename Codec>
+bool handle_nonalphabet_character(
+    Codec const& codec, char_type c, handler::ignore)
+{
+    if(!codec.has_char(c))
+        return false;
+    return true;
+}
+
+} // namespace detail
 
 // -----------------------------------------------------------------------------
 //
@@ -46,6 +107,27 @@ std::size_t get_decoded_size(std::size_t source_size, Codec const& codec)
                               unpacked_segment_size<Codec>::value);
 }
 
+template <typename Codec>
+bool validate_nonalphabet_character(Codec const& codec, char_type c)
+{
+    return ::boost::radix::detail::handle_nonalphabet_character(
+        codec, c, codec_traits::on_whitespace_char<Codec>::type());
+}
+
+template <typename Codec>
+bool validate_whitespace_character(Codec const& codec, char_type c)
+{
+    return ::boost::radix::detail::handle_whitespace_character(
+        codec, c, codec_traits::on_nonalphabet_char<Codec>::type());
+}
+
+template <typename Codec>
+bool validate_character(Codec const& codec, char_type c)
+{
+    return validate_whitespace_character(codec, c) &&
+           validate_nonalphabet_character(codec, c);
+}
+
 } // namespace adl
 
 namespace detail {
@@ -68,7 +150,11 @@ void get_unpacked_segment(
 
     while(first != last && ubegin != uend)
     {
-        *ubegin++ = codec.bits_from_char(*first++);
+        char_type c = *first++;
+
+        using boost::radix::adl::validate_character;
+        if(validate_character(codec, c))
+            *ubegin++ = codec.bits_from_char(c);
     }
 
     if(first == last)
