@@ -18,6 +18,8 @@
 
 #include "common.hpp"
 
+// -----------------------------------------------------------------------------
+//
 template <std::size_t Bits>
 class msb_codec
     : public boost::radix::basic_codec<
@@ -37,6 +39,14 @@ get_segment_packer(msb_codec<Bits> const&)
 }
 
 template <std::size_t Bits>
+bool validate_character(msb_codec<Bits> const& codec, char_type c)
+{
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+//
+template <std::size_t Bits>
 class lsb_codec
     : public boost::radix::basic_codec<
           boost::radix::bits::to_alphabet_size<Bits>::value>
@@ -54,6 +64,14 @@ get_segment_packer(lsb_codec<Bits> const&)
     return boost::radix::static_obitstream_lsb<Bits>();
 }
 
+template <std::size_t Bits>
+bool validate_character(lsb_codec<Bits> const& codec, char_type c)
+{
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+//
 template <std::size_t Bits, typename DataGenerator, typename Decoder>
 void test_decode(DataGenerator data_generator, Decoder decoder)
 {

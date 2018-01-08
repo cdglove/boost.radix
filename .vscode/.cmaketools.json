@@ -1,0 +1,669 @@
+{
+  "variant": {
+    "label": "Release",
+    "keywordSettings": {
+      "buildType": "release"
+    },
+    "description": "Enable optimizations, omit debug info"
+  },
+  "activeEnvironments": [],
+  "codeModel": {
+    "configurations": [
+      {
+        "name": "Release",
+        "projects": [
+          {
+            "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+            "name": "Project",
+            "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+            "targets": [
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousCoverage",
+                      "build/CMakeFiles/ContinuousCoverage.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousCoverage",
+                "name": "ContinuousCoverage",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "artifacts": [
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.ibitstream.exe",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/libtest.radix.ibitstream.dll.a",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.ibitstream.pdb"
+                ],
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build/test",
+                "fileGroups": [
+                  {
+                    "compileFlags": "-O3 -DNDEBUG  ",
+                    "includePath": [
+                      {
+                        "path": "C:/msys64/home/cglover/src/local/boost.radix/include"
+                      },
+                      {
+                        "isSystem": true,
+                        "path": "C:/msys64/home/cglover/src/cmn/boost"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "CXX",
+                    "sources": [
+                      "ibitstream.cpp"
+                    ]
+                  }
+                ],
+                "fullName": "test.radix.ibitstream.exe",
+                "linkLanguageFlags": "-O3 -DNDEBUG",
+                "linkLibraries": "C:\\msys64\\home\\cglover\\src\\cmn\\boost\\stage\\lib\\libboost_unit_test_framework-mgw71-mt-1_65.a -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+                "linkerLanguage": "CXX",
+                "name": "test.radix.ibitstream",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix/test",
+                "type": "EXECUTABLE"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousSubmit",
+                      "build/CMakeFiles/ContinuousSubmit.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousSubmit",
+                "name": "ContinuousSubmit",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousConfigure",
+                      "build/CMakeFiles/ContinuousConfigure.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousConfigure",
+                "name": "ContinuousConfigure",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "artifacts": [
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.obitstream.exe",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/libtest.radix.obitstream.dll.a",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.obitstream.pdb"
+                ],
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build/test",
+                "fileGroups": [
+                  {
+                    "compileFlags": "-O3 -DNDEBUG  ",
+                    "includePath": [
+                      {
+                        "path": "C:/msys64/home/cglover/src/local/boost.radix/include"
+                      },
+                      {
+                        "isSystem": true,
+                        "path": "C:/msys64/home/cglover/src/cmn/boost"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "CXX",
+                    "sources": [
+                      "obitstream.cpp"
+                    ]
+                  }
+                ],
+                "fullName": "test.radix.obitstream.exe",
+                "linkLanguageFlags": "-O3 -DNDEBUG",
+                "linkLibraries": "C:\\msys64\\home\\cglover\\src\\cmn\\boost\\stage\\lib\\libboost_unit_test_framework-mgw71-mt-1_65.a -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+                "linkerLanguage": "CXX",
+                "name": "test.radix.obitstream",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix/test",
+                "type": "EXECUTABLE"
+              },
+              {
+                "artifacts": [
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.decode.exe",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/libtest.radix.decode.dll.a",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.decode.pdb"
+                ],
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build/test",
+                "fileGroups": [
+                  {
+                    "compileFlags": "-O3 -DNDEBUG  ",
+                    "includePath": [
+                      {
+                        "path": "C:/msys64/home/cglover/src/local/boost.radix/include"
+                      },
+                      {
+                        "isSystem": true,
+                        "path": "C:/msys64/home/cglover/src/cmn/boost"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "CXX",
+                    "sources": [
+                      "decode.cpp"
+                    ]
+                  }
+                ],
+                "fullName": "test.radix.decode.exe",
+                "linkLanguageFlags": "-O3 -DNDEBUG",
+                "linkLibraries": "C:\\msys64\\home\\cglover\\src\\cmn\\boost\\stage\\lib\\libboost_unit_test_framework-mgw71-mt-1_65.a -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+                "linkerLanguage": "CXX",
+                "name": "test.radix.decode",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix/test",
+                "type": "EXECUTABLE"
+              },
+              {
+                "artifacts": [
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.round_trip.exe",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/libtest.radix.round_trip.dll.a",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.round_trip.pdb"
+                ],
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build/test",
+                "fileGroups": [
+                  {
+                    "compileFlags": "-O3 -DNDEBUG  ",
+                    "includePath": [
+                      {
+                        "path": "C:/msys64/home/cglover/src/local/boost.radix/include"
+                      },
+                      {
+                        "isSystem": true,
+                        "path": "C:/msys64/home/cglover/src/cmn/boost"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "CXX",
+                    "sources": [
+                      "round_trip.cpp"
+                    ]
+                  }
+                ],
+                "fullName": "test.radix.round_trip.exe",
+                "linkLanguageFlags": "-O3 -DNDEBUG",
+                "linkLibraries": "C:\\msys64\\home\\cglover\\src\\cmn\\boost\\stage\\lib\\libboost_unit_test_framework-mgw71-mt-1_65.a -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+                "linkerLanguage": "CXX",
+                "name": "test.radix.round_trip",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix/test",
+                "type": "EXECUTABLE"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousTest",
+                      "build/CMakeFiles/ContinuousTest.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousTest",
+                "name": "ContinuousTest",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousStart",
+                      "build/CMakeFiles/ContinuousStart.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousStart",
+                "name": "ContinuousStart",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "artifacts": [
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.encode.exe",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/libtest.radix.encode.dll.a",
+                  "C:/msys64/home/cglover/src/local/boost.radix/build/test/test.radix.encode.pdb"
+                ],
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build/test",
+                "fileGroups": [
+                  {
+                    "compileFlags": "-O3 -DNDEBUG  ",
+                    "includePath": [
+                      {
+                        "path": "C:/msys64/home/cglover/src/local/boost.radix/include"
+                      },
+                      {
+                        "isSystem": true,
+                        "path": "C:/msys64/home/cglover/src/cmn/boost"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "CXX",
+                    "sources": [
+                      "encode.cpp"
+                    ]
+                  }
+                ],
+                "fullName": "test.radix.encode.exe",
+                "linkLanguageFlags": "-O3 -DNDEBUG",
+                "linkLibraries": "C:\\msys64\\home\\cglover\\src\\cmn\\boost\\stage\\lib\\libboost_unit_test_framework-mgw71-mt-1_65.a -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+                "linkerLanguage": "CXX",
+                "name": "test.radix.encode",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix/test",
+                "type": "EXECUTABLE"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlySubmit",
+                      "build/CMakeFiles/NightlySubmit.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlySubmit",
+                "name": "NightlySubmit",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyUpdate",
+                      "build/CMakeFiles/NightlyUpdate.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyUpdate",
+                "name": "NightlyUpdate",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyMemoryCheck",
+                      "build/CMakeFiles/NightlyMemoryCheck.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyMemoryCheck",
+                "name": "NightlyMemoryCheck",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyBuild",
+                      "build/CMakeFiles/NightlyBuild.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyBuild",
+                "name": "NightlyBuild",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyTest",
+                      "build/CMakeFiles/NightlyTest.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyTest",
+                "name": "NightlyTest",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyMemCheck",
+                      "build/CMakeFiles/NightlyMemCheck.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyMemCheck",
+                "name": "NightlyMemCheck",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousBuild",
+                      "build/CMakeFiles/ContinuousBuild.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousBuild",
+                "name": "ContinuousBuild",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyStart",
+                      "build/CMakeFiles/NightlyStart.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyStart",
+                "name": "NightlyStart",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalTest",
+                      "build/CMakeFiles/ExperimentalTest.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalTest",
+                "name": "ExperimentalTest",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyConfigure",
+                      "build/CMakeFiles/NightlyConfigure.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyConfigure",
+                "name": "NightlyConfigure",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalMemCheck",
+                      "build/CMakeFiles/ExperimentalMemCheck.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalMemCheck",
+                "name": "ExperimentalMemCheck",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalConfigure",
+                      "build/CMakeFiles/ExperimentalConfigure.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalConfigure",
+                "name": "ExperimentalConfigure",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/NightlyCoverage",
+                      "build/CMakeFiles/NightlyCoverage.rule"
+                    ]
+                  }
+                ],
+                "fullName": "NightlyCoverage",
+                "name": "NightlyCoverage",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalStart",
+                      "build/CMakeFiles/ExperimentalStart.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalStart",
+                "name": "ExperimentalStart",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalUpdate",
+                      "build/CMakeFiles/ExperimentalUpdate.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalUpdate",
+                "name": "ExperimentalUpdate",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalCoverage",
+                      "build/CMakeFiles/ExperimentalCoverage.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalCoverage",
+                "name": "ExperimentalCoverage",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousMemCheck",
+                      "build/CMakeFiles/ContinuousMemCheck.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousMemCheck",
+                "name": "ContinuousMemCheck",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalSubmit",
+                      "build/CMakeFiles/ExperimentalSubmit.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalSubmit",
+                "name": "ExperimentalSubmit",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ContinuousUpdate",
+                      "build/CMakeFiles/ContinuousUpdate.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ContinuousUpdate",
+                "name": "ContinuousUpdate",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/ExperimentalBuild",
+                      "build/CMakeFiles/ExperimentalBuild.rule"
+                    ]
+                  }
+                ],
+                "fullName": "ExperimentalBuild",
+                "name": "ExperimentalBuild",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "name": "radix",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "INTERFACE_LIBRARY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/Continuous",
+                      "build/CMakeFiles/Continuous.rule"
+                    ]
+                  }
+                ],
+                "fullName": "Continuous",
+                "name": "Continuous",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/check",
+                      "build/CMakeFiles/check.rule"
+                    ]
+                  }
+                ],
+                "fullName": "check",
+                "name": "check",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/Nightly",
+                      "build/CMakeFiles/Nightly.rule"
+                    ]
+                  }
+                ],
+                "fullName": "Nightly",
+                "name": "Nightly",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              },
+              {
+                "buildDirectory": "C:/msys64/home/cglover/src/local/boost.radix/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": true,
+                    "sources": [
+                      "build/CMakeFiles/Experimental",
+                      "build/CMakeFiles/Experimental.rule"
+                    ]
+                  }
+                ],
+                "fullName": "Experimental",
+                "name": "Experimental",
+                "sourceDirectory": "C:/msys64/home/cglover/src/local/boost.radix",
+                "type": "UTILITY"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "cookie": "0.6853502884237679",
+    "inReplyTo": "codemodel",
+    "type": "reply"
+  }
+}
