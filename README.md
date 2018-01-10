@@ -17,7 +17,7 @@ Boost.Radix is a library that aims to generalise conversion between binary and t
 
 # Example
 
-```
+```cpp
 #include <algorithm>
 #include <boost/radix/codec/rfc4648/base64.hpp>
 #include <boost/radix/decode.hpp>
