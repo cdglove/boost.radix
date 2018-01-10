@@ -33,14 +33,14 @@ int main()
         return n++;
     });
 
-    std::cout << "Data:\n";
+    std::cout << "Data: ";
     std::copy(
         data.begin(), data.end(),
         std::ostream_iterator<unsigned char>(std::cout));
 
     boost::radix::codec::rfc4648::base64 codec64;
 
-    std::cout << "\n\nEncoded:\n";
+    std::cout << "\n\nEncoded: ";
     boost::radix::encode(
         data.begin(), data.end(), std::ostream_iterator<char>(std::cout),
         codec64);
@@ -49,7 +49,7 @@ int main()
     boost::radix::encode(
         data.begin(), data.end(), std::back_inserter(encoded), codec64);
 
-    std::cout << "\n\nDecoded:\n";
+    std::cout << "\n\nDecoded: ";
     boost::radix::decode(
         encoded.begin(), encoded.end(),
         std::ostream_iterator<unsigned char>(std::cout), codec64);
