@@ -57,13 +57,16 @@ int main()
 }
 ```
 
-## Ouput
+Output
 
 Data:
+
 ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
 
 Encoded:
+
 QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpbXF1eX2A=
 
 Decoded:
+
 ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
