@@ -66,7 +66,7 @@ public:
 
     bool has_char(char_type index) const
     {
-        return bits_[index] != Size || index == get_pad_char();
+        return bits_[(unsigned char)(index)] != Size || index == get_pad_char();
     }
 
     char_type char_from_bits(bits_type index) const

@@ -39,7 +39,7 @@ get_segment_packer(msb_codec<Bits> const&)
 }
 
 template <std::size_t Bits>
-bool validate_character(msb_codec<Bits> const& codec, char_type c)
+bool validate_whitespace_character(msb_codec<Bits> const& codec, char_type c)
 {
     return true;
 }
