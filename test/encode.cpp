@@ -26,8 +26,9 @@ class msb_codec
 {
 public:
     msb_codec()
-        : boost::radix::basic_codec<boost::radix::bits::to_alphabet_size<
-              Bits>::value>(generate_alphabet(Bits))
+        : boost::radix::basic_codec<
+              boost::radix::bits::to_alphabet_size<Bits>::value>(
+              generate_alphabet(Bits))
     {}
 };
 
