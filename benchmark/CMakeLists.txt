@@ -11,11 +11,12 @@ include(ExternalProject)
 set(BENCHMARK_DOWNLOAD_DEPENDENCIES ON)
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
 set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "")
+set(benchmark_args "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/external/benchmark")
+list(APPEND benchmark_args "-DCMAKE_BUILD_TYPE=Release")
 ExternalProject_Add(google_benchmark 
-	GIT_REPOSITORY C:/Users/cdglo/src/cmn/benchmark2
+	GIT_REPOSITORY https://github.com/google/benchmark.git
 	GIT_TAG v1.3.0
-	CMAKE_ARGS
-		-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/external/benchmark)
+	CMAKE_ARGS ${benchmark_args})
 
 ##############################################################################
 # Helper function to add benchmarks
