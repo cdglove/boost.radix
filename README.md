@@ -2,7 +2,7 @@
 
 Note: Boost.Radix is **not** an offical boost library. It is written in a boost style, and placed in the boost namespace because I hope to have the library encompassed in boost in the future.
 
-Boost.Radix is a library that aims to generalise conversion between binary and text. Common examples of such encodings are base64, hex, binary, etc. There are many implementations ofr such libraries, but none are configurable to suit the user. With this, the aims of boost.radix are.
+Boost.Radix is a library that aims to generalise conversion between binary and text. Common examples of such encodings are base64, hex, binary, etc. There are many implementations of such libraries, but none are configurable to suit the user. With this, the aims of boost.radix are.
 
 - Supply a general mechanism for users to convert between binary and text data
 - Supply a toolkit to facilitate construction of different encoding strategies
