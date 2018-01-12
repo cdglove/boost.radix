@@ -18,6 +18,7 @@
 #include <boost/radix/static_ibitstream_msb.hpp>
 
 #include <boost/array.hpp>
+#include <boost/noncopyable.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
@@ -244,6 +245,67 @@ void encode_impl(
 }
 
 } // namespace detail
+
+template <typename Codec, typename OuputIterator, typename SegmentUnpacker>
+class encoder : boost::noncopyable
+{
+public:
+    encoder(Codec const& codec, OuputIterator out)
+        : codec_(codec)
+        , out_(out)
+        , bytes_written_(0)
+    {}
+
+    template <typename Iterator, typename EndIterator>
+    std::size_t append(Iterator first, EndIterator last)
+    {
+        using boost::radix::codec_traits::unpacked_segment_size;
+
+        ::boost::radix::detail::get_packed_segment(
+            first, last, codec_, packed_segment_);
+
+        boost::array<char_type, unpacked_segment_size<Codec>::value>
+            unpacked_segment;
+
+        unpacker_(packed_segment_, unpacked_segment);
+
+        if(first != last)
+        {
+            out_ = std::transform(
+                unpacked_segment.begin(), unpacked_segment.end(), out,
+                ::boost::radix::detail::bits_to_char_mapper<Codec>(codec_));
+
+            bytes_written_ += unpacked_segment.static_size;
+        }
+    }
+
+    std::size_t flush()
+    {
+        ::boost::radix::detail::maybe_pad_segment(
+            codec_, packed_segment_, unpacked_segment,
+            typename codec_traits::requires_pad<Codec>::type());
+
+        out_ = std::transform(
+            unpacked_segment.begin(), unpacked_segment.end(), out_,
+            ::boost::radix::detail::bits_to_char_mapper<Codec>(codec_));
+    }
+
+    std::size_t bytes_written()
+    {
+        return bytes_written_;
+    }
+
+private:
+    Codec const& codec_;
+    OuputIterator out_;
+    SegmentUnpacker unpacker_;
+    std::size_t bytes_written_;
+
+    detail::segment_buffer<
+        bits_type,
+        codec_traits::packed_segment_size<Codec>::value>
+        packed_segment_;
+}; // namespace radix
 
 // -----------------------------------------------------------------------------
 //
