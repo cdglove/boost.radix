@@ -71,6 +71,19 @@ void test_encode(DataGenerator data_generator, Encoder encoder)
         alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
 }
 
+template <std::size_t Bits, typename DataGenerator, typename Encoder>
+void test_encoder(DataGenerator data_generator, Encoder codec)
+{
+    std::vector<char_type> alphabet = generate_alphabet(Bits);
+    std::vector<bits_type> data     = data_generator(Bits);
+    std::string result;
+    auto encoder = boost::radix::make_encoder(codec, std::back_inserter(result));
+    encoder.append(data.begin(), data.end());
+    encoder.flush();
+    BOOST_TEST(std::equal(
+        alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
+}
+
 template <std::size_t Bits>
 void test_encode_msb()
 {
@@ -151,4 +164,9 @@ BOOST_AUTO_TEST_CASE(encode_seven_bit_msb)
 BOOST_AUTO_TEST_CASE(encode_seven_bit_lsb)
 {
     test_encode_lsb<7>();
+}
+
+BOOST_AUTO_TEST_CASE(encoder_six_bit_msb)
+{
+    test_encoder<6>(generate_all_permutations_msb, msb_codec<6>());
 }

@@ -31,7 +31,7 @@ public:
     typedef typename container::const_reference const_reference;
 
     segment_buffer()
-        : size_(Size)
+        : size_(0)
     {}
 
     reference operator[](std::size_t idx)
@@ -78,6 +78,21 @@ public:
     std::size_t size() const
     {
         return size_;
+    }
+
+    std::size_t capacity() const
+    {
+        return Size;
+    }
+
+    bool full() const
+    {
+        return size() == capacity();
+    }
+
+    void clear()
+    {
+        size_ = 0;
     }
 
 private:

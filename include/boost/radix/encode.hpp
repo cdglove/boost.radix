@@ -89,7 +89,7 @@ void get_packed_segment(
     PackedSegment& packed)
 {
     typename PackedSegment::iterator pbegin = packed.begin();
-    typename PackedSegment::iterator pend   = packed.end();
+    typename PackedSegment::iterator pend   = packed.begin() + packed.capacity();
 
     while(first != last && pbegin != pend)
     {
@@ -102,31 +102,69 @@ void get_packed_segment(
 
 // -----------------------------------------------------------------------------
 //
+template <
+    typename Iterator,
+    typename EndIterator,
+    typename Codec,
+    typename PackedSegment>
+void fill_packed_segment(
+    Iterator& first,
+    EndIterator last,
+    Codec const& codec,
+    PackedSegment& packed)
+{
+    typename PackedSegment::iterator pbegin = packed.end();
+    typename PackedSegment::iterator pend   = packed.begin() + packed.capacity();
+
+    while(first != last && pbegin != pend)
+    {
+        *pbegin++ = *first++;
+    }
+
+    packed.resize(std::distance(packed.begin(), pbegin));
+    std::fill(pbegin, pend, 0);
+}
+
+// -----------------------------------------------------------------------------
+//
+template <typename Codec>
+std::size_t
+get_unpacked_size_from_packed_size(Codec const& codec, std::size_t packed_size)
+{
+    std::size_t bits_written = packed_size * 8;
+    std::size_t bytes_written =
+        (bits_written + (codec_traits::required_bits<Codec>::value - 1)) /
+        codec_traits::required_bits<Codec>::value;
+    return bytes_written;
+}
+
+// -----------------------------------------------------------------------------
+//
 template <typename Codec, typename PackedBuffer, typename UnpackedBuffer>
-void maybe_pad_segment(
+std::size_t maybe_pad_segment(
     Codec const& codec,
     PackedBuffer const& packed,
     UnpackedBuffer& unpacked,
     boost::true_type)
 {
-    using boost::radix::codec_traits::required_bits;
-
-    std::size_t bits_written = packed.size() * 8;
     std::size_t bytes_written =
-        (bits_written + (required_bits<Codec>::value - 1)) /
-        required_bits<Codec>::value;
+        get_unpacked_size_from_packed_size(codec, packed.size());
 
     while(bytes_written < unpacked.size())
         unpacked[bytes_written++] = codec.get_pad_bits();
+
+    return unpacked.size();
 }
 
 template <typename Codec, typename PackedBuffer, typename UnpackedBuffer>
-void maybe_pad_segment(
+std::size_t maybe_pad_segment(
     Codec const& codec,
     PackedBuffer const& packed,
     UnpackedBuffer& unpacked,
     boost::false_type)
-{}
+{
+    return get_unpacked_size_from_packed_size(codec, packed.size());
+}
 
 // -----------------------------------------------------------------------------
 //
@@ -206,88 +244,108 @@ void encode_impl(
     Codec const& codec,
     SegmentUnpacker unpacker)
 {
-    using boost::radix::codec_traits::packed_segment_size;
-    using boost::radix::codec_traits::unpacked_segment_size;
-
     if(first == last)
         return;
 
     while(true)
     {
-        detail::segment_buffer<bits_type, packed_segment_size<Codec>::value>
+        detail::segment_buffer<
+            bits_type, codec_traits::packed_segment_size<Codec>::value>
             packed_segment;
 
-        ::boost::radix::detail::get_packed_segment(
-            first, last, codec, packed_segment);
+        detail::get_packed_segment(first, last, codec, packed_segment);
 
-        boost::array<char_type, unpacked_segment_size<Codec>::value>
+        boost::array<
+            char_type, codec_traits::unpacked_segment_size<Codec>::value>
             unpacked_segment;
 
         unpacker(packed_segment, unpacked_segment);
 
         if(first == last)
         {
-            ::boost::radix::detail::maybe_pad_segment(
+            std::size_t unpacked_size = detail::maybe_pad_segment(
                 codec, packed_segment, unpacked_segment,
                 typename codec_traits::requires_pad<Codec>::type());
 
             out = std::transform(
-                unpacked_segment.begin(), unpacked_segment.end(), out,
-                ::boost::radix::detail::bits_to_char_mapper<Codec>(codec));
+                unpacked_segment.begin(),
+                unpacked_segment.begin() + unpacked_size, out,
+                detail::bits_to_char_mapper<Codec>(codec));
 
             break;
         }
 
         out = std::transform(
             unpacked_segment.begin(), unpacked_segment.end(), out,
-            ::boost::radix::detail::bits_to_char_mapper<Codec>(codec));
+            detail::bits_to_char_mapper<Codec>(codec));
     }
 }
 
 } // namespace detail
 
-template <typename Codec, typename OuputIterator, typename SegmentUnpacker>
-class encoder : boost::noncopyable
+template <typename Codec, typename OutputIterator>
+class encoder //: boost::noncopyable
 {
 public:
-    encoder(Codec const& codec, OuputIterator out)
+    encoder(Codec const& codec, OutputIterator out)
         : codec_(codec)
         , out_(out)
         , bytes_written_(0)
     {}
 
+    ~encoder()
+    {
+        flush();
+    }
+
     template <typename Iterator, typename EndIterator>
     std::size_t append(Iterator first, EndIterator last)
     {
-        using boost::radix::codec_traits::unpacked_segment_size;
-
-        ::boost::radix::detail::get_packed_segment(
-            first, last, codec_, packed_segment_);
-
-        boost::array<char_type, unpacked_segment_size<Codec>::value>
-            unpacked_segment;
-
-        unpacker_(packed_segment_, unpacked_segment);
-
-        if(first != last)
+        std::size_t bytes_append = 0;
+        while(first != last)
         {
-            out_ = std::transform(
-                unpacked_segment.begin(), unpacked_segment.end(), out,
-                ::boost::radix::detail::bits_to_char_mapper<Codec>(codec_));
+            detail::fill_packed_segment(first, last, codec_, packed_segment_);
 
-            bytes_written_ += unpacked_segment.static_size;
+            if(packed_segment_.full())
+            {
+                boost::array<
+                    char_type, codec_traits::unpacked_segment_size<Codec>::value>
+                    unpacked_segment;
+
+                using boost::radix::adl::get_segment_unpacker;
+                get_segment_unpacker(codec_)(packed_segment_, unpacked_segment);
+
+                out_ = std::transform(
+                    unpacked_segment.begin(), unpacked_segment.end(), out_,
+                    detail::bits_to_char_mapper<Codec>(codec_));
+
+                bytes_append += unpacked_segment.static_size;
+                packed_segment_.clear();
+            }
         }
+
+        bytes_written_ = bytes_append;
+        return bytes_append; 
     }
 
     std::size_t flush()
     {
-        ::boost::radix::detail::maybe_pad_segment(
+        boost::array<
+            char_type, codec_traits::unpacked_segment_size<Codec>::value>
+            unpacked_segment;
+
+        using boost::radix::adl::get_segment_unpacker;
+        get_segment_unpacker(codec_)(packed_segment_, unpacked_segment);
+
+        std::size_t unpacked_size = detail::maybe_pad_segment(
             codec_, packed_segment_, unpacked_segment,
             typename codec_traits::requires_pad<Codec>::type());
 
         out_ = std::transform(
-            unpacked_segment.begin(), unpacked_segment.end(), out_,
-            ::boost::radix::detail::bits_to_char_mapper<Codec>(codec_));
+            unpacked_segment.begin(), unpacked_segment.begin() + unpacked_size,
+            out_, detail::bits_to_char_mapper<Codec>(codec_));
+
+        return unpacked_size;
     }
 
     std::size_t bytes_written()
@@ -297,15 +355,22 @@ public:
 
 private:
     Codec const& codec_;
-    OuputIterator out_;
-    SegmentUnpacker unpacker_;
+    OutputIterator out_;
+    //SegmentUnpacker unpacker_;
     std::size_t bytes_written_;
 
     detail::segment_buffer<
         bits_type,
         codec_traits::packed_segment_size<Codec>::value>
         packed_segment_;
-}; // namespace radix
+};
+
+template <typename Codec, typename OutputIterator>
+encoder<Codec, OutputIterator>
+make_encoder(Codec const& codec, OutputIterator out)
+{
+    return encoder<Codec, OutputIterator>(codec, out);
+}
 
 // -----------------------------------------------------------------------------
 //
