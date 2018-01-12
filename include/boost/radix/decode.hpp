@@ -15,6 +15,7 @@
 #include <boost/radix/codec_traits/pad.hpp>
 #include <boost/radix/codec_traits/segment.hpp>
 #include <boost/radix/codec_traits/validation.hpp>
+#include <boost/radix/exception.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
@@ -111,14 +112,14 @@ template <typename Codec>
 bool validate_nonalphabet_character(Codec const& codec, char_type c)
 {
     return ::boost::radix::detail::handle_nonalphabet_character(
-        codec, c, codec_traits::on_whitespace_char<Codec>::type());
+        codec, c, typename codec_traits::on_whitespace_char<Codec>::type());
 }
 
 template <typename Codec>
 bool validate_whitespace_character(Codec const& codec, char_type c)
 {
     return ::boost::radix::detail::handle_whitespace_character(
-        codec, c, codec_traits::on_nonalphabet_char<Codec>::type());
+        codec, c, typename codec_traits::on_nonalphabet_char<Codec>::type());
 }
 
 template <typename Codec>
