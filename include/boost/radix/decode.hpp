@@ -147,7 +147,7 @@ void get_unpacked_segment(
     using boost::radix::codec_traits::required_bits;
 
     typename UnpackedSegment::iterator ubegin = unpacked.begin();
-    typename UnpackedSegment::iterator uend   = unpacked.end();
+    typename UnpackedSegment::iterator uend   = ubegin + unpacked.capacity();
 
     while(first != last && ubegin != uend)
     {
