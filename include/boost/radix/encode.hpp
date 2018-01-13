@@ -18,6 +18,9 @@
 #include <boost/radix/static_ibitstream_msb.hpp>
 
 #include <boost/array.hpp>
+#include <boost/container/static_vector.hpp>
+
+#include <memory>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
@@ -274,6 +277,94 @@ void encode(
             codec, out,
             typename codec_traits::requires_line_breaks<Codec>::type()),
         codec, get_segment_unpacker(codec));
+}
+
+// -----------------------------------------------------------------------------
+//
+template <typename InnerIterator, typename Codec>
+struct encode_iterator : std::iterator<std::output_iterator_tag, char_type>
+{
+    encode_iterator(InnerIterator iter, Codec const& codec)
+        : iter_(iter)
+        , codec_(&codec)
+        , ref_(this, [this](void*) { flush(); })
+    {}
+
+    encode_iterator& operator++()
+    {
+        iter_++;
+        return *this;
+    }
+
+    encode_iterator& operator++(int)
+    {
+        ++iter_;
+        return *this;
+    }
+
+    encode_iterator& operator*()
+    {
+        return *this;
+    }
+
+    template <typename T>
+    encode_iterator& operator=(T const& t)
+    {
+        using boost::radix::codec_traits::unpacked_segment_size;
+
+        packed_segment_.push_back(t);
+
+        if(packed_segment_.size() == packed_segment_.capacity())
+        {
+            boost::array<char_type, unpacked_segment_size<Codec>::value>
+                unpacked_segment;
+
+            using boost::radix::adl::get_segment_unpacker;
+            get_segment_unpacker(*codec_)(packed_segment_, unpacked_segment);
+
+            iter_ = std::transform(
+                unpacked_segment.begin(), unpacked_segment.end(), iter_,
+                ::boost::radix::detail::bits_to_char_mapper<Codec>(*codec_));
+
+            packed_segment_.clear();
+        }
+
+        return *this;
+    }
+
+    void flush()
+    {
+        if(packed_segment_.empty())
+            return;
+
+        boost::array<char_type, codec_traits::unpacked_segment_size<Codec>::value>
+            unpacked_segment;
+
+        using boost::radix::adl::get_segment_unpacker;
+        get_segment_unpacker(*codec_)(packed_segment_, unpacked_segment);
+
+        ::boost::radix::detail::maybe_pad_segment(
+            *codec_, packed_segment_, unpacked_segment,
+            typename codec_traits::requires_pad<Codec>::type());
+
+        iter_ = std::transform(
+            unpacked_segment.begin(), unpacked_segment.end(), iter_,
+            ::boost::radix::detail::bits_to_char_mapper<Codec>(*codec_));
+    }
+
+    InnerIterator iter_;
+    Codec const* codec_;
+    boost::container::static_vector<
+        bits_type,
+        codec_traits::packed_segment_size<Codec>::value>
+        packed_segment_;
+    std::shared_ptr<void> ref_;
+};
+
+template <typename InnerIterator, typename Codec>
+encode_iterator<InnerIterator, Codec> encoder(InnerIterator iter, Codec const& codec)
+{
+    return encode_iterator<InnerIterator, Codec>(iter, codec);
 }
 
 }} // namespace boost::radix

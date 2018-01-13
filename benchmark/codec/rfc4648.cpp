@@ -47,6 +47,7 @@ bool validate_character(boost::radix::codec::rfc4648::base64 const&)
     return true;
 }
 }} // namespace boost::radix
+
 // static void Base64_Encode_BackInserter(benchmark::State& state)
 //{
 //    boost::radix::codec::rfc4648::base64 codec;
@@ -115,6 +116,29 @@ static void Base64_Encode_OutputDirect(benchmark::State& state)
         int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_Encode_OutputDirect)
+    ->Arg(128)
+    ->Arg(1024)
+    ->Arg(8 * 1024)
+    ->Arg(64 * 1024)
+    ->Arg(1024 * 1024);
+
+static void Base64_Encoder_OutputDirect(benchmark::State& state)
+{
+    boost::radix::codec::rfc4648::base64 codec;
+
+    std::vector<bits_type> data = generate_random_bytes(state.range(0));
+
+    std::string result;
+    result.resize(encoded_size(data.size(), codec));
+    for(auto _ : state)
+    {
+        std::copy(data.begin(), data.end(), boost::radix::encoder(result.begin(), codec));
+    }
+
+    state.SetBytesProcessed(
+        int64_t(state.iterations()) * int64_t(state.range(0)));
+}
+BENCHMARK(Base64_Encoder_OutputDirect)
     ->Arg(128)
     ->Arg(1024)
     ->Arg(8 * 1024)
