@@ -156,6 +156,7 @@ static void Base64_Encode_Reference(benchmark::State& state)
     for(auto _ : state)
     {
         result = base64::encode(std::addressof(*data.begin()), data.size());
+        benchmark::DoNotOptimize(result);
     }
 
     state.SetBytesProcessed(
@@ -178,6 +179,7 @@ static void Base64_Decode_Reference(benchmark::State& state)
     for(auto _ : state)
     {
         result = base64::decode(encoded);
+        benchmark::DoNotOptimize(result);
     }
 
     state.SetBytesProcessed(

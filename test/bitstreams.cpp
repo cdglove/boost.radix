@@ -27,7 +27,7 @@ static void check_static_istream_lsb(std::size_t num_segments)
     std::size_t const unpacked_segment_size =
         boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::size_t max_value = ~((~0) << Bits);
+    std::size_t max_value = ~(std::size_t(~0) << Bits);
 
     // Checking every bit combination in every position would be possible, though
     // it would take a long time, so instead we check to make sure we can extract every
@@ -65,7 +65,7 @@ static void check_static_istream_msb(std::size_t num_segments)
     std::size_t const unpacked_segment_size =
         boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::size_t max_value = ~((~0) << Bits);
+    std::size_t max_value = ~(std::size_t(~0) << Bits);
 
     // Checking every bit combination in every position would be possible, though
     // it would take a long time, so instead we check to make sure we can extract every
@@ -103,7 +103,7 @@ static void check_static_ostream_lsb(std::size_t num_segments)
     std::size_t const unpacked_segment_size =
         boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::size_t max_value = ~((~0) << Bits);
+    std::size_t max_value = ~(std::size_t(~0) << Bits);
 
     // Checking every bit combination in every position would be possible, though
     // it would take a long time, so instead we check to make sure we can extract every
@@ -141,7 +141,7 @@ static void check_static_ostream_msb(std::size_t num_segments)
     std::size_t const unpacked_segment_size =
         boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::size_t max_value = ~((~0) << Bits);
+    std::size_t max_value = ~(std::size_t(~0) << Bits);
 
     // Checking every bit combination in every position would be possible, though
     // it would take a long time, so instead we check to make sure we can extract every
@@ -179,7 +179,7 @@ static void check_static_iostream_lsb(std::size_t num_segments)
     std::size_t const unpacked_segment_size =
         boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::size_t max_value = ~((~0) << Bits);
+    std::size_t max_value = ~(std::size_t(~0) << Bits);
 
     // Checking every bit combination in every position would be possible, though
     // it would take a long time, so instead we check to make sure we can extract every
@@ -220,7 +220,7 @@ static void check_static_iostream_msb(std::size_t num_segments)
     std::size_t const unpacked_segment_size =
         boost::radix::bits::to_unpacked_segment_size<Bits>::value;
 
-    std::size_t max_value = ~((~0) << Bits);
+    std::size_t max_value = ~(std::size_t(~0) << Bits);
 
     // Checking every bit combination in every position would be possible, though
     // it would take a long time, so instead we check to make sure we can extract every

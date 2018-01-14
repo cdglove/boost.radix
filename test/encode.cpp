@@ -40,6 +40,26 @@ get_segment_unpacker(msb_codec<Bits> const&)
 }
 
 template <std::size_t Bits>
+class msb2_codec
+    : public boost::radix::basic_codec<
+          boost::radix::bits::to_alphabet_size<Bits>::value>
+{
+public:
+    msb2_codec()
+        : boost::radix::basic_codec<
+              boost::radix::bits::to_alphabet_size<Bits>::value>(
+              generate_alphabet(Bits))
+    {}
+};
+
+template <std::size_t Bits>
+boost::radix::static_ibitstream_msb2<Bits>
+get_segment_unpacker(msb2_codec<Bits> const&)
+{
+    return boost::radix::static_ibitstream_msb2<Bits>();
+}
+
+template <std::size_t Bits>
 class lsb_codec
     : public boost::radix::basic_codec<
           boost::radix::bits::to_alphabet_size<Bits>::value>
@@ -72,6 +92,18 @@ void test_encode(DataGenerator data_generator, Encoder encoder)
 }
 
 template <std::size_t Bits, typename DataGenerator, typename Encoder>
+void test_encode2(DataGenerator data_generator, Encoder encoder)
+{
+    std::vector<char_type> alphabet = generate_alphabet(Bits);
+    std::vector<bits_type> data     = data_generator(Bits);
+    std::string result;
+    boost::radix::encode2(
+        data.begin(), data.end(), std::back_inserter(result), encoder);
+    BOOST_TEST(std::equal(
+        alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
+}
+
+template <std::size_t Bits, typename DataGenerator, typename Encoder>
 void test_encoder(DataGenerator data_generator, Encoder codec)
 {
     std::vector<char_type> alphabet = generate_alphabet(Bits);
@@ -80,6 +112,17 @@ void test_encoder(DataGenerator data_generator, Encoder codec)
     auto encoder = boost::radix::make_encoder(codec, std::back_inserter(result));
     encoder.append(data.begin(), data.end());
     encoder.flush();
+    BOOST_TEST(std::equal(
+        alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
+}
+
+template <std::size_t Bits, typename DataGenerator, typename Encoder>
+void test_encode_iterator(DataGenerator data_generator, Encoder encoder)
+{
+    std::vector<char_type> alphabet = generate_alphabet(Bits);
+    std::vector<bits_type> data     = data_generator(Bits);
+    std::string result;
+    std::copy(data.begin(), data.end(), boost::radix::make_encode_iterator(encoder, std::back_inserter(result)));
     BOOST_TEST(std::equal(
         alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
 }
@@ -169,4 +212,14 @@ BOOST_AUTO_TEST_CASE(encode_seven_bit_lsb)
 BOOST_AUTO_TEST_CASE(encoder_six_bit_msb)
 {
     test_encoder<6>(generate_all_permutations_msb, msb_codec<6>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_iterator_six_bit_msb)
+{
+    test_encode_iterator<6>(generate_all_permutations_msb, msb_codec<6>());
+}
+
+BOOST_AUTO_TEST_CASE(encode2_six_bit_msb)
+{
+    test_encode2<6>(generate_all_permutations_msb, msb2_codec<6>());
 }

@@ -69,6 +69,11 @@ public:
         --size_;
     }
 
+    void push_back(ElementType e)
+    {
+        container_[size_++] = e;
+    }
+
     void resize(std::size_t size)
     {
         BOOST_ASSERT(size <= container_.size());
@@ -88,6 +93,11 @@ public:
     bool full() const
     {
         return size() == capacity();
+    }
+
+    bool empty() const
+    {
+        return size_ == 0;
     }
 
     void clear()

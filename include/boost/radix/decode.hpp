@@ -18,6 +18,8 @@
 #include <boost/radix/exception.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
+#include <cctype>
+
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
 #endif
