@@ -13,6 +13,7 @@
 #include <array>
 #include <boost/radix/basic_codec.hpp>
 #include <boost/radix/encode.hpp>
+#include <boost/radix/encode_iterator.hpp>
 #include <boost/radix/static_ibitstream_lsb.hpp>
 #include <boost/radix/static_ibitstream_msb.hpp>
 #include <vector>
@@ -86,18 +87,6 @@ void test_encode(DataGenerator data_generator, Encoder encoder)
     std::vector<bits_type> data     = data_generator(Bits);
     std::string result;
     boost::radix::encode(
-        data.begin(), data.end(), std::back_inserter(result), encoder);
-    BOOST_TEST(std::equal(
-        alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
-}
-
-template <std::size_t Bits, typename DataGenerator, typename Encoder>
-void test_encode2(DataGenerator data_generator, Encoder encoder)
-{
-    std::vector<char_type> alphabet = generate_alphabet(Bits);
-    std::vector<bits_type> data     = data_generator(Bits);
-    std::string result;
-    boost::radix::encode2(
         data.begin(), data.end(), std::back_inserter(result), encoder);
     BOOST_TEST(std::equal(
         alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
@@ -217,9 +206,4 @@ BOOST_AUTO_TEST_CASE(encoder_six_bit_msb)
 BOOST_AUTO_TEST_CASE(encode_iterator_six_bit_msb)
 {
     test_encode_iterator<6>(generate_all_permutations_msb, msb_codec<6>());
-}
-
-BOOST_AUTO_TEST_CASE(encode2_six_bit_msb)
-{
-    test_encode2<6>(generate_all_permutations_msb, msb2_codec<6>());
 }

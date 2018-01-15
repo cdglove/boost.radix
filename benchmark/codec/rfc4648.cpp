@@ -16,6 +16,7 @@
 #include <boost/radix/codec/rfc4648/base64url.hpp>
 #include <boost/radix/decode.hpp>
 #include <boost/radix/encode.hpp>
+#include <boost/radix/encode_iterator.hpp>
 
 #include "../test/common.hpp"
 
@@ -138,32 +139,6 @@ boost::radix::static_ibitstream_msb2<6> get_segment_unpacker(base64_2 const&)
 {
     return boost::radix::static_ibitstream_msb2<6>();
 }
-
-static void Base64_Encode2_OutputDirect(benchmark::State& state)
-{
-    base64_2 codec;
-
-    std::vector<bits_type> data = generate_random_bytes(state.range(0));
-
-    std::string result;
-    result.resize(encoded_size(data.size(), codec));
-    for(auto _ : state)
-    {
-        boost::radix::encode2(
-            unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
-            unwrap_iterator(result.begin()), codec);
-        benchmark::DoNotOptimize(result);
-    }
-
-    state.SetBytesProcessed(
-        int64_t(state.iterations()) * int64_t(state.range(0)));
-}
-BENCHMARK(Base64_Encode2_OutputDirect)
-    ->Arg(128)
-    ->Arg(1024)
-    ->Arg(8 * 1024)
-    ->Arg(64 * 1024)
-    ->Arg(1024 * 1024);
 
 static void Base64_Lsb_Encode_OutputDirect(benchmark::State& state)
 {
