@@ -41,26 +41,6 @@ get_segment_unpacker(msb_codec<Bits> const&)
 }
 
 template <std::size_t Bits>
-class msb2_codec
-    : public boost::radix::basic_codec<
-          boost::radix::bits::to_alphabet_size<Bits>::value>
-{
-public:
-    msb2_codec()
-        : boost::radix::basic_codec<
-              boost::radix::bits::to_alphabet_size<Bits>::value>(
-              generate_alphabet(Bits))
-    {}
-};
-
-template <std::size_t Bits>
-boost::radix::static_ibitstream_msb2<Bits>
-get_segment_unpacker(msb2_codec<Bits> const&)
-{
-    return boost::radix::static_ibitstream_msb2<Bits>();
-}
-
-template <std::size_t Bits>
 class lsb_codec
     : public boost::radix::basic_codec<
           boost::radix::bits::to_alphabet_size<Bits>::value>
