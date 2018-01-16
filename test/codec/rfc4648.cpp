@@ -34,9 +34,9 @@ encode_string(boost::basic_string_view<CharType> input, Codec const& codec)
     result.resize(encoded_size(
         std::distance(boost::begin(input), boost::end(input)), codec));
 
-    encode(boost::begin(input), boost::end(input), result.begin(), codec);
-    while(!result.empty() && result.back() == '\0')
-        result.pop_back();
+    std::size_t encoded_size =
+        encode(boost::begin(input), boost::end(input), result.begin(), codec);
+    result.resize(encoded_size);
     return result;
 }
 
@@ -60,9 +60,9 @@ decode_string(boost::basic_string_view<CharType> input, Codec const& codec)
     result.resize(decoded_size(
         std::distance(boost::begin(input), boost::end(input)), codec));
 
-    decode(boost::begin(input), boost::end(input), result.begin(), codec);
-    while(!result.empty() && result.back() == '\0')
-        result.pop_back();
+    std::size_t decoded_size =
+        decode(boost::begin(input), boost::end(input), result.begin(), codec);
+    result.resize(decoded_size);
     return result;
 }
 
