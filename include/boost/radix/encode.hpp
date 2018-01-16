@@ -172,7 +172,7 @@ public:
         return *this;
     }
 
-//private:
+    // private:
     Codec const* codec_;
     InnerIterator iter_;
 };
@@ -226,6 +226,10 @@ public:
         if(packed_segment_.empty())
             return 0;
 
+        std::fill(
+            packed_segment_.end(),
+            packed_segment_.begin() + packed_segment_.capacity(), 0);
+
         boost::array<
             char_type, codec_traits::unpacked_segment_size<Codec>::value>
             unpacked_segment;
@@ -256,7 +260,7 @@ private:
     // -----------------------------------------------------------------------------
     //
     template <typename Iterator, typename EndIterator, typename PackedSegment>
-    static void fill_packed_segment(
+    static bool fill_packed_segment(
         Iterator& first, EndIterator last, PackedSegment& packed)
     {
         typename PackedSegment::iterator pbegin = packed.end();
@@ -269,7 +273,7 @@ private:
         }
 
         packed.resize(std::distance(packed.begin(), pbegin));
-        std::fill(pbegin, pend, 0);
+        return pbegin == pend;
     }
 
     // -----------------------------------------------------------------------------
@@ -322,9 +326,7 @@ private:
 
         while(true)
         {
-            fill_packed_segment(first, last, packed_segment_);
-
-            if(!packed_segment_.full())
+            if(!fill_packed_segment(first, last, packed_segment_))
                 break;
 
             flush_packed(segment_unpacker);
@@ -339,12 +341,13 @@ private:
     void flush_packed(SegmentUnpacker& segment_unpacker)
     {
         out_ = segment_unpacker(
-            packed_segment_,
-            detail::make_char_from_bits_iterator(
-                codec_, detail::maybe_add_line_break_iterator(
-                            codec_, out_,
-                            typename codec_traits::requires_line_breaks<
-                                Codec>::type()))).iter_;
+                   packed_segment_,
+                   detail::make_char_from_bits_iterator(
+                       codec_, detail::maybe_add_line_break_iterator(
+                                   codec_, out_,
+                                   typename codec_traits::requires_line_breaks<
+                                       Codec>::type())))
+                   .iter_;
         packed_segment_.clear();
     }
 
