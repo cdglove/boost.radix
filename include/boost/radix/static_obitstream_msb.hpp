@@ -19,21 +19,6 @@ namespace boost { namespace radix {
 
 namespace detail {
 
-template <std::size_t Bits, typename UnpackedSegment>
-static std::size_t check_bits(UnpackedSegment const& unpacked)
-{
-    std::size_t length = detail::bits_lcm<Bits>::value / Bits;
-    for(std::size_t i = 0; i < length; ++i)
-    {
-        if(unpacked[i] > mask<Bits>::value)
-        {
-            return i;
-        }
-    }
-
-    return 0;
-}
-
 template <std::size_t BitSize>
 struct sequencial_segment_packer;
 
@@ -154,7 +139,6 @@ struct static_obitstream_msb
     void
     operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
     {
-        BOOST_ASSERT(detail::check_bits<Bits>(unpacked) == 0);
         detail::sequencial_segment_packer<Bits>::pack(unpacked, packed);
     }
 };

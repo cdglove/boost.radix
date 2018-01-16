@@ -24,127 +24,139 @@ struct sequencial_segment_unpacker;
 template <>
 struct sequencial_segment_unpacker<1>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename PackedSegment, typename OuputIterator>
+    static OuputIterator unpack(PackedSegment const& packed, OuputIterator out)
     {
         // [1, 1, 1, 1]
         bits_type bits = packed[0];
         for(int i = 0; i < 8; ++i)
         {
-            unpacked[i] = (bits >> (7 - i)) & mask<1>::value;
+            *out++ = (bits >> (7 - i)) & mask<1>::value;
         }
+
+        return out;
     }
 };
 
 template <>
 struct sequencial_segment_unpacker<2>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename PackedSegment, typename OuputIterator>
+    static OuputIterator unpack(PackedSegment const& packed, OuputIterator out)
     {
         // [2, 2, 2, 2]
         bits_type bits = packed[0];
 
-        unpacked[0] = (bits >> 6) & mask<2>::value;
-        unpacked[1] = (bits >> 4) & mask<2>::value;
-        unpacked[2] = (bits >> 2) & mask<2>::value;
-        unpacked[3] = (bits >> 0) & mask<2>::value;
+        *out++ = (bits >> 6) & mask<2>::value;
+        *out++ = (bits >> 4) & mask<2>::value;
+        *out++ = (bits >> 2) & mask<2>::value;
+        *out++ = (bits >> 0) & mask<2>::value;
+
+        return out;
     };
 };
 
 template <>
 struct sequencial_segment_unpacker<3>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename PackedSegment, typename OuputIterator>
+    static OuputIterator unpack(PackedSegment const& packed, OuputIterator out)
     {
         // [3, 3, 2], [1, 3, 3, 1], [2, 3, 3]
-        unpacked[0] = (packed[0] >> 5) & mask<3>::value;
-        unpacked[1] = (packed[0] >> 2) & mask<3>::value;
-        unpacked[2] = ((packed[0] << 1) & mask_shift<2, 1>::value) +
-                      ((packed[1] >> 7) & mask<1>::value);
-        unpacked[3] = (packed[1] >> 4) & mask<3>::value;
-        unpacked[4] = (packed[1] >> 1) & mask<3>::value;
-        unpacked[5] = ((packed[1] << 2) & mask_shift<1, 2>::value) +
-                      ((packed[2] >> 6) & mask<2>::value);
-        unpacked[6] = (packed[2] >> 3) & mask<3>::value;
-        unpacked[7] = (packed[2] >> 0) & mask<3>::value;
+        *out++ = (packed[0] >> 5) & mask<3>::value;
+        *out++ = (packed[0] >> 2) & mask<3>::value;
+        *out++ = ((packed[0] << 1) & mask_shift<2, 1>::value) +
+                 ((packed[1] >> 7) & mask<1>::value);
+        *out++ = (packed[1] >> 4) & mask<3>::value;
+        *out++ = (packed[1] >> 1) & mask<3>::value;
+        *out++ = ((packed[1] << 2) & mask_shift<1, 2>::value) +
+                 ((packed[2] >> 6) & mask<2>::value);
+        *out++ = (packed[2] >> 3) & mask<3>::value;
+        *out++ = (packed[2] >> 0) & mask<3>::value;
+
+        return out;
     }
 };
 
 template <>
 struct sequencial_segment_unpacker<4>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename PackedSegment, typename OuputIterator>
+    static OuputIterator unpack(PackedSegment const& packed, OuputIterator out)
     {
         // [4, 4]
         bits_type bits = packed[0];
 
-        unpacked[0] = (bits >> 4) & mask<4>::value;
-        unpacked[1] = (bits >> 0) & mask<4>::value;
+        *out++ = (bits >> 4) & mask<4>::value;
+        *out++ = (bits >> 0) & mask<4>::value;
+
+        return out;
     }
 };
 
 template <>
 struct sequencial_segment_unpacker<5>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename PackedSegment, typename OuputIterator>
+    static OuputIterator unpack(PackedSegment const& packed, OuputIterator out)
     {
         // [5, 3], [2, 5, 1], [4, 4], [1, 5, 2], [3, 5]
-        unpacked[0] = (packed[0] >> 3) & mask<5>::value;
-        unpacked[1] = ((packed[0] << 2) & mask_shift<3, 2>::value) +
-                      ((packed[1] >> 6) & mask<2>::value);
-        unpacked[2] = (packed[1] >> 1) & mask<5>::value;
-        unpacked[3] = ((packed[1] << 4) & mask_shift<1, 4>::value) +
-                      ((packed[2] >> 4) & mask<4>::value);
-        unpacked[4] = ((packed[2] << 1) & mask_shift<4, 1>::value) +
-                      ((packed[3] >> 7) & mask<1>::value);
-        unpacked[5] = (packed[3] >> 2) & mask<5>::value;
-        unpacked[6] = ((packed[3] << 3) & mask_shift<2, 3>::value) +
-                      ((packed[4] >> 5) & mask<3>::value);
-        unpacked[7] = (packed[4] >> 0) & mask<5>::value;
+        *out++ = (packed[0] >> 3) & mask<5>::value;
+        *out++ = ((packed[0] << 2) & mask_shift<3, 2>::value) +
+                 ((packed[1] >> 6) & mask<2>::value);
+        *out++ = (packed[1] >> 1) & mask<5>::value;
+        *out++ = ((packed[1] << 4) & mask_shift<1, 4>::value) +
+                 ((packed[2] >> 4) & mask<4>::value);
+        *out++ = ((packed[2] << 1) & mask_shift<4, 1>::value) +
+                 ((packed[3] >> 7) & mask<1>::value);
+        *out++ = (packed[3] >> 2) & mask<5>::value;
+        *out++ = ((packed[3] << 3) & mask_shift<2, 3>::value) +
+                 ((packed[4] >> 5) & mask<3>::value);
+        *out++ = (packed[4] >> 0) & mask<5>::value;
+
+        return out;
     }
 };
 
 template <>
 struct sequencial_segment_unpacker<6>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename PackedSegment, typename OuputIterator>
+    static OuputIterator unpack(PackedSegment const& packed, OuputIterator out)
     {
-        // clang-format off
         // [6, 2], [4, 4], [2, 6]
-        unpacked[0] = (packed[0] >> 2);
-        unpacked[1] = ((packed[0] << 4) & mask_shift<2, 4>::value) + ((packed[1] >> 4));
-        unpacked[2] = ((packed[1] << 2) & mask_shift<4, 2>::value) + ((packed[2] >> 6));
-        unpacked[3] = (packed[2] >> 0) & mask<6>::value;
-        // clang-format on
+        *out++ = (packed[0] >> 2);
+        *out++ = ((packed[0] << 4) & mask_shift<2, 4>::value) + ((packed[1] >> 4));
+        *out++ = ((packed[1] << 2) & mask_shift<4, 2>::value) + ((packed[2] >> 6));
+        *out++ = (packed[2] >> 0) & mask<6>::value;
+
+        return out;
     }
 };
 
 template <>
 struct sequencial_segment_unpacker<7>
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    static void unpack(PackedSegment const& packed, UnpackedSegment& unpacked)
+    template <typename PackedSegment, typename OuputIterator>
+    static OuputIterator unpack(PackedSegment const& packed, OuputIterator out)
     {
         // [7, 1], [6, 2], [5, 3], [4, 4], [3, 5], [2, 6], [1, 7]
-        unpacked[0] = (packed[0] >> 1) & mask<7>::value;
-        unpacked[1] = ((packed[0] << 6) & mask_shift<1, 6>::value) +
-                      ((packed[1] >> 2) & mask<6>::value);
-        unpacked[2] = ((packed[1] << 5) & mask_shift<2, 5>::value) +
-                      ((packed[2] >> 3) & mask<5>::value);
-        unpacked[3] = ((packed[2] << 4) & mask_shift<3, 4>::value) +
-                      ((packed[3] >> 4) & mask<4>::value);
-        unpacked[4] = ((packed[3] << 3) & mask_shift<4, 3>::value) +
-                      ((packed[4] >> 5) & mask<3>::value);
-        unpacked[5] = ((packed[4] << 2) & mask_shift<5, 2>::value) +
-                      ((packed[5] >> 6) & mask<2>::value);
-        unpacked[6] = ((packed[5] << 1) & mask_shift<6, 1>::value) +
-                      ((packed[6] >> 7) & mask<1>::value);
-        unpacked[7] = (packed[6] >> 0) & mask<7>::value;
+        *out++ = (packed[0] >> 1) & mask<7>::value;
+        *out++ = ((packed[0] << 6) & mask_shift<1, 6>::value) +
+                 ((packed[1] >> 2) & mask<6>::value);
+        *out++ = ((packed[1] << 5) & mask_shift<2, 5>::value) +
+                 ((packed[2] >> 3) & mask<5>::value);
+        *out++ = ((packed[2] << 4) & mask_shift<3, 4>::value) +
+                 ((packed[3] >> 4) & mask<4>::value);
+        *out++ = ((packed[3] << 3) & mask_shift<4, 3>::value) +
+                 ((packed[4] >> 5) & mask<3>::value);
+        *out++ = ((packed[4] << 2) & mask_shift<5, 2>::value) +
+                 ((packed[5] >> 6) & mask<2>::value);
+        *out++ = ((packed[5] << 1) & mask_shift<6, 1>::value) +
+                 ((packed[6] >> 7) & mask<1>::value);
+        *out++ = (packed[6] >> 0) & mask<7>::value;
+
+        return out;
     };
 };
 } // namespace detail
@@ -152,45 +164,15 @@ struct sequencial_segment_unpacker<7>
 template <std::size_t Bits>
 struct static_ibitstream_msb
 {
-    template <typename PackedSegment, typename UnpackedSegment>
-    void
-    operator()(PackedSegment const& packed, UnpackedSegment& unpacked) const
+    template <typename PackedSegment, typename OuputIterator>
+    OuputIterator
+    operator()(PackedSegment const& packed, OuputIterator out) const
     {
-        detail::sequencial_segment_unpacker<Bits>::unpack(packed, unpacked);
-    }
-};
-
-namespace detail {
-template <std::size_t Bits>
-struct sequencial_segment_unpacker2;
-
-template <>
-struct sequencial_segment_unpacker2<6>
-{
-    template <typename InputIterator, typename OutputIterator>
-    static OutputIterator unpack( InputIterator in, OutputIterator out)
-    {
-        // [6, 2], [4, 4], [2, 6]
-        *out++ = (in[0] >> 2);
-        *out++ = ((in[0] << 4) & mask_shift<2, 4>::value) + ((in[1] >> 4));
-        *out++ = ((in[1] << 2) & mask_shift<4, 2>::value) + ((in[2] >> 6));
-        *out++ = (in[2] >> 0) & mask<6>::value;
-        return out;
-    }
-};
-
-} // namespace detail
-
-template <std::size_t Bits>
-struct static_ibitstream_msb2
-{
-    template <typename InputIterator, typename OutputIterator>
-    OutputIterator operator()(InputIterator in, OutputIterator out) const
-    {
-        return detail::sequencial_segment_unpacker2<Bits>::unpack(in, out);
+        return detail::sequencial_segment_unpacker<Bits>::unpack(packed, out);
     }
 };
 
 }} // namespace boost::radix
 
 #endif // BOOST_RADIX_STATICIBITSTREAMMSB_HPP
+
