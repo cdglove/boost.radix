@@ -101,7 +101,7 @@ void test_decode_lsb()
 
 BOOST_AUTO_TEST_CASE(decode_one_bit_msb)
 {
-    test_decode_lsb<1>();
+    test_decode_msb<1>();
 }
 
 BOOST_AUTO_TEST_CASE(decode_one_bit_lsb)
