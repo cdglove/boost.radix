@@ -26,7 +26,11 @@
 template <typename Iterator>
 auto unwrap_iterator(Iterator i)
 {
+#if _HAS_ITERATOR_DEBUGGING
+    return i;
+#else
     return boost::addressof(*i);
+#endif
 }
 
 struct base64_lsb : boost::radix::codec::rfc4648::base64
@@ -131,14 +135,6 @@ BENCHMARK(Base64_Encode_OutputDirect)
     ->Arg(8 * 1024)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
-
-struct base64_2 : boost::radix::codec::rfc4648::base64
-{};
-
-boost::radix::static_ibitstream_msb2<6> get_segment_unpacker(base64_2 const&)
-{
-    return boost::radix::static_ibitstream_msb2<6>();
-}
 
 static void Base64_Lsb_Encode_OutputDirect(benchmark::State& state)
 {
