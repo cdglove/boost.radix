@@ -106,7 +106,7 @@ private:
         Iterator first, Iterator last, char_type pad_char, bits_type pad_bits)
     {
         std::fill(std::copy(first, last, chars_.begin()), chars_.end(), '\0');
-        std::fill(bits_.begin(), bits_.end(), Size);
+        std::fill(bits_.begin(), bits_.end(), bits_type(Size));
         for(bits_type i = 0; i < Size; ++i)
         {
             bits_[static_cast<bits_type>(chars_[i])] = i;
