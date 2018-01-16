@@ -37,23 +37,21 @@ private:
         {};
 
         template <typename PackedSegment, typename OutputIterator>
-        static OutputIterator
-        this_read(PackedSegment const& packed, OutputIterator out, split_read)
+        static void
+        this_read(PackedSegment const& packed, OutputIterator& out, split_read)
         {
             bits_type first  = packed[Offset / 8] >> Offset % 8;
             bits_type second = packed[(Offset + Bits) / 8]
                                << (8 - (Offset % 8));
 
             *out++ = (first | second) & mask<Bits>::value;
-            return out;
         }
 
         template <typename PackedSegment, typename OutputIterator>
-        static OutputIterator
-        this_read(PackedSegment const& packed, OutputIterator out, single_read)
+        static void
+        this_read(PackedSegment const& packed, OutputIterator& out, single_read)
         {
             *out++ = (packed[Offset / 8] >> Offset % 8) & mask<Bits>::value;
-            return out;
         }
 
         struct do_read
@@ -63,47 +61,40 @@ private:
         {};
 
         template <typename PackedSegment, typename OutputIterator>
-        static OutputIterator
-        next_read(PackedSegment const& packed, OutputIterator out, do_read)
+        static void
+        next_read(PackedSegment const& packed, OutputIterator& out, do_read)
         {
-            return read_op<Offset + Bits, ReadsRemaining - 1>::read(
-                packed, out);
+            read_op<Offset + Bits, ReadsRemaining - 1>::read(packed, out);
         }
 
         template <typename PackedSegment, typename OutputIterator>
-        static OutputIterator
+        static void
         next_read(PackedSegment const& packed, OutputIterator& out, nop_read)
-        {
-            return out;
-        }
+        {}
 
     public:
         template <typename PackedSegment, typename OutputIterator>
-        static OutputIterator
-        read(PackedSegment const& packed, OutputIterator out)
+        static void read(PackedSegment const& packed, OutputIterator& out)
         {
             typedef typename boost::conditional<
                 Offset / 8 == (Offset + Bits) / 8 || ReadsRemaining == 1,
                 single_read, split_read>::type this_read_type;
 
-            out = this_read(packed, out, this_read_type());
+            this_read(packed, out, this_read_type());
 
             typedef typename boost::conditional<
                 ReadsRemaining - 1 == 0, nop_read, do_read>::type
                 next_read_type;
 
             next_read(packed, out, next_read_type());
-
-            return out;
         };
     };
 
 public:
     template <typename PackedSegment, typename OutputIterator>
-    OutputIterator
-    operator()(PackedSegment const& packed, OutputIterator out) const
+    void operator()(PackedSegment const& packed, OutputIterator& out) const
     {
-        return read_op<0, SegmentSize>::read(packed, out);
+        read_op<0, SegmentSize>::read(packed, out);
     }
 };
 
