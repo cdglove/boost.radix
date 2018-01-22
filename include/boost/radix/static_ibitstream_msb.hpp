@@ -151,10 +151,11 @@ template <std::size_t Bits>
 struct static_ibitstream_msb
 {
     template <typename PackedSegment, typename OutputIterator>
-    void
-    operator()(PackedSegment const& packed, OutputIterator& out) const
+    OutputIterator
+    operator()(PackedSegment const& packed, OutputIterator out) const
     {
         detail::sequencial_segment_unpacker<Bits>::unpack(packed, out);
+        return out;
     }
 };
 

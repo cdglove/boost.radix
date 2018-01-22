@@ -92,9 +92,10 @@ private:
 
 public:
     template <typename PackedSegment, typename OutputIterator>
-    void operator()(PackedSegment const& packed, OutputIterator& out) const
+    OutputIterator operator()(PackedSegment const& packed, OutputIterator out) const
     {
         read_op<0, SegmentSize>::read(packed, out);
+        return out;
     }
 };
 
