@@ -23,8 +23,8 @@ template <std::size_t Bits>
 class static_ibitstream_lsb
 {
 private:
-    BOOST_STATIC_CONSTANT(
-        std::size_t, SegmentSize = detail::bits_lcm<Bits>::type::value / Bits);
+    static std::size_t const SegmentSize =
+        detail::bits_lcm<Bits>::type::value / Bits;
 
     template <std::size_t Offset, std::size_t ReadsRemaining>
     struct read_op
@@ -92,7 +92,7 @@ private:
 
 public:
     template <typename PackedSegment, typename OutputIterator>
-    void operator()(PackedSegment const& packed, OutputIterator& out) const
+    void operator()(PackedSegment const& packed, OutputIterator&& out) const
     {
         read_op<0, SegmentSize>::read(packed, out);
     }

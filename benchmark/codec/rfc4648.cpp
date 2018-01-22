@@ -25,13 +25,17 @@
 
 template <typename Iterator>
 auto unwrap_iterator(Iterator i)
-{
 #if _HAS_ITERATOR_DEBUGGING
+    -> Iterator
+{
     return i;
-#else
-    return boost::addressof(*i);
-#endif
 }
+#else
+    -> decltype(boost::addressof(*i))
+{
+    return boost::addressof(*i);
+}
+#endif
 
 struct base64_lsb : boost::radix::codec::rfc4648::base64
 {};

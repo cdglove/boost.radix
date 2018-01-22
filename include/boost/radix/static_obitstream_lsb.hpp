@@ -101,7 +101,7 @@ private:
 public:
     template <typename UnpackedSegment, typename PackedSegment>
     void
-    operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
+    operator()(UnpackedSegment const& unpacked, PackedSegment&& packed) const
     {
         // We need to zero the first bytes, the rest will be taken care
         // of with split write.

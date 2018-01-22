@@ -13,9 +13,17 @@
 
 template <typename Iterator>
 auto unwrap_iterator(Iterator i)
+#if _HAS_ITERATOR_DEBUGGING
+    -> Iterator
+{
+    return i;
+}
+#else
+    -> decltype(boost::addressof(*i))
 {
     return boost::addressof(*i);
 }
+#endif
 
 static void Base64_Encode_Beast(benchmark::State& state)
 {

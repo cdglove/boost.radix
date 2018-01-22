@@ -14,9 +14,9 @@
 
 #include <boost/radix/detail/bits.hpp>
 
-#include <boost/array.hpp>
-#include <boost/static_assert.hpp>
 #include <boost/utility/string_view.hpp>
+
+#include <array>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
@@ -28,12 +28,13 @@ template <std::size_t Size>
 class alphabet
 {
 public:
-    BOOST_STATIC_ASSERT(Size < std::size_t(1) << 63);
-    BOOST_STATIC_ASSERT(
+    static_assert(
+        Size < std::size_t(1) << 63, "Size must be less than 64 bits.");
+    static_assert(
         Size == std::size_t(1)
-                    << boost::radix::bits::from_alphabet_size<Size>::value &&
+                    << boost::radix::bits::from_alphabet_size<Size>::value,
         "AlphabetSize must me a power-of-two");
-    BOOST_STATIC_CONSTANT(std::size_t, alphabet_size = Size);
+    static const std::size_t alphabet_size = Size;
 
     template <typename Iterator>
     alphabet(Iterator first, Iterator last)
@@ -115,8 +116,8 @@ private:
         set_pads(pad_bits, pad_char);
     }
 
-    boost::array<char_type, 256> chars_;
-    boost::array<bits_type, 256> bits_;
+    std::array<char_type, 256> chars_;
+    std::array<bits_type, 256> bits_;
     bits_type pad_bits_;
 };
 

@@ -137,7 +137,7 @@ struct static_obitstream_msb
 {
     template <typename UnpackedSegment, typename PackedSegment>
     void
-    operator()(UnpackedSegment const& unpacked, PackedSegment& packed) const
+    operator()(UnpackedSegment const& unpacked, PackedSegment&& packed) const
     {
         detail::sequencial_segment_packer<Bits>::pack(unpacked, packed);
     }
