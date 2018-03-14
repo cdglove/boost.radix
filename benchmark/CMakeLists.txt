@@ -33,6 +33,7 @@ function(add_radix_bench target_file)
    	endif()
     target_include_directories(${radix_test_name} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/external/benchmark/include)
     add_test(NAME ${radix_test_name} COMMAND ${radix_test_name})
+    add_dependencies(${radix_test_name} google_benchmark)
 endfunction()
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/external/benchmark/lib)
