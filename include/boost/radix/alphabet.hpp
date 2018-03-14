@@ -25,8 +25,7 @@
 namespace boost { namespace radix {
 
 template <std::size_t Size>
-class alphabet
-{
+class alphabet {
 public:
     BOOST_STATIC_ASSERT(Size < std::size_t(1) << 63);
     BOOST_STATIC_ASSERT(
@@ -36,8 +35,7 @@ public:
     BOOST_STATIC_CONSTANT(std::size_t, alphabet_size = Size);
 
     template <typename Iterator>
-    alphabet(Iterator first, Iterator last)
-    {
+    alphabet(Iterator first, Iterator last) {
         init_from_iterators(first, last, '=', ~bits_type(0));
     }
 
@@ -46,51 +44,42 @@ public:
         Iterator first,
         Iterator last,
         char_type pad_char,
-        bits_type pad_bits = ~bits_type(0))
-    {
+        bits_type pad_bits = ~bits_type(0)) {
         init_from_iterators(first, last, pad_char, pad_bits);
     }
 
-    explicit alphabet(boost::basic_string_view<char_type> chars)
-    {
+    explicit alphabet(boost::basic_string_view<char_type> chars) {
         init_from_iterators(chars.begin(), chars.end(), '=', ~bits_type(0));
     }
 
     alphabet(
         boost::basic_string_view<char_type> chars,
         char_type pad_char,
-        bits_type pad_bits = ~bits_type(0))
-    {
+        bits_type pad_bits = ~bits_type(0)) {
         init_from_iterators(chars.begin(), chars.end(), pad_char, pad_bits);
     }
 
-    bool has_char(char_type index) const
-    {
+    bool has_char(char_type index) const {
         return bits_[(unsigned char)(index)] != Size || index == get_pad_char();
     }
 
-    char_type char_from_bits(bits_type index) const
-    {
+    char_type char_from_bits(bits_type index) const {
         return chars_[index];
     }
 
-    bits_type bits_from_char(char_type index) const
-    {
+    bits_type bits_from_char(char_type index) const {
         return bits_[(unsigned char)(index)];
     }
 
-    char_type get_pad_char() const
-    {
+    char_type get_pad_char() const {
         return chars_[pad_bits_];
     }
 
-    bits_type get_pad_bits() const
-    {
+    bits_type get_pad_bits() const {
         return pad_bits_;
     }
 
-    void set_pads(bits_type pad_bits, char_type pad_char)
-    {
+    void set_pads(bits_type pad_bits, char_type pad_char) {
         BOOST_ASSERT(pad_bits > Size);
         BOOST_ASSERT(
             std::find(chars_.begin(), chars_.end(), pad_char) == chars_.end());
@@ -103,12 +92,10 @@ public:
 private:
     template <typename Iterator>
     void init_from_iterators(
-        Iterator first, Iterator last, char_type pad_char, bits_type pad_bits)
-    {
+        Iterator first, Iterator last, char_type pad_char, bits_type pad_bits) {
         std::fill(std::copy(first, last, chars_.begin()), chars_.end(), '\0');
         std::fill(bits_.begin(), bits_.end(), bits_type(Size));
-        for(bits_type i = 0; i < Size; ++i)
-        {
+        for(bits_type i = 0; i < Size; ++i) {
             bits_[static_cast<bits_type>(chars_[i])] = i;
         }
 
