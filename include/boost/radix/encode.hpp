@@ -245,7 +245,7 @@ class char_from_bits_iterator
 
 template <typename Codec, typename OutputIterator>
 char_from_bits_iterator<Codec, OutputIterator> make_char_from_bits_iterator(
-    Codec const& codec, OutputIterator out) {
+    Codec const& codec, OutputIterator& out) {
   return char_from_bits_iterator<Codec, OutputIterator>(codec, out);
 }
 
@@ -349,7 +349,10 @@ class encoder {
   template <typename Iterator, typename EndIterator>
   std::size_t append(Iterator first, EndIterator last) {
     using boost::radix::adl::get_segment_unpacker;
-    return append_impl(first, last, get_segment_unpacker(codec_));
+    std::size_t bytes_appended =
+        append_impl(first, last, get_segment_unpacker(codec_));
+    bytes_written_ += bytes_appended;
+    return bytes_appended;
   }
 
   std::size_t append(bits_type bits) {
@@ -362,6 +365,7 @@ class encoder {
           ::boost::radix::detail::make_char_from_bits_iterator(codec_, out_),
           get_segment_unpacker(codec_));
       bytes_written_ += codec_traits::unpacked_segment_size<Codec>::value;
+      packed_segment_.clear();
     }
     return 1;
   }
@@ -432,7 +436,6 @@ class encoder {
     bytes_appended += direct_write_segments(
         first, last, segment_unpacker,
         typename std::iterator_traits<Iterator>::iterator_category());
-    bytes_written_ += bytes_appended;
     return bytes_appended;
   }
 
