@@ -19,6 +19,7 @@
 
 #include <boost/array.hpp>
 
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -151,9 +152,9 @@ template <typename InnerIterator, std::size_t MaxLineLength>
 class line_break_iterator
     : public std::iterator<std::output_iterator_tag, void, void, void, void> {
  public:
-  line_break_iterator(InnerIterator iter)
-      : iter_(iter)
-      , char_(0) {
+  line_break_iterator(InnerIterator& iter, std::size_t current_char)
+      : iter_(&iter)
+      , char_(current_char) {
   }
 
   line_break_iterator& operator++() {
@@ -172,20 +173,20 @@ class line_break_iterator
   line_break_iterator& operator=(T const& t) {
     ++char_;
     if(char_ == MaxLineLength) {
-      *(iter_)++ = '\n';
-      char_      = 0;
+      *(*iter_)++ = '\n';
+      char_       = 0;
     }
 
-    *(iter_)++ = t;
+    *(*iter_)++ = t;
     return *this;
   }
 
-  InnerIterator unwrap() const {
-    return iter_;
-  }
+  // InnerIterator unwrap() const {
+  //  return iter_;
+  //}
 
  private:
-  InnerIterator iter_;
+  InnerIterator* iter_;
   std::size_t char_;
 };
 
@@ -194,15 +195,15 @@ line_break_iterator<
     OutputIterator,
     codec_traits::max_encoded_line_length<Codec>::value>
 maybe_add_line_break_iterator(
-    Codec const&, OutputIterator out, boost::true_type) {
+    Codec const&, OutputIterator& out, boost::true_type) {
   return line_break_iterator<
       OutputIterator, codec_traits::max_encoded_line_length<Codec>::value>(out);
 }
 
 template <typename Codec, typename OutputIterator>
-passthrough_output_iterator<OutputIterator> maybe_add_line_break_iterator(
-    Codec const&, OutputIterator out, boost::false_type) {
-  return passthrough_output_iterator<OutputIterator>(out);
+OutputIterator& maybe_add_line_break_iterator(
+    Codec const&, OutputIterator& out, boost::false_type) {
+  return out; // passthrough_output_iterator<OutputIterator>(out);
 }
 
 // -----------------------------------------------------------------------------
@@ -211,9 +212,9 @@ template <typename Codec, typename InnerIterator>
 class char_from_bits_iterator
     : public std::iterator<std::output_iterator_tag, void, void, void, void> {
  public:
-  char_from_bits_iterator(Codec const& codec, InnerIterator iter)
+  char_from_bits_iterator(Codec const& codec, InnerIterator& iter)
       : codec_(&codec)
-      , iter_(iter) {
+      , iter_(&iter) {
   }
 
   char_from_bits_iterator& operator++() {
@@ -229,17 +230,17 @@ class char_from_bits_iterator
   }
 
   char_from_bits_iterator& operator=(bits_type bits) {
-    *(iter_)++ = codec_->char_from_bits(bits);
+    *(*iter_)++ = codec_->char_from_bits(bits);
     return *this;
   }
 
-  InnerIterator unwrap() const {
-    return iter_;
-  }
+  // InnerIterator unwrap() const {
+  //  return iter_;
+  //}
 
  private:
   Codec const* codec_;
-  InnerIterator iter_;
+  InnerIterator* iter_;
 };
 
 template <typename Codec, typename OutputIterator>
@@ -319,6 +320,12 @@ void encode_partial_segment(
     InputIterator& first, InputIterator last, OutputIterator out) {
 }
 
+template <typename Iterator, typename OutIterator, typename SegmentUnpacker>
+void unpack_and_encode_segment(
+    Iterator& from, OutIterator to, SegmentUnpacker segment_unpacker) {
+  segment_unpacker(from, to);
+}
+
 } // namespace detail
 
 // -----------------------------------------------------------------------------
@@ -349,7 +356,11 @@ class encoder {
     packed_segment_.push_back(bits);
     if(packed_segment_.full()) {
       using boost::radix::adl::get_segment_unpacker;
-      write_segment(packed_segment_.begin(), get_segment_unpacker(codec_));
+      auto packed_in = packed_segment_.begin();
+      ::boost::radix::detail::unpack_and_encode_segment(
+          packed_in,
+          ::boost::radix::detail::make_char_from_bits_iterator(codec_, out_),
+          get_segment_unpacker(codec_));
       bytes_written_ += codec_traits::unpacked_segment_size<Codec>::value;
     }
     return 1;
@@ -367,8 +378,9 @@ class encoder {
         unpacked_segment;
 
     using boost::radix::adl::get_segment_unpacker;
-    get_segment_unpacker(codec_)(
-        packed_segment_.begin(), unpacked_segment.begin());
+    auto in  = packed_segment_.begin();
+    auto out = unpacked_segment.begin();
+    get_segment_unpacker(codec_)(in, out);
 
     std::size_t unpacked_size = ::boost::radix::detail::maybe_pad_segment(
         codec_, packed_segment_.size(), unpacked_segment);
@@ -402,42 +414,41 @@ class encoder {
   template <typename Iterator, typename EndIterator, typename SegmentUnpacker>
   std::size_t append_impl(
       Iterator first, EndIterator last, SegmentUnpacker segment_unpacker) {
+    std::size_t bytes_appended = 0;
+    if(!packed_segment_.empty()) {
+      if(!fill_packed_segment(first, last, packed_segment_)) {
+        return 0;
+      }
+      BOOST_ASSERT(packed_segment_.full());
+      auto packed_in = packed_segment_.begin();
+      ::boost::radix::detail::unpack_and_encode_segment(
+          packed_in,
+          ::boost::radix::detail::make_char_from_bits_iterator(codec_, out_),
+          segment_unpacker);
+      packed_segment_.clear();
+      bytes_appended += codec_traits::unpacked_segment_size<Codec>::value;
+    }
 
-    if(!packed_segment_.empty() && !fill_packed_segment(first, last, packed_segment_))
-      return 0;
-    write_segment(packed_segment_.begin(), segment_unpacker);
-    packed_segment_.clear();
-    std::size_t bytes_append =
-        codec_traits::unpacked_segment_size<Codec>::value;
-    bytes_append += write_segments(
+    bytes_appended += direct_write_segments(
         first, last, segment_unpacker,
         typename std::iterator_traits<Iterator>::iterator_category());
-    bytes_written_ += bytes_append;
-    return bytes_append;
+    bytes_written_ += bytes_appended;
+    return bytes_appended;
   }
 
   template <typename Iterator, typename SegmentUnpacker>
-  void write_segment(Iterator first, SegmentUnpacker segment_unpacker) {
-    segment_unpacker(
-        first,
-        detail::make_char_from_bits_iterator(
-            codec_,
-            detail::maybe_add_line_break_iterator(
-                codec_, detail::make_iterator_reference(out_),
-                typename codec_traits::requires_line_breaks<Codec>::type())));
-  }
-
-  template <typename Iterator, typename EndIterator, typename SegmentUnpacker>
-  std::size_t write_segments(
+  std::size_t direct_write_segments(
       Iterator first,
-      EndIterator last,
+      Iterator last,
       SegmentUnpacker segment_unpacker,
       std::random_access_iterator_tag) {
     std::size_t bytes_append = 0;
     while(std::distance(first, last) >=
           codec_traits::packed_segment_size<Codec>::value) {
-      write_segment(first, segment_unpacker);
-      first += codec_traits::packed_segment_size<Codec>::value;
+      ::boost::radix::detail::unpack_and_encode_segment(
+          first,
+          ::boost::radix::detail::make_char_from_bits_iterator(codec_, out_),
+          segment_unpacker);
       bytes_append += codec_traits::unpacked_segment_size<Codec>::value;
     }
 
@@ -446,12 +457,8 @@ class encoder {
   }
 
   template <typename Iterator, typename EndIterator, typename SegmentUnpacker>
-  std::size_t write_segments(
-      Iterator first,
-      EndIterator last,
-      SegmentUnpacker segment_unpacker,
-      std::input_iterator_tag) {
-
+  std::size_t direct_write_segments(
+      Iterator first, EndIterator last, SegmentUnpacker segment_unpacker, ...) {
     std::size_t bytes_append = 0;
     while(true) {
       if(!fill_packed_segment(first, last, packed_segment_))

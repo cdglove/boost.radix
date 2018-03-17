@@ -24,38 +24,33 @@
 #include <boost/radix/static_obitstream_lsb.hpp>
 
 template <typename Iterator>
-auto unwrap_iterator(Iterator i)
-{
+auto unwrap_iterator(Iterator i) {
 #if _HAS_ITERATOR_DEBUGGING
-    return i;
+  return i;
 #else
-    return boost::addressof(*i);
+  return boost::addressof(*i);
 #endif
 }
 
-struct base64_lsb : boost::radix::codec::rfc4648::base64
-{};
+struct base64_lsb : boost::radix::codec::rfc4648::base64 {};
 
 boost::radix::static_obitstream_lsb<
     boost::radix::codec_traits::required_bits<base64_lsb>::value>
-get_segment_packer(base64_lsb const&)
-{
-    return boost::radix::static_obitstream_lsb<
-        boost::radix::codec_traits::required_bits<base64_lsb>::value>();
+get_segment_packer(base64_lsb const&) {
+  return boost::radix::static_obitstream_lsb<
+      boost::radix::codec_traits::required_bits<base64_lsb>::value>();
 }
 
 boost::radix::static_ibitstream_lsb<
     boost::radix::codec_traits::required_bits<base64_lsb>::value>
-get_segment_unpacker(base64_lsb const&)
-{
-    return boost::radix::static_ibitstream_lsb<
-        boost::radix::codec_traits::required_bits<base64_lsb>::value>();
+get_segment_unpacker(base64_lsb const&) {
+  return boost::radix::static_ibitstream_lsb<
+      boost::radix::codec_traits::required_bits<base64_lsb>::value>();
 }
 
 namespace boost { namespace radix {
-bool validate_character(boost::radix::codec::rfc4648::base64 const&)
-{
-    return true;
+bool validate_character(boost::radix::codec::rfc4648::base64 const&) {
+  return true;
 }
 }} // namespace boost::radix
 
@@ -110,24 +105,20 @@ bool validate_character(boost::radix::codec::rfc4648::base64 const&)
 //    ->Arg(64 * 1024)
 //    ->Arg(1024 * 1024);
 
-static void Base64_Encode_OutputDirect(benchmark::State& state)
-{
-    boost::radix::codec::rfc4648::base64 codec;
+static void Base64_Encode_OutputDirect(benchmark::State& state) {
+  boost::radix::codec::rfc4648::base64 codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string result;
+  result.resize(encoded_size(data.size(), codec));
+  for(auto _ : state) {
+    boost::radix::encode(
+        unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
+        unwrap_iterator(result.begin()), codec);
+    benchmark::DoNotOptimize(result);
+  }
 
-    std::vector<bits_type> data = generate_random_bytes(state.range(0));
-
-    std::string result;
-    result.resize(encoded_size(data.size(), codec));
-    for(auto _ : state)
-    {
-        boost::radix::encode(
-            unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
-            unwrap_iterator(result.begin()), codec);
-        benchmark::DoNotOptimize(result);
-    }
-
-    state.SetBytesProcessed(
-        int64_t(state.iterations()) * int64_t(state.range(0)));
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_Encode_OutputDirect)
     ->Arg(128)
@@ -136,24 +127,20 @@ BENCHMARK(Base64_Encode_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-static void Base64_Lsb_Encode_OutputDirect(benchmark::State& state)
-{
-    base64_lsb codec;
+static void Base64_Lsb_Encode_OutputDirect(benchmark::State& state) {
+  base64_lsb codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string result;
+  result.resize(encoded_size(data.size(), codec));
+  for(auto _ : state) {
+    boost::radix::encode(
+        unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
+        unwrap_iterator(result.begin()), codec);
+    benchmark::DoNotOptimize(result);
+  }
 
-    std::vector<bits_type> data = generate_random_bytes(state.range(0));
-
-    std::string result;
-    result.resize(encoded_size(data.size(), codec));
-    for(auto _ : state)
-    {
-        boost::radix::encode(
-            unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
-            unwrap_iterator(result.begin()), codec);
-        benchmark::DoNotOptimize(result);
-    }
-
-    state.SetBytesProcessed(
-        int64_t(state.iterations()) * int64_t(state.range(0)));
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_Lsb_Encode_OutputDirect)
     ->Arg(128)
@@ -162,24 +149,19 @@ BENCHMARK(Base64_Lsb_Encode_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-static void Base64_Encoder_OutputDirect(benchmark::State& state)
-{
-    boost::radix::codec::rfc4648::base64 codec;
+static void Base64_Encoder_OutputDirect(benchmark::State& state) {
+  boost::radix::codec::rfc4648::base64 codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string result;
+  result.resize(encoded_size(data.size(), codec));
+  for(auto _ : state) {
+    auto encoder = boost::radix::make_encoder(codec, result.begin());
+    encoder.append(unwrap_iterator(data.begin()), unwrap_iterator(data.end()));
+    benchmark::DoNotOptimize(result);
+  }
 
-    std::vector<bits_type> data = generate_random_bytes(state.range(0));
-
-    std::string result;
-    result.resize(encoded_size(data.size(), codec));
-    for(auto _ : state)
-    {
-        auto encoder = boost::radix::make_encoder(codec, result.begin());
-        encoder.append(
-            unwrap_iterator(data.begin()), unwrap_iterator(data.end()));
-        benchmark::DoNotOptimize(result);
-    }
-
-    state.SetBytesProcessed(
-        int64_t(state.iterations()) * int64_t(state.range(0)));
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_Encoder_OutputDirect)
     ->Arg(128)
@@ -188,25 +170,21 @@ BENCHMARK(Base64_Encoder_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-static void Base64_EncodeIterator_OutputDirect(benchmark::State& state)
-{
-    boost::radix::codec::rfc4648::base64 codec;
+static void Base64_EncodeIterator_OutputDirect(benchmark::State& state) {
+  boost::radix::codec::rfc4648::base64 codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string result;
+  result.resize(encoded_size(data.size(), codec));
+  for(auto _ : state) {
+    std::copy(
+        data.begin(), data.end(),
+        boost::radix::make_encode_iterator(
+            codec, unwrap_iterator(result.begin())));
+    benchmark::DoNotOptimize(result);
+  }
 
-    std::vector<bits_type> data = generate_random_bytes(state.range(0));
-
-    std::string result;
-    result.resize(encoded_size(data.size(), codec));
-    for(auto _ : state)
-    {
-        std::copy(
-            data.begin(), data.end(),
-            boost::radix::make_encode_iterator(
-                codec, unwrap_iterator(result.begin())));
-        benchmark::DoNotOptimize(result);
-    }
-
-    state.SetBytesProcessed(
-        int64_t(state.iterations()) * int64_t(state.range(0)));
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_EncodeIterator_OutputDirect)
     ->Arg(128)
@@ -215,27 +193,22 @@ BENCHMARK(Base64_EncodeIterator_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-static void Base64_Decode_OutputDirect(benchmark::State& state)
-{
-    boost::radix::codec::rfc4648::base64 codec;
+static void Base64_Decode_OutputDirect(benchmark::State& state) {
+  boost::radix::codec::rfc4648::base64 codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string encoded;
+  boost::radix::encode(
+      data.begin(), data.end(), std::back_inserter(encoded), codec);
+  std::vector<bits_type> result(data.size());
+  for(auto _ : state) {
+    boost::radix::decode(
+        unwrap_iterator(encoded.begin()), unwrap_iterator(encoded.end()),
+        unwrap_iterator(result.begin()), codec);
+    benchmark::DoNotOptimize(result);
+  }
 
-    std::vector<bits_type> data = generate_random_bytes(state.range(0));
-
-    std::string encoded;
-    boost::radix::encode(
-        data.begin(), data.end(), std::back_inserter(encoded), codec);
-
-    std::vector<bits_type> result(data.size());
-    for(auto _ : state)
-    {
-        boost::radix::decode(
-            unwrap_iterator(encoded.begin()), unwrap_iterator(encoded.end()),
-            unwrap_iterator(result.begin()), codec);
-        benchmark::DoNotOptimize(result);
-    }
-
-    state.SetBytesProcessed(
-        int64_t(state.iterations()) * int64_t(state.range(0)));
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_Decode_OutputDirect)
     ->Arg(128)
@@ -244,27 +217,22 @@ BENCHMARK(Base64_Decode_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-static void Base64_Lsb_Decode_OutputDirect(benchmark::State& state)
-{
-    base64_lsb codec;
+static void Base64_Lsb_Decode_OutputDirect(benchmark::State& state) {
+  base64_lsb codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string encoded;
+  boost::radix::encode(
+      data.begin(), data.end(), std::back_inserter(encoded), codec);
+  std::vector<bits_type> result(data.size());
+  for(auto _ : state) {
+    boost::radix::decode(
+        unwrap_iterator(encoded.begin()), unwrap_iterator(encoded.end()),
+        unwrap_iterator(result.begin()), codec);
+    benchmark::DoNotOptimize(result);
+  }
 
-    std::vector<bits_type> data = generate_random_bytes(state.range(0));
-
-    std::string encoded;
-    boost::radix::encode(
-        data.begin(), data.end(), std::back_inserter(encoded), codec);
-
-    std::vector<bits_type> result(data.size());
-    for(auto _ : state)
-    {
-        boost::radix::decode(
-            unwrap_iterator(encoded.begin()), unwrap_iterator(encoded.end()),
-            unwrap_iterator(result.begin()), codec);
-        benchmark::DoNotOptimize(result);
-    }
-
-    state.SetBytesProcessed(
-        int64_t(state.iterations()) * int64_t(state.range(0)));
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_Lsb_Decode_OutputDirect)
     ->Arg(128)

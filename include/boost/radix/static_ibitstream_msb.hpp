@@ -152,7 +152,7 @@ struct sequencial_segment_unpacker<7> {
 template <std::size_t Bits>
 struct static_ibitstream_msb {
   template <typename InputIterator, typename OutputIterator>
-  void operator()(InputIterator in, OutputIterator out) const {
+  void operator()(InputIterator& in, OutputIterator& out) const {
     detail::sequencial_segment_unpacker<Bits>::unpack(in, out);
   }
 };
