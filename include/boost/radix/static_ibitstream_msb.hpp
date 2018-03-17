@@ -12,46 +12,43 @@
 
 #include <boost/radix/common.hpp>
 
-#include <boost/array.hpp>
 #include <boost/radix/bitmask.hpp>
+
+#include <boost/array.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 
 namespace boost { namespace radix {
 
-namespace detail {
-
-template <std::size_t BitSize>
-struct sequencial_segment_unpacker;
-
-template <>
-struct sequencial_segment_unpacker<1> {
-  template <std::size_t SegmentSize, typename OutputIterator>
+template <std::size_t Bits>
+class static_ibitstream_msb {
+ private:
+  template <typename OutputIterator>
   static void unpack(
-      boost::array<bits_type, SegmentSize> const& packed, OutputIterator& out) {
+      boost::array<bits_type, 1> const& packed,
+      OutputIterator& out,
+      boost::integral_constant<std::size_t, 1>) {
     // [1, 1, 1, 1]
     for(int i = 0; i < 8; ++i) {
       *out++ = (packed[0] >> (7 - i)) & mask<1>::value;
     }
   }
-};
 
-template <>
-struct sequencial_segment_unpacker<2> {
-  template <std::size_t SegmentSize, typename OutputIterator>
+  template <typename OutputIterator>
   static void unpack(
-      boost::array<bits_type, SegmentSize> const& packed, OutputIterator& out) {
+      boost::array<bits_type, 1> const& packed,
+      OutputIterator& out,
+      boost::integral_constant<std::size_t, 2>) {
     // [2, 2, 2, 2]
     *out++ = (packed[0] >> 6) & mask<2>::value;
     *out++ = (packed[0] >> 4) & mask<2>::value;
     *out++ = (packed[0] >> 2) & mask<2>::value;
     *out++ = (packed[0] >> 0) & mask<2>::value;
   };
-};
-
-template <>
-struct sequencial_segment_unpacker<3> {
-  template <std::size_t SegmentSize, typename OutputIterator>
+  template <typename OutputIterator>
   static void unpack(
-      boost::array<bits_type, SegmentSize> const& packed, OutputIterator& out) {
+      boost::array<bits_type, 3> const& packed,
+      OutputIterator& out,
+      boost::integral_constant<std::size_t, 3>) {
     // [3, 3, 2], [1, 3, 3, 1], [2, 3, 3]
     *out++ = (packed[0] >> 5) & mask<3>::value;
     *out++ = (packed[0] >> 2) & mask<3>::value;
@@ -64,24 +61,20 @@ struct sequencial_segment_unpacker<3> {
     *out++ = (packed[2] >> 3) & mask<3>::value;
     *out++ = (packed[2] >> 0) & mask<3>::value;
   }
-};
-
-template <>
-struct sequencial_segment_unpacker<4> {
-  template <std::size_t SegmentSize, typename OutputIterator>
+  template <typename OutputIterator>
   static void unpack(
-      boost::array<bits_type, SegmentSize> const& packed, OutputIterator& out) {
+      boost::array<bits_type, 1> const& packed,
+      OutputIterator& out,
+      boost::integral_constant<std::size_t, 4>) {
     // [4, 4]
     *out++ = (packed[0] >> 4) & mask<4>::value;
     *out++ = (packed[0] >> 0) & mask<4>::value;
   }
-};
-
-template <>
-struct sequencial_segment_unpacker<5> {
-  template <std::size_t SegmentSize, typename OutputIterator>
+  template <typename OutputIterator>
   static void unpack(
-      boost::array<bits_type, SegmentSize> const& packed, OutputIterator& out) {
+      boost::array<bits_type, 5> const& packed,
+      OutputIterator& out,
+      boost::integral_constant<std::size_t, 5>) {
     // [5, 3], [2, 5, 1], [4, 4], [1, 5, 2], [3, 5]
     *out++ = (packed[0] >> 3) & mask<5>::value;
     *out++ = ((packed[0] << 2) & mask_shift<3, 2>::value) +
@@ -96,26 +89,22 @@ struct sequencial_segment_unpacker<5> {
              ((packed[4] >> 5) & mask<3>::value);
     *out++ = (packed[4] >> 0) & mask<5>::value;
   }
-};
-
-template <>
-struct sequencial_segment_unpacker<6> {
-  template <std::size_t SegmentSize, typename OutputIterator>
+  template <typename OutputIterator>
   static void unpack(
-      boost::array<bits_type, SegmentSize> const& packed, OutputIterator& out) {
+      boost::array<bits_type, 3> const& packed,
+      OutputIterator& out,
+      boost::integral_constant<std::size_t, 6>) {
     // [6, 2], [4, 4], [2, 6]
     *out++ = (packed[0] >> 2);
     *out++ = ((packed[0] << 4) & mask_shift<2, 4>::value) + ((packed[1] >> 4));
     *out++ = ((packed[1] << 2) & mask_shift<4, 2>::value) + ((packed[2] >> 6));
     *out++ = (packed[2] >> 0) & mask<6>::value;
   }
-};
-
-template <>
-struct sequencial_segment_unpacker<7> {
-  template <std::size_t SegmentSize, typename OutputIterator>
+  template <typename OutputIterator>
   static void unpack(
-      boost::array<bits_type, SegmentSize> const& packed, OutputIterator& out) {
+      boost::array<bits_type, 7> const& packed,
+      OutputIterator& out,
+      boost::integral_constant<std::size_t, 7>) {
     // [7, 1], [6, 2], [5, 3], [4, 4], [3, 5], [2, 6], [1, 7]
     *out++ = (packed[0] >> 1) & mask<7>::value;
     *out++ = ((packed[0] << 6) & mask_shift<1, 6>::value) +
@@ -132,14 +121,6 @@ struct sequencial_segment_unpacker<7> {
              ((packed[6] >> 7) & mask<1>::value);
     *out++ = (packed[6] >> 0) & mask<7>::value;
   }
-};
-} // namespace detail
-
-template <std::size_t Bits>
-class static_ibitstream_msb {
- private:
-  BOOST_STATIC_CONSTANT(
-      std::size_t, SegmentSize = detail::bits_lcm<Bits>::type::value / Bits);
 
  public:
   template <typename InputIterator, typename OutputIterator>
@@ -147,7 +128,7 @@ class static_ibitstream_msb {
     boost::array<bits_type, bits::to_packed_segment_size<Bits>::value> packed;
     for(int i = 0; i < bits::to_packed_segment_size<Bits>::value; ++i)
       packed[i] = *in++;
-    detail::sequencial_segment_unpacker<Bits>::unpack(packed, out);
+    unpack(packed, out, boost::integral_constant<std::size_t, Bits>());
   }
 };
 
