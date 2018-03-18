@@ -12,9 +12,9 @@
 
 #include <boost/radix/common.hpp>
 
-#include <boost/radix/bitmask.hpp>
-
 #include <boost/array.hpp>
+#include <boost/radix/bitmask.hpp>
+#include <boost/radix/detail/bits.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 
 namespace boost { namespace radix {

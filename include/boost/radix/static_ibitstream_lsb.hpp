@@ -15,7 +15,6 @@
 #include <boost/array.hpp>
 #include <boost/radix/bitmask.hpp>
 #include <boost/radix/detail/bits.hpp>
-
 #include <boost/type_traits/conditional.hpp>
 
 namespace boost { namespace radix {
@@ -28,37 +27,47 @@ class static_ibitstream_lsb {
    private:
     struct split_read {};
     struct single_read {};
-    template <typename PackedSegment, typename OutputIterator>
+    template <std::size_t SegmentSize, typename OutputIterator>
     static void this_read(
-        PackedSegment const& packed, OutputIterator& out, split_read) {
+        boost::array<bits_type, SegmentSize> const& packed,
+        OutputIterator& out,
+        split_read) {
       bits_type first  = packed[Offset / 8] >> Offset % 8;
       bits_type second = packed[(Offset + Bits) / 8] << (8 - (Offset % 8));
 
       *out++ = (first | second) & mask<Bits>::value;
     }
 
-    template <typename PackedSegment, typename OutputIterator>
+    template <std::size_t SegmentSize, typename OutputIterator>
     static void this_read(
-        PackedSegment const& packed, OutputIterator& out, single_read) {
+        boost::array<bits_type, SegmentSize> const& packed,
+        OutputIterator& out,
+        single_read) {
       *out++ = (packed[Offset / 8] >> Offset % 8) & mask<Bits>::value;
     }
 
     struct do_read {};
     struct nop_read {};
-    template <typename PackedSegment, typename OutputIterator>
+    template <std::size_t SegmentSize, typename OutputIterator>
     static void next_read(
-        PackedSegment const& packed, OutputIterator& out, do_read) {
+        boost::array<bits_type, SegmentSize> const& packed,
+        OutputIterator& out,
+        do_read) {
       read_op<Offset + Bits, ReadsRemaining - 1>::read(packed, out);
     }
 
-    template <typename PackedSegment, typename OutputIterator>
+    template <std::size_t SegmentSize, typename OutputIterator>
     static void next_read(
-        PackedSegment const& packed, OutputIterator& out, nop_read) {
+        boost::array<bits_type, SegmentSize> const& packed,
+        OutputIterator& out,
+        nop_read) {
     }
 
    public:
-    template <typename PackedSegment, typename OutputIterator>
-    static void read(PackedSegment const& packed, OutputIterator& out) {
+    template <std::size_t SegmentSize, typename OutputIterator>
+    static void read(
+        boost::array<bits_type, SegmentSize> const& packed,
+        OutputIterator& out) {
       typedef typename boost::conditional<
           Offset / 8 == (Offset + Bits) / 8 || ReadsRemaining == 1, single_read,
           split_read>::type this_read_type;
