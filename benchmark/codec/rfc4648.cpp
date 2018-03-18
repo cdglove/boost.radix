@@ -108,12 +108,12 @@ bool validate_character(boost::radix::codec::rfc4648::base64 const&) {
 static void Base64_Encode_OutputDirect(benchmark::State& state) {
   boost::radix::codec::rfc4648::base64 codec;
   std::vector<bits_type> data = generate_random_bytes(state.range(0));
-  std::string result;
+  std::vector<char_type> result;
   result.resize(encoded_size(data.size(), codec));
   for(auto _ : state) {
     boost::radix::encode(
-        unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
-        unwrap_iterator(result.begin()), codec);
+        data.data(), data.data() + data.size(),
+        result.data(), codec);
     benchmark::DoNotOptimize(result);
   }
 
