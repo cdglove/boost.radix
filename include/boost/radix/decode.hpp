@@ -18,6 +18,7 @@
 #include <boost/radix/exception.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
+#include <boost/move/utility.hpp>
 #include <cctype>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
@@ -250,7 +251,7 @@ class decoder {
 
   void reset(OutputIterator out) {
     abort();
-    out_           = std::move(out);
+    out_           = boost::move(out);
     bytes_written_ = 0;
   }
 

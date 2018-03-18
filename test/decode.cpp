@@ -15,7 +15,6 @@
 #include <boost/radix/static_obitstream_lsb.hpp>
 #include <boost/range/algorithm/equal.hpp>
 
-#include <array>
 #include <vector>
 
 #include "common.hpp"
@@ -97,9 +96,11 @@ void test_decoder(DataGenerator data_generator, Encoder codec) {
   std::vector<char_type> alphabet = generate_alphabet(Bits);
   std::vector<bits_type> data     = data_generator(Bits);
   std::vector<bits_type> result;
-  auto decoder = boost::radix::make_decoder(codec, std::back_inserter(result));
+  result.resize(boost::radix::decoded_size(data.size(), codec));
+  boost::radix::decoder<Encoder, bits_type*> decoder = boost::radix::make_decoder(codec, result.data());
   decoder.append(data.begin(), data.end());
   decoder.resolve();
+  result.resize(decoder.bytes_written());
   BOOST_TEST(boost::equal(data, result, is_equal_unsigned()));
 }
 

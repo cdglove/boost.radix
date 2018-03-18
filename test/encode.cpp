@@ -10,7 +10,7 @@
 #define BOOST_TEST_MODULE TestEncode
 #include <boost/test/unit_test.hpp>
 
-#include <array>
+#include <boost/foreach.hpp>
 #include <boost/radix/basic_codec.hpp>
 #include <boost/radix/encode.hpp>
 #include <boost/radix/encode_iterator.hpp>
@@ -24,7 +24,7 @@ template <std::size_t Bits>
 class msb_codec
     : public boost::radix::basic_codec<
           boost::radix::bits::to_alphabet_size<Bits>::value> {
-public:
+ public:
   msb_codec()
       : boost::radix::basic_codec<
             boost::radix::bits::to_alphabet_size<Bits>::value>(
@@ -42,7 +42,7 @@ template <std::size_t Bits>
 class lsb_codec
     : public boost::radix::basic_codec<
           boost::radix::bits::to_alphabet_size<Bits>::value> {
-public:
+ public:
   lsb_codec()
       : boost::radix::basic_codec<
             boost::radix::bits::to_alphabet_size<Bits>::value>(
@@ -71,28 +71,71 @@ template <std::size_t Bits, typename DataGenerator, typename Encoder>
 void test_encoder(DataGenerator data_generator, Encoder codec) {
   std::vector<char_type> alphabet = generate_alphabet(Bits);
   std::vector<bits_type> data     = data_generator(Bits);
-  std::string result;
-  auto encoder = boost::radix::make_encoder(codec, std::back_inserter(result));
+  std::vector<char_type> result;
+  result.resize(boost::radix::encoded_size(data.size(), codec));
+  boost::radix::encoder<Encoder, char*> encoder =
+      boost::radix::make_encoder(codec, result.data());
   encoder.append(data.begin(), data.end());
   encoder.resolve();
+  result.resize(encoder.bytes_written());
   BOOST_TEST(std::equal(
       alphabet.begin(), alphabet.end(), result.begin(), is_equal_unsigned()));
 }
 
 template <std::size_t Bits, typename Encoder>
-void test_encode_part(Encoder codec) {
+void test_encode_part_range(Encoder codec) {
+  using namespace boost::radix::codec_traits;
   std::vector<bits_type> data = generate_random_bytes(1024, (1 << Bits) - 1);
-  std::string full_result;
-  std::string partial_result;
-  auto encoder =
-      boost::radix::make_encoder(codec, std::back_inserter(full_result));
-  encoder.append(data.begin(), data.end());
+  std::vector<char_type> full_result;
+  boost::radix::encode(
+      data.begin(), data.end(), std::back_inserter(full_result), codec);
+  std::vector<char_type> partial_result;
+  partial_result.resize(boost::radix::encoded_size(data.size(), codec));
+  boost::radix::encoder<Encoder, char_type*> encoder =
+      boost::radix::make_encoder(codec, partial_result.data());
+  std::size_t segment                 = 1;
+  std::vector<bits_type>::iterator it = data.begin();
+  while(std::distance(it, data.end()) < packed_segment_size<Encoder>::value) {
+    std::vector<bits_type>::iterator next =
+        it + packed_segment_size<Encoder>::value - 1;
+    encoder.append(it, next);
+    it = next;
+
+    // We also compare the result as we go because it should be able to
+    // output partial results.
+    if(encoder.bytes_written() ==
+       (segment *
+        boost::radix::codec_traits::packed_segment_size<Encoder>::value)) {
+      ++segment;
+      BOOST_TEST(std::equal(
+          partial_result.begin(),
+          partial_result.begin() + encoder.bytes_written(), full_result.begin(),
+          is_equal_unsigned()));
+    }
+  }
+
+  encoder.append(it, data.end());
   encoder.resolve();
-  encoder.reset(std::back_inserter(partial_result));
+  partial_result.resize(encoder.bytes_written());
+  BOOST_TEST(full_result == partial_result);
+}
+
+template <std::size_t Bits, typename Encoder>
+void test_encode_part_single(Encoder codec) {
+  std::vector<bits_type> data = generate_random_bytes(1024, (1 << Bits) - 1);
+  std::vector<char_type> full_result;
+  boost::radix::encode(
+      data.begin(), data.end(), std::back_inserter(full_result), codec);
+  std::vector<char_type> partial_result;
+  partial_result.resize(boost::radix::encoded_size(data.size(), codec));
+  boost::radix::encoder<Encoder, char_type*> encoder =
+      boost::radix::make_encoder(codec, partial_result.data());
   std::size_t segment = 1;
-  for(bits_type bits : data) {
+  BOOST_FOREACH(bits_type bits, data) {
     encoder.append(bits);
-    // Ensure partial encoding is correct.
+
+    // We also compare the result as we go because it should be able to
+    // output partial results.
     if(encoder.bytes_written() ==
        (segment *
         boost::radix::codec_traits::packed_segment_size<Encoder>::value)) {
@@ -105,6 +148,7 @@ void test_encode_part(Encoder codec) {
   }
 
   encoder.resolve();
+  partial_result.resize(encoder.bytes_written());
   BOOST_TEST(full_result == partial_result);
 }
 
@@ -242,30 +286,58 @@ BOOST_AUTO_TEST_CASE(encode_iterator_seven_bit_msb) {
   test_encode_iterator<7>(generate_all_permutations_msb, msb_codec<7>());
 }
 
-BOOST_AUTO_TEST_CASE(encode_part_one_bit_msb) {
-  test_encode_part<1>(msb_codec<1>());
+BOOST_AUTO_TEST_CASE(encode_part_single_one_bit_msb) {
+  test_encode_part_single<1>(msb_codec<1>());
 }
 
-BOOST_AUTO_TEST_CASE(encode_part_two_bit_msb) {
-  test_encode_part<2>(msb_codec<2>());
+BOOST_AUTO_TEST_CASE(encode_part_single_two_bit_msb) {
+  test_encode_part_single<2>(msb_codec<2>());
 }
 
-BOOST_AUTO_TEST_CASE(encode_part_three_bit_msb) {
-  test_encode_part<3>(msb_codec<3>());
+BOOST_AUTO_TEST_CASE(encode_part_single_three_bit_msb) {
+  test_encode_part_single<3>(msb_codec<3>());
 }
 
-BOOST_AUTO_TEST_CASE(encode_part_four_bit_msb) {
-  test_encode_part<4>(msb_codec<4>());
+BOOST_AUTO_TEST_CASE(encode_part_single_four_bit_msb) {
+  test_encode_part_single<4>(msb_codec<4>());
 }
 
-BOOST_AUTO_TEST_CASE(encode_part_five_bit_msb) {
-  test_encode_part<5>(msb_codec<5>());
+BOOST_AUTO_TEST_CASE(encode_part_single_five_bit_msb) {
+  test_encode_part_single<5>(msb_codec<5>());
 }
 
-BOOST_AUTO_TEST_CASE(encode_part_six_bit_msb) {
-  test_encode_part<6>(msb_codec<6>());
+BOOST_AUTO_TEST_CASE(encode_part_single_six_bit_msb) {
+  test_encode_part_single<6>(msb_codec<6>());
 }
 
-BOOST_AUTO_TEST_CASE(encode_part_seven_bit_msb) {
-  test_encode_part<7>(msb_codec<7>());
+BOOST_AUTO_TEST_CASE(encode_part_single_seven_bit_msb) {
+  test_encode_part_single<7>(msb_codec<7>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_part_range_one_bit_msb) {
+  test_encode_part_range<1>(msb_codec<1>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_part_range_two_bit_msb) {
+  test_encode_part_range<2>(msb_codec<2>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_part_range_three_bit_msb) {
+  test_encode_part_range<3>(msb_codec<3>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_part_range_four_bit_msb) {
+  test_encode_part_range<4>(msb_codec<4>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_part_range_five_bit_msb) {
+  test_encode_part_range<5>(msb_codec<5>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_part_range_six_bit_msb) {
+  test_encode_part_range<6>(msb_codec<6>());
+}
+
+BOOST_AUTO_TEST_CASE(encode_part_range_seven_bit_msb) {
+  test_encode_part_range<7>(msb_codec<7>());
 }

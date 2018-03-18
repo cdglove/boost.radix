@@ -18,8 +18,8 @@
 #include <boost/radix/static_ibitstream_msb.hpp>
 
 #include <boost/array.hpp>
+#include <boost/move/utility.hpp>
 
-#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -333,7 +333,8 @@ void encode_segment(
   ::boost::radix::detail::format_segment(
       codec, from,
       ::boost::radix::detail::maybe_add_line_break_iterator(
-          codec, to, typename codec_traits::requires_line_breaks<Codec>::type()),
+          codec, to,
+          typename codec_traits::requires_line_breaks<Codec>::type()),
       segment_unpacker);
 }
 
@@ -386,7 +387,8 @@ class encoder {
     packed_segment_.push_back(bits);
     if(packed_segment_.full()) {
       using boost::radix::adl::get_segment_unpacker;
-      typename packed_segment_type::iterator packed_in = packed_segment_.begin();
+      typename packed_segment_type::iterator packed_in =
+          packed_segment_.begin();
       ::boost::radix::detail::unpack_segment(
           codec_, packed_in, out_, get_segment_unpacker(codec_));
       bytes_written_ += codec_traits::unpacked_segment_size<Codec>::value;
@@ -403,12 +405,13 @@ class encoder {
         packed_segment_.end(),
         packed_segment_.begin() + packed_segment_.capacity(), 0);
 
-    boost::array<char_type, codec_traits::unpacked_segment_size<Codec>::value>
-        unpacked_segment;
+    typedef boost::array<char_type, codec_traits::unpacked_segment_size<Codec>::value>
+        unpacked_segment_type;
+    unpacked_segment_type unpacked_segment;
 
     using boost::radix::adl::get_segment_unpacker;
-    auto in  = packed_segment_.begin();
-    auto out = unpacked_segment.begin();
+    typename packed_segment_type::iterator in  = packed_segment_.begin();
+    typename unpacked_segment_type::iterator out = unpacked_segment.begin();
     get_segment_unpacker(codec_)(in, out);
 
     std::size_t unpacked_size = ::boost::radix::detail::maybe_pad_segment(
@@ -431,7 +434,7 @@ class encoder {
   void reset(OutputIterator out) {
     abort();
     bytes_written_ = 0;
-    out_           = std::move(out);
+    out_           = boost::move(out);
   }
 
   std::size_t bytes_written() const {
@@ -449,7 +452,7 @@ class encoder {
         return 0;
       }
       BOOST_ASSERT(packed_segment_.full());
-      auto packed_in = packed_segment_.begin();
+      typename packed_segment_type::iterator packed_in = packed_segment_.begin();
       ::boost::radix::detail::unpack_segment(
           codec_, packed_in, out_, segment_unpacker);
       packed_segment_.clear();
@@ -482,7 +485,10 @@ class encoder {
 
   template <typename Iterator, typename EndIterator, typename SegmentUnpacker>
   std::size_t direct_write_segments(
-      Iterator first, EndIterator last, SegmentUnpacker& segment_unpacker, ...) {
+      Iterator first,
+      EndIterator last,
+      SegmentUnpacker& segment_unpacker,
+      ...) {
     std::size_t bytes_append = 0;
     while(true) {
       if(!fill_packed_segment(first, last, packed_segment_))

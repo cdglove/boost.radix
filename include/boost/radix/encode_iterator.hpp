@@ -13,9 +13,10 @@
 #include <boost/radix/common.hpp>
 
 #include <boost/radix/encode.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
 
 #include <iterator>
-#include <memory>
 
 namespace boost { namespace radix {
 // -----------------------------------------------------------------------------
@@ -26,7 +27,7 @@ class encode_iterator
 {
 public:
     encode_iterator(Codec const& codec, InnerIterator iter)
-        : encoder_(std::make_shared<encoder<Codec, InnerIterator>>(codec, iter))
+        : encoder_(boost::make_shared<encoder<Codec, InnerIterator> >(codec, iter))
     {}
 
     encode_iterator& operator++()
@@ -57,7 +58,7 @@ public:
     }
 
 private:
-    std::shared_ptr<encoder<Codec, InnerIterator>> encoder_;
+    boost::shared_ptr<encoder<Codec, InnerIterator> > encoder_;
 };
 
 template <typename Codec, typename InnerIterator>
