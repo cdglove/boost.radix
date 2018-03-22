@@ -11,14 +11,13 @@ include(ExternalProject)
 set(BENCHMARK_DOWNLOAD_DEPENDENCIES ON)
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
 set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "")
-set(benchmark_args "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/external/benchmark")
-list(APPEND benchmark_args "-DCMAKE_BUILD_TYPE=Release")
 ExternalProject_Add(google_benchmark 
 	GIT_REPOSITORY https://github.com/google/benchmark.git
 	GIT_TAG v1.3.0
-	CMAKE_ARGS ${benchmark_args}
-  UPDATE_DISCONNECTED 1
-  UPDATE_COMMAND "")
+	PREFIX "google_benchmark"
+	INSTALL_COMMAND ""
+  	UPDATE_DISCONNECTED 1
+  	UPDATE_COMMAND "")
 
 ##############################################################################
 # Helper function to add benchmarks
@@ -33,12 +32,12 @@ function(add_radix_bench target_file)
    	else()
    		target_link_libraries(${radix_test_name} PRIVATE pthread)
    	endif()
-    target_include_directories(${radix_test_name} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/external/benchmark/include")
+    target_include_directories(${radix_test_name} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/google_benchmark/src/google_benchmark/include")
     add_test(NAME ${radix_test_name} COMMAND ${radix_test_name})
     add_dependencies(${radix_test_name} google_benchmark)
 endfunction()
 
-link_directories(${CMAKE_CURRENT_BINARY_DIR}/external/benchmark/lib)
+link_directories("${CMAKE_CURRENT_BINARY_DIR}/google_benchmark/src/google_benchmark-build/src")
 add_radix_bench(codec/rfc4648)
 add_radix_bench(codec/base64_reference)
 add_radix_bench(codec/base64_beast)
