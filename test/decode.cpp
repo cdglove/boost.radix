@@ -98,7 +98,7 @@ void test_decoder(DataGenerator data_generator, Encoder codec) {
   std::vector<bits_type> result;
   result.resize(boost::radix::decoded_size(data.size(), codec));
   boost::radix::decoder<Encoder, bits_type*> decoder = boost::radix::make_decoder(codec, result.data());
-  decoder.append(data.begin(), data.end());
+  decoder.append(alphabet.begin(), alphabet.end());
   decoder.resolve();
   result.resize(decoder.bytes_written());
   BOOST_TEST(boost::equal(data, result, is_equal_unsigned()));
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(decoder_four_bit_msb) {
   test_decoder<4>(generate_all_permutations_msb, msb_codec<4>());
 }
 
-BOOST_AUTO_TEST_CASE(encoder_five_bit_msb) {
+BOOST_AUTO_TEST_CASE(decoder_five_bit_msb) {
   test_decoder<5>(generate_all_permutations_msb, msb_codec<5>());
 }
 

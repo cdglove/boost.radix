@@ -157,6 +157,7 @@ static void Base64_Encoder_OutputDirect(benchmark::State& state) {
   for(auto _ : state) {
     auto encoder = boost::radix::make_encoder(codec, result.begin());
     encoder.append(unwrap_iterator(data.begin()), unwrap_iterator(data.end()));
+    encoder.resolve();
     benchmark::DoNotOptimize(result);
   }
 
@@ -235,6 +236,35 @@ static void Base64_Lsb_Decode_OutputDirect(benchmark::State& state) {
       int64_t(state.iterations()) * int64_t(state.range(0)));
 }
 BENCHMARK(Base64_Lsb_Decode_OutputDirect)
+    ->Arg(128)
+    ->Arg(1024)
+    ->Arg(8 * 1024)
+    ->Arg(64 * 1024)
+    ->Arg(1024 * 1024);
+
+struct rfc4648_nocheck : boost::radix::codec::rfc4648::base64
+{};
+
+bool validate_character(rfc4648_nocheck const& codec, char_type c) {
+  return true;
+}
+
+static void Base64_Decoder_OutputDirect(benchmark::State& state) {
+  rfc4648_nocheck codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string result;
+  result.resize(decoded_size(data.size(), codec));
+  for(auto _ : state) {
+    auto decoder = boost::radix::make_decoder(codec, result.begin());
+    decoder.append(unwrap_iterator(data.begin()), unwrap_iterator(data.end()));
+    decoder.resolve();
+    benchmark::DoNotOptimize(result);
+  }
+
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
+}
+BENCHMARK(Base64_Decoder_OutputDirect)
     ->Arg(128)
     ->Arg(1024)
     ->Arg(8 * 1024)
