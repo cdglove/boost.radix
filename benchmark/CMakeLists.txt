@@ -16,6 +16,7 @@ ExternalProject_Add(google_benchmark
 	GIT_TAG v1.3.0
 	PREFIX "google_benchmark"
 	INSTALL_COMMAND ""
+	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   	UPDATE_DISCONNECTED 1
   	UPDATE_COMMAND "")
 
