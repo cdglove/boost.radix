@@ -54,51 +54,46 @@ bool validate_character(boost::radix::codec::rfc4648::base64 const&) {
 }
 }} // namespace boost::radix
 
-// static void Base64_Encode_BackInserter(benchmark::State& state)
-//{
-//    boost::radix::codec::rfc4648::base64 codec;
+//static void Base64_Encode_BackInserter(benchmark::State& state) {
+//  boost::radix::codec::rfc4648::base64 codec;
 //
-//    std::vector<bits_type> data = generate_random_bytes(state.range(0));
+//  std::vector<bits_type> data = generate_random_bytes(state.range(0));
 //
-//    for(auto _ : state)
-//    {
-//        std::string result;
-//        boost::radix::encode(
-//            data.begin(), data.end(), std::back_inserter(result), codec);
-//    }
+//  for(auto _ : state) {
+//    std::string result;
+//    boost::radix::encode(
+//        data.begin(), data.end(), std::back_inserter(result), codec);
+//  }
 //
-//    state.SetBytesProcessed(
-//        int64_t(state.iterations()) * int64_t(state.range(0)));
+//  state.SetBytesProcessed(
+//      int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-// BENCHMARK(Base64_Encode_BackInserter)
+//BENCHMARK(Base64_Encode_BackInserter)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
 //    ->Arg(64 * 1024)
 //    ->Arg(1024 * 1024);
 //
-// static void Base64_Decode_BackInserter(benchmark::State& state)
-//{
-//    boost::radix::codec::rfc4648::base64 codec;
+//static void Base64_Decode_BackInserter(benchmark::State& state) {
+//  boost::radix::codec::rfc4648::base64 codec;
 //
-//    std::vector<bits_type> data = generate_random_bytes(state.range(0));
+//  std::vector<bits_type> data = generate_random_bytes(state.range(0));
 //
-//    std::string encoded;
-//    boost::radix::encode(
-//        data.begin(), data.end(), std::back_inserter(encoded), codec);
+//  std::string encoded;
+//  boost::radix::encode(
+//      data.begin(), data.end(), std::back_inserter(encoded), codec);
 //
-//    for(auto _ : state)
-//    {
-//        std::vector<bits_type> result;
-//        boost::radix::decode(
-//            encoded.begin(), encoded.end(), std::back_inserter(result),
-//            codec);
-//    }
+//  for(auto _ : state) {
+//    std::vector<bits_type> result;
+//    boost::radix::decode(
+//        encoded.begin(), encoded.end(), std::back_inserter(result), codec);
+//  }
 //
-//    state.SetBytesProcessed(
-//        int64_t(state.iterations()) * int64_t(state.range(0)));
+//  state.SetBytesProcessed(
+//      int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-// BENCHMARK(Base64_Decode_BackInserter)
+//BENCHMARK(Base64_Decode_BackInserter)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
@@ -126,27 +121,27 @@ BENCHMARK(Base64_Encode_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-// static void Base64_Lsb_Encode_OutputDirect(benchmark::State& state) {
-//  base64_lsb codec;
-//  std::vector<bits_type> data = generate_random_bytes(state.range(0));
-//  std::string result;
-//  result.resize(encoded_size(data.size(), codec));
-//  for(auto _ : state) {
-//    boost::radix::encode(
-//        unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
-//        unwrap_iterator(result.begin()), codec);
-//    benchmark::DoNotOptimize(result);
-//  }
-//
-//  state.SetBytesProcessed(
-//      int64_t(state.iterations()) * int64_t(state.range(0)));
-//}
-// BENCHMARK(Base64_Lsb_Encode_OutputDirect)
-//    ->Arg(128)
-//    ->Arg(1024)
-//    ->Arg(8 * 1024)
-//    ->Arg(64 * 1024)
-//    ->Arg(1024 * 1024);
+static void Base64_Lsb_Encode_OutputDirect(benchmark::State& state) {
+  base64_lsb codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string result;
+  result.resize(encoded_size(data.size(), codec));
+  for(auto _ : state) {
+    boost::radix::encode(
+        unwrap_iterator(data.begin()), unwrap_iterator(data.end()),
+        unwrap_iterator(result.begin()), codec);
+    benchmark::DoNotOptimize(result);
+  }
+
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
+}
+BENCHMARK(Base64_Lsb_Encode_OutputDirect)
+    ->Arg(128)
+    ->Arg(1024)
+    ->Arg(8 * 1024)
+    ->Arg(64 * 1024)
+    ->Arg(1024 * 1024);
 
 static void Base64_Encoder_OutputDirect(benchmark::State& state) {
   boost::radix::codec::rfc4648::base64 codec;
@@ -217,29 +212,29 @@ BENCHMARK(Base64_Decode_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-// static void Base64_Lsb_Decode_OutputDirect(benchmark::State& state) {
-//  base64_lsb codec;
-//  std::vector<bits_type> data = generate_random_bytes(state.range(0));
-//  std::string encoded;
-//  boost::radix::encode(
-//      data.begin(), data.end(), std::back_inserter(encoded), codec);
-//  std::vector<bits_type> result(data.size());
-//  for(auto _ : state) {
-//    boost::radix::decode(
-//        unwrap_iterator(encoded.begin()), unwrap_iterator(encoded.end()),
-//        unwrap_iterator(result.begin()), codec);
-//    benchmark::DoNotOptimize(result);
-//  }
-//
-//  state.SetBytesProcessed(
-//      int64_t(state.iterations()) * int64_t(state.range(0)));
-//}
-// BENCHMARK(Base64_Lsb_Decode_OutputDirect)
-//    ->Arg(128)
-//    ->Arg(1024)
-//    ->Arg(8 * 1024)
-//    ->Arg(64 * 1024)
-//    ->Arg(1024 * 1024);
+static void Base64_Lsb_Decode_OutputDirect(benchmark::State& state) {
+  base64_lsb codec;
+  std::vector<bits_type> data = generate_random_bytes(state.range(0));
+  std::string encoded;
+  boost::radix::encode(
+      data.begin(), data.end(), std::back_inserter(encoded), codec);
+  std::vector<bits_type> result(data.size());
+  for(auto _ : state) {
+    boost::radix::decode(
+        unwrap_iterator(encoded.begin()), unwrap_iterator(encoded.end()),
+        unwrap_iterator(result.begin()), codec);
+    benchmark::DoNotOptimize(result);
+  }
+
+  state.SetBytesProcessed(
+      int64_t(state.iterations()) * int64_t(state.range(0)));
+}
+BENCHMARK(Base64_Lsb_Decode_OutputDirect)
+    ->Arg(128)
+    ->Arg(1024)
+    ->Arg(8 * 1024)
+    ->Arg(64 * 1024)
+    ->Arg(1024 * 1024);
 
 struct rfc4648_nocheck : boost::radix::codec::rfc4648::base64 {};
 

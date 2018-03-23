@@ -19,12 +19,6 @@
 #include <boost/radix/static_obitstream_msb.hpp>
 #include <vector>
 
-// So we can easily call apis taking iterator refs.
-template <typename Function, typename Arg1, typename Arg2>
-void call(Function f, Arg1 arg1, Arg2 arg2) {
-  f(arg1, arg2);
-}
-
 template <std::size_t Bits>
 static void check_static_istream_lsb(std::size_t num_segments) {
   std::size_t const packed_segment_size =
@@ -47,16 +41,12 @@ static void check_static_istream_lsb(std::size_t num_segments) {
     for(std::size_t j = 0; j < unpacked_segment_size; ++j) {
       std::fill(packed.begin(), packed.end(), 0);
       set_bits_lsb(packed, value, offset, Bits);
-      call(
-          boost::radix::static_ibitstream_lsb<Bits>(), packed.begin(),
-          unpacked.begin());
+      boost::radix::static_ibitstream_lsb<Bits>()(packed.begin(), unpacked);
       BOOST_TEST(unpacked[j] == value);
 
       std::fill(packed.begin(), packed.end(), bits_type(~0));
       set_bits_lsb(packed, value, offset, Bits);
-      call(
-          boost::radix::static_ibitstream_lsb<Bits>(), packed.begin(),
-          unpacked.begin());
+      boost::radix::static_ibitstream_lsb<Bits>()(packed.begin(), unpacked);
       BOOST_TEST(unpacked[j] == value);
 
       offset += Bits;
@@ -86,16 +76,12 @@ static void check_static_istream_msb(std::size_t num_segments) {
     for(std::size_t j = 0; j < unpacked_segment_size; ++j) {
       std::fill(packed.begin(), packed.end(), 0);
       set_bits_msb(packed, value, offset, Bits);
-      call(
-          boost::radix::static_ibitstream_msb<Bits>(), packed.begin(),
-          unpacked.begin());
+      boost::radix::static_ibitstream_msb<Bits>()(packed.begin(), unpacked);
       BOOST_TEST(unpacked[j] == value);
 
       std::fill(packed.begin(), packed.end(), bits_type(~0));
       set_bits_msb(packed, value, offset, Bits);
-      call(
-          boost::radix::static_ibitstream_msb<Bits>(), packed.begin(),
-          unpacked.begin());
+      boost::radix::static_ibitstream_msb<Bits>()(packed.begin(), unpacked);
       BOOST_TEST(unpacked[j] == value);
 
       offset += Bits;
@@ -128,7 +114,7 @@ static void check_static_ostream_lsb(std::size_t num_segments) {
       boost::radix::static_obitstream_lsb<Bits>()(unpacked, packed);
       BOOST_TEST(get_bits_lsb(packed, offset, Bits) == value);
 
-      std::fill(unpacked.begin(), unpacked.end(), max_value);
+      std::fill(unpacked.begin(), unpacked.end(), bits_type(max_value));
       unpacked[j] = value;
       boost::radix::static_obitstream_lsb<Bits>()(unpacked, packed);
       BOOST_TEST(get_bits_lsb(packed, offset, Bits) == value);
@@ -197,17 +183,15 @@ static void check_static_iostream_lsb(std::size_t num_segments) {
       std::fill(unpacked_source.begin(), unpacked_source.end(), 0);
       unpacked_source[j] = value;
       boost::radix::static_obitstream_lsb<Bits>()(unpacked_source, packed);
-      call(
-          boost::radix::static_ibitstream_lsb<Bits>(), packed.begin(),
-          unpacked_result.begin());
+      boost::radix::static_ibitstream_lsb<Bits>()(
+          packed.begin(), unpacked_result);
       BOOST_TEST(unpacked_source == unpacked_result);
 
       std::fill(unpacked_source.begin(), unpacked_source.end(), max_value);
       unpacked_source[j] = value;
       boost::radix::static_obitstream_lsb<Bits>()(unpacked_source, packed);
-      call(
-          boost::radix::static_ibitstream_lsb<Bits>(), packed.begin(),
-          unpacked_result.begin());
+      boost::radix::static_ibitstream_lsb<Bits>()(
+          packed.begin(), unpacked_result);
       BOOST_TEST(unpacked_source == unpacked_result);
 
       offset += Bits;
@@ -239,17 +223,15 @@ static void check_static_iostream_msb(std::size_t num_segments) {
       std::fill(unpacked_source.begin(), unpacked_source.end(), 0);
       unpacked_source[j] = value;
       boost::radix::static_obitstream_msb<Bits>()(unpacked_source, packed);
-      call(
-          boost::radix::static_ibitstream_msb<Bits>(), packed.begin(),
-          unpacked_result.begin());
+      boost::radix::static_ibitstream_msb<Bits>()(
+          packed.begin(), unpacked_result);
       BOOST_TEST(unpacked_source == unpacked_result);
 
       std::fill(unpacked_source.begin(), unpacked_source.end(), max_value);
       unpacked_source[j] = value;
       boost::radix::static_obitstream_msb<Bits>()(unpacked_source, packed);
-      call(
-          boost::radix::static_ibitstream_msb<Bits>(), packed.begin(),
-          unpacked_result.begin());
+      boost::radix::static_ibitstream_msb<Bits>()(
+          packed.begin(), unpacked_result);
       BOOST_TEST(unpacked_source == unpacked_result);
 
       offset += Bits;

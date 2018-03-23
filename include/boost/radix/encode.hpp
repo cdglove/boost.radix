@@ -217,7 +217,6 @@ OutputIterator unpack_segment(
       bits_type, codec_traits::unpacked_segment_size<Codec>::value>
       buffer_type;
   buffer_type buffer;
-  //typename buffer_type::iterator buf = buffer.begin();
   segment_unpacker(from, buffer);
   return format_segment(codec, buffer.begin(), buffer.end(), to);
 }
@@ -278,9 +277,7 @@ class encoder {
     unpacked_segment_type unpacked_segment;
 
     using boost::radix::adl::get_segment_unpacker;
-    typename packed_segment_type::iterator in    = packed_segment_.begin();
-    typename unpacked_segment_type::iterator out = unpacked_segment.begin();
-    get_segment_unpacker(codec_)(in, out);
+    get_segment_unpacker(codec_)(packed_segment_.begin(), unpacked_segment);
 
     std::size_t unpacked_size = ::boost::radix::detail::maybe_pad_segment(
         codec_, packed_segment_.size(), unpacked_segment);
@@ -320,9 +317,8 @@ class encoder {
         return 0;
       }
       BOOST_ASSERT(packed_segment_.full());
-      typename packed_segment_type::iterator in = packed_segment_.begin();
       out_ = ::boost::radix::detail::unpack_segment(
-          codec_, in, out_, segment_unpacker);
+          codec_, packed_segment_.begin(), out_, segment_unpacker);
       packed_segment_.clear();
       bytes_appended += codec_traits::unpacked_segment_size<Codec>::value;
     }
@@ -362,9 +358,8 @@ class encoder {
     while(true) {
       if(!fill_packed_segment(first, last, packed_segment_))
         break;
-      typename packed_segment_type::iterator in = packed_segment_.begin();
       out_ = ::boost::radix::detail::unpack_segment(
-          codec_, in, out_, segment_unpacker);
+          codec_, packed_segment_.begin(), out_, segment_unpacker);
       packed_segment_.clear();
       bytes_appended += codec_traits::unpacked_segment_size<Codec>::value;
     }
