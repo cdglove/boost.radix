@@ -97,7 +97,7 @@ class line_break_iterator
     ++char_;
     if(char_ == MaxLineLength) {
       *iter_++ = '\n';
-      char_       = 0;
+      char_    = 0;
     }
 
     *iter_++ = t;
@@ -105,7 +105,7 @@ class line_break_iterator
   }
 
   operator InnerIterator() {
-      return iter_;
+    return iter_;
   }
 
  private:
@@ -124,7 +124,8 @@ maybe_add_line_break_iterator(
 }
 
 template <typename Codec, typename OutputIterator>
-OutputIterator maybe_add_line_break_iterator(Codec const&, OutputIterator out, boost::false_type) {
+OutputIterator maybe_add_line_break_iterator(
+    Codec const&, OutputIterator out, boost::false_type) {
   return out;
 }
 
@@ -188,20 +189,18 @@ std::size_t maybe_pad_segment(
 
 // -----------------------------------------------------------------------------
 //
-template <
-    typename Codec,
-    typename InputIterator,
-    typename OutputIterator>
+template <typename Codec, typename InputIterator, typename OutputIterator>
 OutputIterator format_segment(
     Codec const& codec,
     InputIterator first,
     InputIterator last,
     OutputIterator to) {
-    return std::transform(
-        first, last, 
-        maybe_add_line_break_iterator(codec, to, typename codec_traits::requires_line_breaks<Codec>::type()),
-        detail::bits_to_char_mapper<Codec>(codec)
-    );
+  return std::transform(
+      first, last,
+      maybe_add_line_break_iterator(
+          codec, to,
+          typename codec_traits::requires_line_breaks<Codec>::type()),
+      detail::bits_to_char_mapper<Codec>(codec));
 }
 
 template <
@@ -214,7 +213,9 @@ void unpack_segment(
     InputIterator& from,
     OutputIterator& to,
     SegmentUnpacker segment_unpacker) {
-  typedef boost::array<bits_type, codec_traits::unpacked_segment_size<Codec>::value> buffer_type;
+  typedef boost::array<
+      bits_type, codec_traits::unpacked_segment_size<Codec>::value>
+      buffer_type;
   buffer_type buffer;
   typename buffer_type::iterator buf = buffer.begin();
   segment_unpacker(from, buf);
@@ -332,23 +333,23 @@ class encoder {
     return bytes_appended;
   }
 
-   template <typename Iterator, typename SegmentUnpacker>
-   std::size_t direct_write_segments(
-       Iterator first,
-       Iterator last,
-       SegmentUnpacker& segment_unpacker,
-       std::random_access_iterator_tag) {
-     std::size_t bytes_appended = 0;
-     while(std::distance(first, last) >=
-           codec_traits::packed_segment_size<Codec>::value) {
-       ::boost::radix::detail::unpack_segment(
-           codec_, first, out_, segment_unpacker);
-       bytes_appended += codec_traits::unpacked_segment_size<Codec>::value;
-     }
+  template <typename Iterator, typename SegmentUnpacker>
+  std::size_t direct_write_segments(
+      Iterator first,
+      Iterator last,
+      SegmentUnpacker& segment_unpacker,
+      std::random_access_iterator_tag) {
+    std::size_t bytes_appended = 0;
+    while(std::distance(first, last) >=
+          codec_traits::packed_segment_size<Codec>::value) {
+      ::boost::radix::detail::unpack_segment(
+          codec_, first, out_, segment_unpacker);
+      bytes_appended += codec_traits::unpacked_segment_size<Codec>::value;
+    }
 
-     fill_packed_segment(first, last, packed_segment_);
-     return bytes_appended;
-   }
+    fill_packed_segment(first, last, packed_segment_);
+    return bytes_appended;
+  }
 
   template <typename Iterator, typename EndIterator, typename SegmentUnpacker>
   std::size_t direct_write_segments(
@@ -415,4 +416,3 @@ std::size_t encode(
 }} // namespace boost::radix
 
 #endif // BOOST_RADIX_ENCODE_HPP
-
