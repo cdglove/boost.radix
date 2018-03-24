@@ -257,7 +257,7 @@ class encoder {
       typename packed_segment_type::iterator in = packed_segment_.begin();
       out_ = ::boost::radix::detail::unpack_segment(
           codec_, in, out_, get_segment_unpacker(codec_));
-      bytes_written_ += codec_traits::unpacked_segment_size<Codec>::value;
+      bytes_written_ += UnpackedSegmentSize;
       packed_segment_.clear();
     }
     return 1;
@@ -336,12 +336,14 @@ class encoder {
       SegmentUnpacker& segment_unpacker,
       std::random_access_iterator_tag) {
     std::size_t bytes_appended = 0;
-    while(std::distance(first, last) >=
-          codec_traits::packed_segment_size<Codec>::value) {
+    std::size_t full_segment_count =
+        std::distance(first, last) / PackedSegmentSize;
+    bytes_appended += full_segment_count * UnpackedSegmentSize;
+
+    while(full_segment_count--) {
       out_ = ::boost::radix::detail::unpack_segment(
           codec_, first, out_, segment_unpacker);
-      first += codec_traits::packed_segment_size<Codec>::value;
-      bytes_appended += codec_traits::unpacked_segment_size<Codec>::value;
+      first += PackedSegmentSize;
     }
 
     fill_packed_segment(first, last, packed_segment_);
@@ -361,19 +363,23 @@ class encoder {
       out_ = ::boost::radix::detail::unpack_segment(
           codec_, packed_segment_.begin(), out_, segment_unpacker);
       packed_segment_.clear();
-      bytes_appended += codec_traits::unpacked_segment_size<Codec>::value;
+      bytes_appended += UnpackedSegmentSize;
     }
 
     return bytes_appended;
   }
 
+  static const std::size_t PackedSegmentSize =
+      codec_traits::packed_segment_size<Codec>::value;
+  static const std::size_t UnpackedSegmentSize =
+      codec_traits::unpacked_segment_size<Codec>::value;
+
   Codec const& codec_;
   OutputIterator out_;
   std::size_t bytes_written_;
 
-  typedef detail::
-      segment_buffer<bits_type, codec_traits::packed_segment_size<Codec>::value>
-          packed_segment_type;
+  typedef detail::segment_buffer<bits_type, PackedSegmentSize>
+      packed_segment_type;
   packed_segment_type packed_segment_;
 }; // namespace radix
 

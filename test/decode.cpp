@@ -34,9 +34,9 @@ public:
 };
 
 template <std::size_t Bits>
-boost::radix::static_obitstream_msb<Bits> get_segment_packer(
+boost::radix::static_obitstream_lsb<Bits> get_segment_packer(
     msb_codec<Bits> const&) {
-  return boost::radix::static_obitstream_msb<Bits>();
+  return boost::radix::static_obitstream_lsb<Bits>();
 }
 
 template <std::size_t Bits>

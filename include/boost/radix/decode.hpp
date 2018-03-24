@@ -154,18 +154,15 @@ bool fill_unpacked_segment(
 
 template <
     typename Codec,
-    typename UnpackedSegment,
+    typename ForwardIterator,
     typename OutputIterator,
     typename SegmentPacker>
-void pack_segment(
+OutputIterator pack_segment(
     Codec const&,
-    UnpackedSegment const& unpacked_segment,
-    OutputIterator& out,
+    ForwardIterator in,
+    OutputIterator out,
     SegmentPacker packer) {
-  boost::array<bits_type, codec_traits::packed_segment_size<Codec>::value>
-      packed_segment;
-  packer(unpacked_segment, packed_segment);
-  out = std::copy(packed_segment.begin(), packed_segment.end(), out);
+  return packer(in, out);
 }
 
 // -----------------------------------------------------------------------------
@@ -255,7 +252,7 @@ class decoder {
     unpacked_segment_.push_back(bits);
     if(unpacked_segment_.full()) {
       using boost::radix::adl::get_segment_packer;
-      ::boost::radix::detail::pack_segment(
+      out_ = ::boost::radix::detail::pack_segment(
           codec_, unpacked_segment_, out_, get_segment_packer(codec_));
       bytes_written_ += codec_traits::packed_segment_size<Codec>::value;
       unpacked_segment_.clear();
@@ -271,10 +268,9 @@ class decoder {
         char_type, codec_traits::packed_segment_size<Codec>::value>
         packed_segment_type;
     packed_segment_type packed_segment;
-    typename packed_segment_type::iterator out_buf = packed_segment.begin();
     using boost::radix::adl::get_segment_packer;
     ::boost::radix::detail::pack_segment(
-        codec_, unpacked_segment_, out_buf, get_segment_packer(codec_));
+        codec_, unpacked_segment_.begin(), packed_segment.begin(), get_segment_packer(codec_));
 
     typename unpacked_segment_type::iterator pad = std::find(
         unpacked_segment_.begin(), unpacked_segment_.end(),
@@ -289,7 +285,7 @@ class decoder {
       output_size = packed_bits / 8;
     }
 
-    std::copy(
+    out_ = std::copy(
         packed_segment.begin(), packed_segment.begin() + output_size, out_);
     bytes_written_ += output_size;
     return output_size;
@@ -322,7 +318,7 @@ class decoder {
       }
 
       BOOST_ASSERT(unpacked_segment_.full());
-      ::boost::radix::detail::pack_segment(
+      out_ = ::boost::radix::detail::pack_segment(
           codec_, unpacked_segment_, out_, segment_packer);
       unpacked_segment_.clear();
       bytes_appended += codec_traits::packed_segment_size<Codec>::value;
@@ -360,7 +356,7 @@ class decoder {
       if(!::boost::radix::detail::fill_unpacked_segment(
              codec_, first, last, unpacked_segment_))
         break;
-      ::boost::radix::detail::pack_segment(
+      out_ = ::boost::radix::detail::pack_segment(
           codec_, unpacked_segment_, out_, segment_packer);
       unpacked_segment_.clear();
       bytes_appended += codec_traits::packed_segment_size<Codec>::value;

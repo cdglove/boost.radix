@@ -54,7 +54,7 @@ bool validate_character(boost::radix::codec::rfc4648::base64 const&) {
 }
 }} // namespace boost::radix
 
-//static void Base64_Encode_BackInserter(benchmark::State& state) {
+// static void Base64_Encode_BackInserter(benchmark::State& state) {
 //  boost::radix::codec::rfc4648::base64 codec;
 //
 //  std::vector<bits_type> data = generate_random_bytes(state.range(0));
@@ -68,14 +68,14 @@ bool validate_character(boost::radix::codec::rfc4648::base64 const&) {
 //  state.SetBytesProcessed(
 //      int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-//BENCHMARK(Base64_Encode_BackInserter)
+// BENCHMARK(Base64_Encode_BackInserter)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
 //    ->Arg(64 * 1024)
 //    ->Arg(1024 * 1024);
 //
-//static void Base64_Decode_BackInserter(benchmark::State& state) {
+// static void Base64_Decode_BackInserter(benchmark::State& state) {
 //  boost::radix::codec::rfc4648::base64 codec;
 //
 //  std::vector<bits_type> data = generate_random_bytes(state.range(0));
@@ -93,7 +93,7 @@ bool validate_character(boost::radix::codec::rfc4648::base64 const&) {
 //  state.SetBytesProcessed(
 //      int64_t(state.iterations()) * int64_t(state.range(0)));
 //}
-//BENCHMARK(Base64_Decode_BackInserter)
+// BENCHMARK(Base64_Decode_BackInserter)
 //    ->Arg(128)
 //    ->Arg(1024)
 //    ->Arg(8 * 1024)
@@ -236,21 +236,17 @@ BENCHMARK(Base64_Lsb_Decode_OutputDirect)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
 
-struct rfc4648_nocheck : boost::radix::codec::rfc4648::base64 {};
-
-bool validate_character(rfc4648_nocheck const& codec, char_type c) {
-  return true;
-}
-
 static void Base64_Decoder_OutputDirect(benchmark::State& state) {
-  rfc4648_nocheck codec;
+  boost::radix::codec::rfc4648::base64 codec;
   std::vector<bits_type> data = generate_random_bytes(state.range(0));
-  std::string result;
-  result.resize(decoded_size(data.size(), codec));
+  std::string encoded;
+  boost::radix::encode(
+      data.begin(), data.end(), std::back_inserter(encoded), codec);
+  std::vector<bits_type> result(data.size());
   for(auto _ : state) {
-    auto decoder = boost::radix::make_decoder(codec, result.begin());
-    decoder.append(unwrap_iterator(data.begin()), unwrap_iterator(data.end()));
-    decoder.resolve();
+    auto decoder = boost::radix::make_decoder(codec, result.data());
+    decoder.append(
+        unwrap_iterator(encoded.begin()), unwrap_iterator(encoded.end()));
     benchmark::DoNotOptimize(result);
   }
 
