@@ -17,6 +17,10 @@
 #include <boost/radix/bitmask.hpp>
 #include <boost/radix/detail/bits.hpp>
 
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif
+
 namespace boost { namespace radix {
 
 template <std::size_t Bits>
@@ -32,14 +36,13 @@ class static_obitstream_msb {
     BOOST_STATIC_ASSERT(packed_size <= sizeof(boost::uint64_t));
 
     boost::uint64_t packed = 0;
-    for(int i = static_cast<int>(unpacked_size) - 1; i >= 0; --i) {
+    for(std::size_t i = 0; i < unpacked_size; ++i) {
       packed <<= Bits;
       packed |= static_cast<bits_type>(unpacked[i] & mask<Bits>::value);
     }
 
-    for(std::size_t i = 0; i < packed_size; ++i) {
-      *out++ = static_cast<bits_type>(packed);
-      packed >>= 8;
+    for(int i = static_cast<int>(packed_size) - 1; i >= 0; --i) {
+      *out++ = static_cast<bits_type>(packed >> (i * 8));
     }
 
     return out;
