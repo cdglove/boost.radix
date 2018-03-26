@@ -12,10 +12,10 @@
 
 #include <boost/radix/common.hpp>
 
-#include <boost/cstdint.hpp>
-
 #include <boost/radix/bitmask.hpp>
 #include <boost/radix/detail/bits.hpp>
+
+#include <boost/cstdint.hpp>
 
 namespace boost { namespace radix {
 
