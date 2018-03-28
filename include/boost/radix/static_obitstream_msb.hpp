@@ -14,15 +14,30 @@
 
 #include <boost/radix/bitmask.hpp>
 #include <boost/radix/detail/bits.hpp>
-#include <boost/type_traits/integral_constant.hpp>
 
 #include <boost/cstdint.hpp>
+#include <boost/predef/hardware/simd.h>
+#include <boost/type_traits/integral_constant.hpp>
+
+#define BOOST_RADIX_OBITSTREAM_PACK_METHOD_INT64 1
+#define BOOST_RADIX_OBITSTREAM_PACK_METHOD_SINGLEBYTE 2
+#define BOOST_RADIX_OBITSTREAM_PACK_METHOD_SIMD 3
+
+#if !defined(BOOST_RADIX_OBITSTREAM_PACK_METHOD)
+#  if defined(BOOST_HW_SIMD)
+#    define BOOST_RADIX_OBITSTREAM_PACK_METHOD                                 \
+      BOOST_RADIX_OBITSTREAM_PACK_METHOD_SIMD
+#  elif !defined(BOOST_NO_INT64_T)
+#    define BOOST_RADIX_OBITSTREAM_PACK_METHOD                                 \
+      BOOST_RADIX_OBITSTREAM_PACK_METHOD_INT64
+#  endif
+#endif
 
 namespace boost { namespace radix {
 namespace detail {
 
 template <typename UnpackedSegment, typename OutputIterator>
-OutputIterator pack(
+OutputIterator pack_segment_msb_simple(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, 1>) {
@@ -37,7 +52,7 @@ OutputIterator pack(
 }
 
 template <typename UnpackedSegment, typename OutputIterator>
-OutputIterator pack(
+OutputIterator pack_segment_msb_simple(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, 2>) {
@@ -52,7 +67,7 @@ OutputIterator pack(
 };
 
 template <typename UnpackedSegment, typename OutputIterator>
-OutputIterator pack(
+OutputIterator pack_segment_msb_simple(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, 3>) {
@@ -65,7 +80,7 @@ OutputIterator pack(
 }
 
 template <typename UnpackedSegment, typename OutputIterator>
-OutputIterator pack(
+OutputIterator pack_segment_msb_simple(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, 4>) {
@@ -75,7 +90,7 @@ OutputIterator pack(
 }
 
 template <typename UnpackedSegment, typename OutputIterator>
-OutputIterator pack(
+OutputIterator pack_segment_msb_simple(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, 5>) {
@@ -89,7 +104,7 @@ OutputIterator pack(
 }
 
 template <typename UnpackedSegment, typename OutputIterator>
-OutputIterator pack(
+OutputIterator pack_segment_msb_simple(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, 6>) {
@@ -101,7 +116,7 @@ OutputIterator pack(
 }
 
 template <typename UnpackedSegment, typename OutputIterator>
-OutputIterator pack(
+OutputIterator pack_segment_msb_simple(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, 7>) {
@@ -117,7 +132,7 @@ OutputIterator pack(
 }
 
 template <typename UnpackedSegment, typename OutputIterator, std::size_t Bits>
-OutputIterator pack_basic(
+OutputIterator pack_segment_msb_uint64(
     UnpackedSegment const& unpacked,
     OutputIterator out,
     boost::integral_constant<std::size_t, Bits>) {

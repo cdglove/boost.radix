@@ -159,7 +159,7 @@ class static_ibitstream_msb {
  public:
   template <typename RandomAccessIterator, typename UnpackedSegment>
   void operator()(RandomAccessIterator packed, UnpackedSegment& u) const {
-    return detail::unpack(
+    detail::unpack(
         packed, u, boost::integral_constant<std::size_t, Bits>());
   }
 };
