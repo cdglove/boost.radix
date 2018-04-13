@@ -39,6 +39,6 @@ function(add_radix_bench target_file)
 endfunction()
 
 link_directories("${CMAKE_CURRENT_BINARY_DIR}/google_benchmark/src/google_benchmark-build/src")
-add_radix_bench(codec/rfc4648)
-add_radix_bench(codec/base64_reference)
+#add_radix_bench(codec/rfc4648)
+#add_radix_bench(codec/base64_reference)
 add_radix_bench(codec/base64_beast)

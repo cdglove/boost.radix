@@ -9,7 +9,10 @@
 
 #include "../test/common.hpp"
 #include "benchmark/benchmark.h"
+#include <boost/array.hpp>
 #include <boost/beast/core/detail/base64.hpp>
+#include <emmintrin.h>
+#include "../test/base64_simd.hpp"
 
 template <typename Iterator>
 auto unwrap_iterator(Iterator i) {
@@ -22,7 +25,7 @@ static void Base64_Encode_Beast(benchmark::State& state) {
   std::string result;
   result.resize(boost::beast::detail::base64::encoded_size(data.size()));
   for(auto _ : state) {
-    boost::beast::detail::base64::encode(
+    boost::beast::detail::base64::encode_simd(
         unwrap_iterator(result.begin()), data.data(), data.size());
     benchmark::DoNotOptimize(result);
   }
