@@ -136,14 +136,26 @@ inline std::size_t encode_simd(void* dest, void const* src, std::size_t len) {
             _mm_shuffle_epi8(unpacked_simd[2], shuffle_unpacked[2][3])),
         _mm_shuffle_epi8(unpacked_simd[3], shuffle_unpacked[3][3]));
 
-    _mm_storeu_si128(reinterpret_cast<__m128i*>(out), dest_simd[0]);
-    out += 16;
-    _mm_storeu_si128(reinterpret_cast<__m128i*>(out), dest_simd[1]);
-    out += 16;
-    _mm_storeu_si128(reinterpret_cast<__m128i*>(out), dest_simd[2]);
-    out += 16;
-    _mm_storeu_si128(reinterpret_cast<__m128i*>(out), dest_simd[3]);
-    out += 16;
+    boost::array<unsigned char, 16 * 4> pre_map_buf;
+    _mm_storeu_si128(
+        reinterpret_cast<__m128i*>(pre_map_buf.data()), dest_simd[0]);
+    _mm_storeu_si128(
+        reinterpret_cast<__m128i*>(pre_map_buf.data() + 16), dest_simd[1]);
+    _mm_storeu_si128(
+        reinterpret_cast<__m128i*>(pre_map_buf.data() + 32), dest_simd[2]);
+    _mm_storeu_si128(
+        reinterpret_cast<__m128i*>(pre_map_buf.data() + 48), dest_simd[3]);
+
+    // Copying to a secondary buffer is faster than outputting
+    // directly.
+    boost::array<unsigned char, 16 * 4> mapped_buf;
+    for(std::size_t i = 0; i < pre_map_buf.size(); ++i) {
+      mapped_buf[i] = pre_map_buf[tab[i]];
+    }
+
+    for(std::size_t i = 0; i < mapped_buf.size(); ++i) {
+      *out++ = mapped_buf[i];
+    }
   }
 
   len = len % (3 * 16);
