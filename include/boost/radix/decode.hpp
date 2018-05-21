@@ -14,7 +14,6 @@
 
 #include <boost/radix/codec_traits/pad.hpp>
 #include <boost/radix/codec_traits/segment.hpp>
-#include <boost/radix/codec_traits/validation.hpp>
 #include <boost/radix/exception.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
@@ -25,59 +24,92 @@
 #  pragma once
 #endif
 
+namespace boost { namespace radix { namespace decode_validation {
+
+enum op {
+  op_consume,
+  op_skip,
+  op_abort,
+};
+
+enum error {
+  none = 0,
+  invalid_whitespace,
+  nonalphabet_character,
+};
+
+}}} // namespace boost::radix::decode_validation
+
+#if BOOST_RADIX_SUPPORT_STDERRORCODE
+namespace std {
+template <>
+struct is_error_code_enum<boost::radix::decode_validation::error>
+    : true_type {};
+} // namespace std
+#endif // BOOST_RADIX_SUPPORT_STDERRORCODE
+
+#if BOOST_RADIX_SUPPORT_BOOSTERRORCODE
+namespace boost { namespace system {
+template <>
+struct is_error_condition_enum<boost::radix::decode_validation::error> {
+  static const bool value = true;
+};
+}}     // namespace boost::system
+#endif // BOOST_RADIX_SUPPORT_BOOSTERRORCODE
+
 namespace boost { namespace radix {
 
-namespace detail {
+// namespace detail {
 
-template <typename Codec>
-bool handle_whitespace_character(
-    Codec const& codec, char_type c, handler::assert) {
-  BOOST_ASSERT(!std::isspace(c));
-  return true;
-}
+// template <typename Codec, typename>
+// bool handle_whitespace_character(
+//     Codec const& codec, char_type c, handler::assert) {
+//   BOOST_ASSERT(!std::isspace(c));
+//   return true;
+// }
 
-template <typename Codec>
-bool handle_whitespace_character(
-    Codec const& codec, char_type c, handler::exception) {
-  if(std::isspace(c)) {
-    BOOST_THROW_EXCEPTION(invalid_whitespace());
-  }
-  return true;
-}
+// template <typename Codec>
+// bool handle_whitespace_character(
+//     Codec const& codec, char_type c, handler::exception) {
+//   if(std::isspace(c)) {
+//     BOOST_THROW_EXCEPTION(invalid_whitespace());
+//   }
+//   return true;
+// }
 
-template <typename Codec>
-bool handle_whitespace_character(
-    Codec const& codec, char_type c, handler::ignore) {
-  if(std::isspace(c))
-    return false;
-  return true;
-}
+// template <typename Codec>
+// bool handle_whitespace_character(
+//     Codec const& codec, char_type c, handler::ignore) {
+//   if(std::isspace(c))
+//     return false;
+//   return true;
+// }
 
-template <typename Codec>
-bool handle_nonalphabet_character(
-    Codec const& codec, char_type c, handler::assert) {
-  BOOST_ASSERT(codec.has_char(c));
-  return true;
-}
+// template <typename Codec>
+// bool handle_nonalphabet_character(
+//     Codec const& codec, char_type c, handler::assert) {
+//   BOOST_ASSERT(std::isspace(c));
+//   return true;
+// }
 
-template <typename Codec>
-bool handle_nonalphabet_character(
-    Codec const& codec, char_type c, handler::exception) {
-  if(!codec.has_char(c)) {
-    BOOST_THROW_EXCEPTION(nonalphabet_character());
-  }
-  return true;
-}
+// template <typename Codec>
+// bool handle_nonalphabet_character(
+//     Codec const& codec, char_type c, handler::exception) {
+//   if(!codec.has_char(c)) {
+//     BOOST_THROW_EXCEPTION(nonalphabet_character());
+//   }
+//   return true;
+// }
 
-template <typename Codec>
-bool handle_nonalphabet_character(
-    Codec const& codec, char_type c, handler::ignore) {
-  if(!codec.has_char(c))
-    return false;
-  return true;
-}
+// template <typename Codec>
+// bool handle_nonalphabet_character(
+//     Codec const& codec, char_type c, handler::ignore) {
+//   if(!codec.has_char(c))
+//     return false;
+//   return true;
+// }
 
-} // namespace detail
+// } // namespace detail
 
 // -----------------------------------------------------------------------------
 //
@@ -102,21 +134,21 @@ std::size_t get_decoded_size(std::size_t source_size, Codec const& codec) {
 }
 
 template <typename Codec>
-bool validate_nonalphabet_character(Codec const& codec, char_type c) {
-  return ::boost::radix::detail::handle_nonalphabet_character(
-      codec, c, typename codec_traits::on_whitespace_char<Codec>::type());
+bool is_invalid_whitespace_character(Codec const& codec, char_type c) {
+  if(std::isspace(c)) {
+    return true;
+  }
+  return false;
 }
 
-template <typename Codec>
-bool validate_whitespace_character(Codec const& codec, char_type c) {
-  return ::boost::radix::detail::handle_whitespace_character(
-      codec, c, typename codec_traits::on_nonalphabet_char<Codec>::type());
-}
-
-template <typename Codec>
-bool validate_character(Codec const& codec, char_type c) {
-  return validate_whitespace_character(codec, c) &&
-         validate_nonalphabet_character(codec, c);
+template <typename Codec, typename ErrorHandler>
+decode_validation::op validate_character(
+    Codec const& codec, char_type c, ErrorHandler& errh) {
+  if(is_invalid_whitespace_character(codec, c))
+    return errh.handle_whitespace_character(codec, c);
+  if(!codec.has_char(c))
+    return errh.handle_nonalphabet_character(codec, c);
+  return decode_validation::op_consume;
 }
 
 } // namespace adl
@@ -127,12 +159,14 @@ template <
     typename Codec,
     typename Iterator,
     typename EndIterator,
-    typename UnpackedSegment>
+    typename UnpackedSegment,
+    typename ErrorHandler>
 bool fill_unpacked_segment(
     Codec const& codec,
     Iterator& first,
     EndIterator last,
-    UnpackedSegment& unpacked) {
+    UnpackedSegment& unpacked,
+    ErrorHandler& errh) {
   using boost::radix::codec_traits::required_bits;
 
   typename UnpackedSegment::iterator ubegin = unpacked.end();
@@ -140,10 +174,15 @@ bool fill_unpacked_segment(
 
   while(first != last && ubegin != uend) {
     char_type c = *first++;
-
     using boost::radix::adl::validate_character;
-    if(validate_character(codec, c)) {
+    switch(validate_character(codec, c, errh)) {
+    case decode_validation::op_consume:
       *ubegin++ = codec.bits_from_char(c);
+      break;
+    case decode_validation::op_skip:
+      continue;
+    case decode_validation::op_abort:
+      return false;
     }
   }
 
@@ -230,6 +269,84 @@ std::size_t decode_impl(
 
 } // namespace detail
 
+struct decode_error_handler_throw {
+  template <typename Codec>
+  decode_error_handler_throw(Codec const&) {
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_whitespace_character(Codec const&, char_type c) {
+    BOOST_THROW_EXCEPTION(invalid_whitespace(c));
+    return decode_validation::op_consume;
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_nonalphabet_character(
+      Codec const& codec, char_type c) {
+    BOOST_THROW_EXCEPTION(nonalphabet_character(c));
+    return decode_validation::op_consume;
+  }
+};
+
+template <typename ErrorCodeType>
+struct decode_error_handler_error_code {
+  template <typename Codec>
+  decode_error_handler_error_code(Codec const&, ErrorCodeType& errc)
+      : errc_(errc) {
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_whitespace_character(Codec const&, char_type c) {
+    errc_ = decode_validation::invalid_whitespace;
+    return decode_validation::op_abort;
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_nonalphabet_character(
+      Codec const& codec, char_type c) {
+    errc_ = decode_validation::nonalphabet_character;
+    return decode_validation::op_abort;
+  }
+
+  ErrorCodeType& errc_;
+};
+
+struct decode_error_handler_assert {
+  template <typename Codec>
+  decode_error_handler_assert(Codec const&) {
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_whitespace_character(Codec const&, char_type c) {
+    BOOST_ASSERT(false);
+    return decode_validation::op_consume;
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_nonalphabet_character(
+      Codec const& codec, char_type c) {
+    BOOST_ASSERT(false);
+    return decode_validation::op_consume;
+  }
+};
+
+struct decode_error_handler_ignore {
+  template <typename Codec>
+  decode_error_handler_ignore(Codec const&) {
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_whitespace_character(Codec const&, char_type c) {
+    return decode_validation::op_consume;
+  }
+
+  template <typename Codec>
+  decode_validation::op handle_nonalphabet_character(
+      Codec const& codec, char_type c) {
+    return decode_validation::op_consume;
+  }
+};
+
 template <typename Codec, typename OutputIterator>
 class decoder {
  public:
@@ -242,22 +359,15 @@ class decoder {
   template <typename Iterator, typename EndIterator>
   std::size_t append(Iterator first, EndIterator last) {
     using boost::radix::adl::get_segment_packer;
+    decode_error_handler_throw errh(codec_);
     std::size_t bytes_appended =
-        append_impl(first, last, get_segment_packer(codec_));
+        append_impl(first, last, get_segment_packer(codec_), errh);
     bytes_written_ += bytes_appended;
     return bytes_appended;
   }
 
-  std::size_t append(bits_type bits) {
-    unpacked_segment_.push_back(bits);
-    if(unpacked_segment_.full()) {
-      using boost::radix::adl::get_segment_packer;
-      out_ = ::boost::radix::detail::pack_segment(
-          codec_, unpacked_segment_, out_, get_segment_packer(codec_));
-      bytes_written_ += codec_traits::packed_segment_size<Codec>::value;
-      unpacked_segment_.clear();
-    }
-    return 1;
+  std::size_t append(char_type c) {
+    return append(&c, (&c) + 1);
   }
 
   std::size_t resolve() {
@@ -270,7 +380,8 @@ class decoder {
     packed_segment_type packed_segment;
     using boost::radix::adl::get_segment_packer;
     ::boost::radix::detail::pack_segment(
-        codec_, unpacked_segment_.begin(), packed_segment.begin(), get_segment_packer(codec_));
+        codec_, unpacked_segment_.begin(), packed_segment.begin(),
+        get_segment_packer(codec_));
 
     typename unpacked_segment_type::iterator pad = std::find(
         unpacked_segment_.begin(), unpacked_segment_.end(),
@@ -307,13 +418,20 @@ class decoder {
 
  private:
   //
-  template <typename Iterator, typename EndIterator, typename SegmentPacker>
+  template <
+      typename Iterator,
+      typename EndIterator,
+      typename SegmentPacker,
+      typename ErrorHandler>
   std::size_t append_impl(
-      Iterator first, EndIterator last, SegmentPacker segment_packer) {
+      Iterator first,
+      EndIterator last,
+      SegmentPacker segment_packer,
+      ErrorHandler& errh) {
     std::size_t bytes_appended = 0;
     if(!unpacked_segment_.empty()) {
       if(!::boost::radix::detail::fill_unpacked_segment(
-             codec_, first, last, unpacked_segment_)) {
+             codec_, first, last, unpacked_segment_, errh)) {
         return 0;
       }
 
@@ -325,16 +443,16 @@ class decoder {
     }
 
     bytes_appended += direct_write_segments(
-        first, last, segment_packer,
+        first, last, segment_packer, errh,
         typename std::iterator_traits<Iterator>::iterator_category());
     return bytes_appended;
   }
 
-  // template <typename Iterator, typename SegmentPacker>
-  // std::size_t direct_write_segments(
-  //     Iterator first,
-  //     Iterator last,
-  //     SegmentPacker& segment_packer,
+  // template <typename Iterator, typename EndIterator, typename SegmentPacker,
+  // typename ErrorHandler>
+  //  std::size_t direct_write_segments(
+  //      Iterator first, EndIterator last, SegmentPacker segment_packer,
+  //      ErrorHandler& errh,
   //     std::random_access_iterator_tag) {
   //   std::size_t bytes_appended = 0;
   //   while(std::distance(first, last) >=
@@ -348,13 +466,21 @@ class decoder {
   //   return bytes_appended;
   // }
 
-  template <typename Iterator, typename EndIterator, typename SegmentPacker>
+  template <
+      typename Iterator,
+      typename EndIterator,
+      typename SegmentPacker,
+      typename ErrorHandler>
   std::size_t direct_write_segments(
-      Iterator first, EndIterator last, SegmentPacker segment_packer, ...) {
+      Iterator first,
+      EndIterator last,
+      SegmentPacker segment_packer,
+      ErrorHandler& errh,
+      ...) {
     std::size_t bytes_appended = 0;
     while(true) {
       if(!::boost::radix::detail::fill_unpacked_segment(
-             codec_, first, last, unpacked_segment_))
+             codec_, first, last, unpacked_segment_, errh))
         break;
       out_ = ::boost::radix::detail::pack_segment(
           codec_, unpacked_segment_, out_, segment_packer);
@@ -410,7 +536,6 @@ std::size_t decode(
   d.resolve();
   return d.bytes_written();
 }
-
 }} // namespace boost::radix
 
 #endif // BOOST_RADIX_DECODE_HPP

@@ -25,7 +25,7 @@ template <std::size_t Bits>
 class msb_codec
     : public boost::radix::basic_codec<
           boost::radix::bits::to_alphabet_size<Bits>::value> {
-public:
+ public:
   msb_codec()
       : boost::radix::basic_codec<
             boost::radix::bits::to_alphabet_size<Bits>::value>(
@@ -40,8 +40,9 @@ boost::radix::static_obitstream_msb<Bits> get_segment_packer(
 }
 
 template <std::size_t Bits>
-bool validate_whitespace_character(msb_codec<Bits> const& codec, char_type c) {
-  return true;
+bool is_invalid_whitespace_character(
+    msb_codec<Bits> const& codec, char_type c) {
+  return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -50,7 +51,7 @@ template <std::size_t Bits>
 class lsb_codec
     : public boost::radix::basic_codec<
           boost::radix::bits::to_alphabet_size<Bits>::value> {
-public:
+ public:
   lsb_codec()
       : boost::radix::basic_codec<
             boost::radix::bits::to_alphabet_size<Bits>::value>(
@@ -64,9 +65,10 @@ boost::radix::static_obitstream_lsb<Bits> get_segment_packer(
   return boost::radix::static_obitstream_lsb<Bits>();
 }
 
-template <std::size_t Bits>
-bool validate_character(lsb_codec<Bits> const& codec, char_type c) {
-  return true;
+template <std::size_t Bits, typename ErrorHandler>
+boost::radix::decode_validation::op validate_character(
+    lsb_codec<Bits> const& codec, char_type c, ErrorHandler& errh) {
+  return boost::radix::decode_validation::op_consume;
 }
 
 // -----------------------------------------------------------------------------
@@ -97,7 +99,8 @@ void test_decoder(DataGenerator data_generator, Encoder codec) {
   std::vector<bits_type> data     = data_generator(Bits);
   std::vector<bits_type> result;
   result.resize(boost::radix::decoded_size(data.size(), codec));
-  boost::radix::decoder<Encoder, bits_type*> decoder = boost::radix::make_decoder(codec, result.data());
+  boost::radix::decoder<Encoder, bits_type*> decoder =
+      boost::radix::make_decoder(codec, result.data());
   decoder.append(alphabet.begin(), alphabet.end());
   decoder.resolve();
   result.resize(decoder.bytes_written());

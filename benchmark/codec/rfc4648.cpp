@@ -48,12 +48,6 @@ get_segment_unpacker(base64_lsb const&) {
       boost::radix::codec_traits::required_bits<base64_lsb>::value>();
 }
 
-namespace boost { namespace radix {
-bool validate_character(boost::radix::codec::rfc4648::base64 const&) {
-  return true;
-}
-}} // namespace boost::radix
-
 // static void Base64_Encode_BackInserter(benchmark::State& state) {
 //  boost::radix::codec::rfc4648::base64 codec;
 //

@@ -15,16 +15,42 @@
 #include <boost/exception/exception.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-#    pragma once
+#  pragma once
 #endif
 
 namespace boost { namespace radix {
 
-class nonalphabet_character : public boost::exception
-{};
+class nonalphabet_character
+    : public std::exception
+    , public boost::exception {
+ public:
+  nonalphabet_character(char_type which)
+      : char_(which) {
+  }
 
-class invalid_whitespace : public boost::exception
-{};
+  char value() {
+    return char_;
+  }
+
+ private:
+  char char_;
+};
+
+class invalid_whitespace
+    : public std::exception
+    , public boost::exception {
+ public:
+  invalid_whitespace(char_type which)
+      : char_(which) {
+  }
+
+  char value() {
+    return char_;
+  }
+
+ private:
+  char char_;
+};
 
 }} // namespace boost::radix
 
