@@ -17,8 +17,16 @@
 #include <boost/radix/exception.hpp>
 #include <boost/radix/static_obitstream_msb.hpp>
 
+#if BOOST_RADIX_SUPPORT_BOOSTERRORCODE
+#  include <boost/system/error_code.hpp>
+#endif
+
 #include <boost/move/utility.hpp>
 #include <cctype>
+
+#if BOOST_RADIX_SUPPORT_STDERRORCODE
+#  include <system_error>
+#endif
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #  pragma once
@@ -58,58 +66,6 @@ struct is_error_condition_enum<boost::radix::decode_validation::error> {
 #endif // BOOST_RADIX_SUPPORT_BOOSTERRORCODE
 
 namespace boost { namespace radix {
-
-// namespace detail {
-
-// template <typename Codec, typename>
-// bool handle_whitespace_character(
-//     Codec const& codec, char_type c, handler::assert) {
-//   BOOST_ASSERT(!std::isspace(c));
-//   return true;
-// }
-
-// template <typename Codec>
-// bool handle_whitespace_character(
-//     Codec const& codec, char_type c, handler::exception) {
-//   if(std::isspace(c)) {
-//     BOOST_THROW_EXCEPTION(invalid_whitespace());
-//   }
-//   return true;
-// }
-
-// template <typename Codec>
-// bool handle_whitespace_character(
-//     Codec const& codec, char_type c, handler::ignore) {
-//   if(std::isspace(c))
-//     return false;
-//   return true;
-// }
-
-// template <typename Codec>
-// bool handle_nonalphabet_character(
-//     Codec const& codec, char_type c, handler::assert) {
-//   BOOST_ASSERT(std::isspace(c));
-//   return true;
-// }
-
-// template <typename Codec>
-// bool handle_nonalphabet_character(
-//     Codec const& codec, char_type c, handler::exception) {
-//   if(!codec.has_char(c)) {
-//     BOOST_THROW_EXCEPTION(nonalphabet_character());
-//   }
-//   return true;
-// }
-
-// template <typename Codec>
-// bool handle_nonalphabet_character(
-//     Codec const& codec, char_type c, handler::ignore) {
-//   if(!codec.has_char(c))
-//     return false;
-//   return true;
-// }
-
-// } // namespace detail
 
 // -----------------------------------------------------------------------------
 //
@@ -370,6 +326,40 @@ class decoder {
     return append(&c, (&c) + 1);
   }
 
+#if BOOST_RADIX_SUPPORT_BOOSTERRORCODE
+  template <typename Iterator, typename EndIterator>
+  std::size_t append(
+      Iterator first, EndIterator last, boost::system::error_code& errc) {
+    using boost::radix::adl::get_segment_packer;
+    decode_error_handler_error_code<boost::system::error_code> errh(
+        codec_, errc);
+    std::size_t bytes_appended =
+        append_impl(first, last, get_segment_packer(codec_), errh);
+    bytes_written_ += bytes_appended;
+    return bytes_appended;
+  }
+
+  std::size_t append(char_type c, boost::system::error_code& errc) {
+    return append(&c, (&c) + 1, errc);
+  }
+#endif
+
+#if BOOST_RADIX_SUPPORT_STDERRORCODE
+  template <typename Iterator, typename EndIterator>
+  std::size_t append(Iterator first, EndIterator last, std::error_code& errc) {
+    using boost::radix::adl::get_segment_packer;
+    decode_error_handler_error_code<std::error_code> errh(codec_, errc);
+    std::size_t bytes_appended =
+        append_impl(first, last, get_segment_packer(codec_), errh);
+    bytes_written_ += bytes_appended;
+    return bytes_appended;
+  }
+
+  std::size_t append(char_type c, std::error_code& errc) {
+    return append(&c, (&c) + 1, errc);
+  }
+#endif
+
   std::size_t resolve() {
     if(unpacked_segment_.empty())
       return 0;
@@ -448,23 +438,32 @@ class decoder {
     return bytes_appended;
   }
 
-  // template <typename Iterator, typename EndIterator, typename SegmentPacker,
-  // typename ErrorHandler>
-  //  std::size_t direct_write_segments(
-  //      Iterator first, EndIterator last, SegmentPacker segment_packer,
-  //      ErrorHandler& errh,
-  //     std::random_access_iterator_tag) {
-  //   std::size_t bytes_appended = 0;
-  //   while(std::distance(first, last) >=
-  //         codec_traits::unpacked_segment_size<Codec>::value) {
-  //     bytes_appended += ::boost::radix::detail::pack_segment(
-  //         codec_, first, out_, segment_packer);
-  //     bytes_appended += codec_traits::packed_segment_size<Codec>::value;
-  //   }
+  // This optimization is not valid because the char -> bits translation happens
+  // inside of fill_unpacked_segment
+  //template <
+  //    typename Iterator,
+  //    typename EndIterator,
+  //    typename SegmentPacker,
+  //    typename ErrorHandler>
+  //std::size_t direct_write_segments(
+  //    Iterator first,
+  //    EndIterator last,
+  //    SegmentPacker segment_packer,
+  //    ErrorHandler& errh,
+  //    std::random_access_iterator_tag) {
+  //  std::size_t bytes_appended = 0;
+  //  while(std::distance(first, last) >=
+  //        codec_traits::unpacked_segment_size<Codec>::value) {
+  //    out_ = ::boost::radix::detail::pack_segment(
+  //        codec_, first, out_, segment_packer);
+  //    bytes_appended += codec_traits::packed_segment_size<Codec>::value;
+  //    first += codec_traits::unpacked_segment_size<Codec>::value;
+  //  }
 
-  //   fill_packed_segment(first, last, packed_segment_);
-  //   return bytes_appended;
-  // }
+  //  ::boost::radix::detail::fill_unpacked_segment(
+  //      codec_, first, last, unpacked_segment_, errh);
+  //  return bytes_appended;
+  //}
 
   template <
       typename Iterator,
@@ -528,14 +527,50 @@ std::size_t decode(
     InputEndIterator last,
     OutputIterator out,
     Codec const& codec) {
-  // using boost::radix::adl::get_segment_packer;
-  // return boost::radix::detail::decode_impl(
-  //     first, last, out, codec, get_segment_packer(codec));
   decoder<Codec, OutputIterator> d(codec, out);
   d.append(first, last);
   d.resolve();
   return d.bytes_written();
 }
+
+#if BOOST_RADIX_SUPPORT_BOOSTERRORCODE
+template <
+    typename InputIterator,
+    typename InputEndIterator,
+    typename OutputIterator,
+    typename Codec>
+std::size_t decode(
+    InputIterator first,
+    InputEndIterator last,
+    OutputIterator out,
+    Codec const& codec,
+    boost::system::error_code& errc) {
+  decoder<Codec, OutputIterator> d(codec, out);
+  d.append(first, last, errc);
+  d.resolve();
+  return d.bytes_written();
+}
+#endif
+
+#if BOOST_RADIX_SUPPORT_STDERRORCODE
+template <
+    typename InputIterator,
+    typename InputEndIterator,
+    typename OutputIterator,
+    typename Codec>
+std::size_t decode(
+    InputIterator first,
+    InputEndIterator last,
+    OutputIterator out,
+    Codec const& codec,
+    std::error_code& errc) {
+  decoder<Codec, OutputIterator> d(codec, out);
+  d.append(first, last, errc);
+  d.resolve();
+  return d.bytes_written();
+}
+#endif
+
 }} // namespace boost::radix
 
 #endif // BOOST_RADIX_DECODE_HPP

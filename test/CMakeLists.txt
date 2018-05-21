@@ -17,6 +17,7 @@ function(add_radix_test target_file)
     set(radix_test_name boost.radix.test.${target_name})
     add_executable(${radix_test_name} "${target_file}.cpp")
     target_link_libraries(${radix_test_name} PRIVATE radix Boost::unit_test_framework)
+    target_compile_definitions(${radix_test_name} PRIVATE BOOST_ERROR_CODE_HEADER_ONLY BOOST_ALL_NO_LIB)
     add_test(NAME ${radix_test_name} COMMAND ${radix_test_name})
 endfunction()
 
