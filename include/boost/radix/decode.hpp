@@ -109,122 +109,6 @@ decode_validation::op validate_character(
 
 } // namespace adl
 
-namespace detail {
-
-template <
-    typename Codec,
-    typename Iterator,
-    typename EndIterator,
-    typename UnpackedSegment,
-    typename ErrorHandler>
-bool fill_unpacked_segment(
-    Codec const& codec,
-    Iterator& first,
-    EndIterator last,
-    UnpackedSegment& unpacked,
-    ErrorHandler& errh) {
-  using boost::radix::codec_traits::required_bits;
-
-  typename UnpackedSegment::iterator ubegin = unpacked.end();
-  typename UnpackedSegment::iterator uend   = ubegin + unpacked.capacity();
-
-  while(first != last && ubegin != uend) {
-    char_type c = *first++;
-    using boost::radix::adl::validate_character;
-    switch(validate_character(codec, c, errh)) {
-    case decode_validation::op_consume:
-      *ubegin++ = codec.bits_from_char(c);
-      break;
-    case decode_validation::op_skip:
-      continue;
-    case decode_validation::op_abort:
-      return false;
-    }
-  }
-
-  unpacked.resize(std::distance(unpacked.begin(), ubegin));
-  std::fill(ubegin, uend, 0);
-  return ubegin == uend && first != last;
-}
-
-template <
-    typename Codec,
-    typename ForwardIterator,
-    typename OutputIterator,
-    typename SegmentPacker>
-OutputIterator pack_segment(
-    Codec const&,
-    ForwardIterator in,
-    OutputIterator out,
-    SegmentPacker packer) {
-  return packer(in, out);
-}
-
-// -----------------------------------------------------------------------------
-//
-template <
-    typename InputIterator,
-    typename InputEndIterator,
-    typename OutputIterator,
-    typename Codec,
-    typename SegmentPacker>
-std::size_t decode_impl(
-    InputIterator first,
-    InputEndIterator last,
-    OutputIterator out,
-    Codec const& codec,
-    SegmentPacker packer) {
-  if(first == last)
-    return 0;
-
-  using boost::radix::codec_traits::packed_segment_size;
-  using boost::radix::codec_traits::required_bits;
-  using boost::radix::codec_traits::unpacked_segment_size;
-
-  std::size_t bytes_written = 0;
-  std::size_t ins           = 0;
-
-  while(true) {
-    detail::segment_buffer<bits_type, unpacked_segment_size<Codec>::value>
-        unpacked_segment;
-    ::boost::radix::detail::fill_unpacked_segment(
-        codec, first, last, unpacked_segment);
-
-    boost::array<bits_type, packed_segment_size<Codec>::value> packed_segment;
-    packer(unpacked_segment, packed_segment);
-
-    // If we hit the end, we can't write out everything.
-    if(first == last) {
-      typename detail::segment_buffer<
-          bits_type, unpacked_segment_size<Codec>::value>::iterator pad =
-          std::find(
-              unpacked_segment.begin(), unpacked_segment.end(),
-              codec.get_pad_bits());
-
-      std::size_t output_size = 1;
-
-      if(codec_traits::required_bits<Codec>::value > 1) {
-        output_size = (std::distance(unpacked_segment.begin(), pad) *
-                       codec_traits::required_bits<Codec>::value) /
-                      8;
-      }
-
-      std::copy(
-          packed_segment.begin(), packed_segment.begin() + output_size, out);
-
-      bytes_written += output_size;
-      break;
-    }
-
-    out = std::copy(packed_segment.begin(), packed_segment.end(), out);
-    bytes_written += packed_segment.size();
-  }
-
-  return bytes_written;
-}
-
-} // namespace detail
-
 struct decode_error_handler_throw {
   template <typename Codec>
   decode_error_handler_throw(Codec const&) {
@@ -303,6 +187,8 @@ struct decode_error_handler_ignore {
   }
 };
 
+// -----------------------------------------------------------------------------
+//
 template <typename Codec, typename OutputIterator>
 class decoder {
  public:
@@ -369,9 +255,8 @@ class decoder {
         packed_segment_type;
     packed_segment_type packed_segment;
     using boost::radix::adl::get_segment_packer;
-    ::boost::radix::detail::pack_segment(
-        codec_, unpacked_segment_.begin(), packed_segment.begin(),
-        get_segment_packer(codec_));
+    get_segment_packer(codec_)(
+        unpacked_segment_.begin(), packed_segment.begin());
 
     typename unpacked_segment_type::iterator pad = std::find(
         unpacked_segment_.begin(), unpacked_segment_.end(),
@@ -420,50 +305,19 @@ class decoder {
       ErrorHandler& errh) {
     std::size_t bytes_appended = 0;
     if(!unpacked_segment_.empty()) {
-      if(!::boost::radix::detail::fill_unpacked_segment(
-             codec_, first, last, unpacked_segment_, errh)) {
+      if(!fill_unpacked_segment(first, last, errh)) {
         return 0;
       }
 
       BOOST_ASSERT(unpacked_segment_.full());
-      out_ = ::boost::radix::detail::pack_segment(
-          codec_, unpacked_segment_, out_, segment_packer);
+      out_ = segment_packer(unpacked_segment_.begin(), out_);
       unpacked_segment_.clear();
       bytes_appended += codec_traits::packed_segment_size<Codec>::value;
     }
 
-    bytes_appended += direct_write_segments(
-        first, last, segment_packer, errh,
-        typename std::iterator_traits<Iterator>::iterator_category());
+    bytes_appended += direct_write_segments(first, last, segment_packer, errh);
     return bytes_appended;
   }
-
-  // This optimization is not valid because the char -> bits translation happens
-  // inside of fill_unpacked_segment
-  //template <
-  //    typename Iterator,
-  //    typename EndIterator,
-  //    typename SegmentPacker,
-  //    typename ErrorHandler>
-  //std::size_t direct_write_segments(
-  //    Iterator first,
-  //    EndIterator last,
-  //    SegmentPacker segment_packer,
-  //    ErrorHandler& errh,
-  //    std::random_access_iterator_tag) {
-  //  std::size_t bytes_appended = 0;
-  //  while(std::distance(first, last) >=
-  //        codec_traits::unpacked_segment_size<Codec>::value) {
-  //    out_ = ::boost::radix::detail::pack_segment(
-  //        codec_, first, out_, segment_packer);
-  //    bytes_appended += codec_traits::packed_segment_size<Codec>::value;
-  //    first += codec_traits::unpacked_segment_size<Codec>::value;
-  //  }
-
-  //  ::boost::radix::detail::fill_unpacked_segment(
-  //      codec_, first, last, unpacked_segment_, errh);
-  //  return bytes_appended;
-  //}
 
   template <
       typename Iterator,
@@ -474,20 +328,47 @@ class decoder {
       Iterator first,
       EndIterator last,
       SegmentPacker segment_packer,
-      ErrorHandler& errh,
-      ...) {
+      ErrorHandler& errh) {
     std::size_t bytes_appended = 0;
     while(true) {
-      if(!::boost::radix::detail::fill_unpacked_segment(
-             codec_, first, last, unpacked_segment_, errh))
+      if(!fill_unpacked_segment(first, last, errh))
         break;
-      out_ = ::boost::radix::detail::pack_segment(
-          codec_, unpacked_segment_, out_, segment_packer);
+      BOOST_ASSERT(unpacked_segment_.full());
+      out_ = segment_packer(unpacked_segment_.begin(), out_);
+      ;
       unpacked_segment_.clear();
       bytes_appended += codec_traits::packed_segment_size<Codec>::value;
     }
 
     return bytes_appended;
+  }
+
+  template <typename Iterator, typename EndIterator, typename ErrorHandler>
+  bool fill_unpacked_segment(
+      Iterator& first, EndIterator last, ErrorHandler& errh) {
+    using boost::radix::codec_traits::required_bits;
+
+    typename unpacked_segment_type::iterator ubegin = unpacked_segment_.end();
+    typename unpacked_segment_type::iterator uend =
+        ubegin + unpacked_segment_.capacity();
+
+    while(first != last && ubegin != uend) {
+      char_type c = *first++;
+      using boost::radix::adl::validate_character;
+      switch(validate_character(codec_, c, errh)) {
+      case decode_validation::op_consume:
+        *ubegin++ = codec_.bits_from_char(c);
+        break;
+      case decode_validation::op_skip:
+        continue;
+      case decode_validation::op_abort:
+        return false;
+      }
+    }
+
+    unpacked_segment_.resize(std::distance(unpacked_segment_.begin(), ubegin));
+    std::fill(ubegin, uend, 0);
+    return ubegin == uend && first != last;
   }
 
   Codec const& codec_;
