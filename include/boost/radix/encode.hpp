@@ -98,11 +98,7 @@ class encoder {
         packed_segment_.end(),
         packed_segment_.begin() + packed_segment_.capacity(), 0);
 
-    typedef boost::array<
-        char_type, codec_traits::unpacked_segment_size<Codec>::value>
-        unpacked_segment_type;
-    unpacked_segment_type unpacked_segment;
-
+    boost::array<char_type, UnpackedSegmentSize> unpacked_segment;
     using boost::radix::adl::get_segment_unpacker;
     get_segment_unpacker(codec_)(packed_segment_.begin(), unpacked_segment);
 
@@ -303,9 +299,15 @@ class encoder {
     return bytes_written;
   }
 
-  template <typename UnpackedBuffer>
+  static const std::size_t PackedSegmentSize =
+      codec_traits::packed_segment_size<Codec>::value;
+  static const std::size_t UnpackedSegmentSize =
+      codec_traits::unpacked_segment_size<Codec>::value;
+
   std::size_t maybe_pad_segment_impl(
-      std::size_t packed_size, UnpackedBuffer& unpacked, boost::true_type) {
+      std::size_t packed_size,
+      boost::array<char_type, UnpackedSegmentSize>& unpacked,
+      boost::true_type) {
     std::size_t bytes_written = get_unpacked_size_from_packed_size(packed_size);
 
     while(bytes_written < unpacked.size())
@@ -314,24 +316,20 @@ class encoder {
     return unpacked.size();
   }
 
-  template <typename UnpackedBuffer>
   std::size_t maybe_pad_segment_impl(
-      std::size_t packed_size, UnpackedBuffer& unpacked, boost::false_type) {
+      std::size_t packed_size,
+      boost::array<char_type, UnpackedSegmentSize>& unpacked,
+      boost::false_type) {
     return get_unpacked_size_from_packed_size(packed_size);
   }
 
-  template <typename UnpackedBuffer>
   std::size_t maybe_pad_segment(
-      std::size_t packed_size, UnpackedBuffer& unpacked) {
+      std::size_t packed_size,
+      boost::array<char_type, UnpackedSegmentSize>& unpacked) {
     return maybe_pad_segment_impl(
         packed_size, unpacked,
         typename codec_traits::requires_pad<Codec>::type());
   }
-
-  static const std::size_t PackedSegmentSize =
-      codec_traits::packed_segment_size<Codec>::value;
-  static const std::size_t UnpackedSegmentSize =
-      codec_traits::unpacked_segment_size<Codec>::value;
 
   Codec const& codec_;
   OutputIterator out_;
