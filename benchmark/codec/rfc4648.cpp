@@ -94,6 +94,7 @@ get_segment_unpacker(base64_lsb const&) {
 //    ->Arg(64 * 1024)
 //    ->Arg(1024 * 1024);
 
+#if !RADIXBENCH_DECODE_NOVALIDATION
 static void Base64_Encode_OutputDirect(benchmark::State& state) {
   boost::radix::codec::rfc4648::base64 codec;
   std::vector<bits_type> data = generate_random_bytes(state.range(0));
@@ -181,6 +182,31 @@ BENCHMARK(Base64_EncodeIterator_OutputDirect)
     ->Arg(8 * 1024)
     ->Arg(64 * 1024)
     ->Arg(1024 * 1024);
+
+#endif // RADIXBENCH_DECODE_NOVALIDATION
+
+#if RADIXBENCH_DECODE_NOVALIDATION
+namespace boost { namespace radix { namespace codec { namespace rfc4648 {
+
+template <typename ErrorHandler>
+decode_validation::op validate_character(
+    base64 const& codec,
+    char_type c,
+    ErrorHandler&) {
+  return decode_validation::op_consume;
+}
+
+}}}}
+
+template <typename ErrorHandler>
+boost::radix::decode_validation::op validate_character(
+    base64_lsb const& codec,
+    char_type c,
+    ErrorHandler&) {
+  return boost::radix::decode_validation::op_consume;
+}
+
+#endif
 
 static void Base64_Decode_OutputDirect(benchmark::State& state) {
   boost::radix::codec::rfc4648::base64 codec;
