@@ -143,7 +143,8 @@ OutputIterator pack_basic(
 } // namespace detail
 
 template <std::size_t Bits>
-struct static_obitstream_msb {
+class static_obitstream_msb {
+ public:
   template <typename UnpackedSegment, typename OutputIterator>
   OutputIterator operator()(
       UnpackedSegment const& unpacked, OutputIterator out) const {

@@ -18,35 +18,31 @@
 #include <boost/array.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
-#    pragma once
+#  pragma once
 #endif
 
 namespace boost { namespace radix { namespace codec_traits {
 
 template <typename Codec>
-struct required_bits
-{
-    BOOST_STATIC_CONSTANT(
-        std::size_t,
-        value = bits::from_alphabet_size<Codec::alphabet_size>::value);
+struct required_bits {
+  BOOST_STATIC_CONSTANT(
+      std::size_t,
+      value = bits::from_alphabet_size<Codec::alphabet_size>::value);
 };
 
 template <typename Codec>
-struct packed_segment_size
-{
-    BOOST_STATIC_CONSTANT(
-        std::size_t,
-        value =
-            bits::to_packed_segment_size<required_bits<Codec>::value>::value);
+struct packed_segment_size {
+  BOOST_STATIC_CONSTANT(
+      std::size_t,
+      value = bits::to_packed_segment_size<required_bits<Codec>::value>::value);
 };
 
 template <typename Codec>
-struct unpacked_segment_size
-{
-    BOOST_STATIC_CONSTANT(
-        std::size_t,
-        value =
-            bits::to_unpacked_segment_size<required_bits<Codec>::value>::value);
+struct unpacked_segment_size {
+  BOOST_STATIC_CONSTANT(
+      std::size_t,
+      value =
+          bits::to_unpacked_segment_size<required_bits<Codec>::value>::value);
 };
 
 }}} // namespace boost::radix::codec_traits

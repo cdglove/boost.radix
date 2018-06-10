@@ -28,7 +28,6 @@
 template <typename CharType, typename Codec>
 std::basic_string<boost::radix::char_type> encode_string(
     boost::basic_string_view<CharType> input, Codec const& codec) {
-  using boost::radix::adl::get_segment_unpacker;
   std::string result;
   result.resize(encoded_size(
       std::distance(boost::begin(input), boost::end(input)), codec));
@@ -52,7 +51,6 @@ std::basic_string<boost::radix::char_type> encode_string(
 template <typename CharType, typename Codec>
 std::basic_string<boost::radix::char_type> decode_string(
     boost::basic_string_view<CharType> input, Codec const& codec) {
-  using boost::radix::adl::get_segment_unpacker;
   std::string result;
   result.resize(decoded_size(
       std::distance(boost::begin(input), boost::end(input)), codec));
